@@ -46,12 +46,17 @@ concurrency:
 jobs:
   yayin:
     runs-on: ubuntu-latest
-    # SOĞUK ÖNBELLEKTE 60 DAKİKA YETMİYOR. Yeni depoda ilk koşu 284 aylık
-    # AFAD dosyasını ve 57 yıllık KOERI dökümünü sıfırdan indirir; iş bu
-    # sınırda kesilir ve "canceled" görünür -- düşmüş gibi değil, iptal
-    # edilmiş gibi. Sınır, önbellekli koşunun süresine göre değil EN UZUN
-    # koşuya göre konur.
-    timeout-minutes: 150
+    # SINIR, ÖNBELLEKLİ KOŞUYA GÖRE DEĞİL EN UZUN KOŞUYA GÖRE KONUR.
+    #
+    # İlk deneme 60 dakikada kesildi ve "canceled" göründü -- düşmüş gibi
+    # değil, iptal edilmiş gibi. Soğuk önbellekte hat 284 aylık AFAD
+    # dosyasını (aralarında 1 sn bekleme), 57 yıllık KOERI dökümünü ve
+    # EMSC'yi sıfırdan indirir; 60 dakika yalnızca AFAD'a yetmişti.
+    #
+    # Kamuya açık depoda Actions dakikaları ücretsizdir, yani sınırı düşük
+    # tutmanın karşılığı yok; erken biten koşu erken biter. Sonraki koşular
+    # önbellekli olduğu için yarım saat civarındadır.
+    timeout-minutes: 240
 
     steps:
       - name: Kaynağı al
