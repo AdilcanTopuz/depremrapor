@@ -110,3 +110,95 @@ def test_sayim_alanlari_tutarli():
     k = tahmin_kaydi()
     s = k["sayim"]
     assert s["toplam"] == s["listede"] + s["listede_degil"] + s.get("yayin_yoktu", 0)
+
+
+# --- İLERİ BAKIŞ (V-ilerleyen) --------------------------------------------
+#
+# Sicil, olayın kendi TARİHİNE ait yayına bakıyordu. O yayın sabah üretiliyor
+# ve katalogunda o saate kadarki olaylar bulunuyordu; gece yarısından sonra
+# olan bir deprem, KENDİSİNİ ZATEN GÖRMÜŞ bir listeyle karşılaştırılıyordu.
+# Üstelik M4,5 bir olay hücrenin ETAS oranını yükselttiği için "listede
+# vardı" sonucu neredeyse garantiydi -- ölçülen şey tahmin gücü değil, olayın
+# kendisiydi.
+
+def _sahte_yayin(kok, zaman_iso, hucreler):
+    """Verilen üretim zamanıyla tek bir yayın dizini kurar."""
+    ad = pd.Timestamp(zaman_iso).strftime("%Y-%m-%dT%H%M")
+    d = kok / ad
+    d.mkdir(parents=True)
+    (d / "manifest.json").write_text(
+        json.dumps({"uretim_zamani": zaman_iso}), encoding="utf-8")
+    (d / "forecast_1d_m45.geojson").write_text(json.dumps({
+        "type": "FeatureCollection",
+        "features": [{"type": "Feature", "properties":
+                      {"cell_id": c, "times_normal": 3.0}} for c in hucreler],
+    }), encoding="utf-8")
+    return d
+
+
+def test_olaydan_SONRA_uretilen_yayin_sayilmaz(tmp_path, monkeypatch):
+    """Kural 9: ölçütün ileri bakışı gerçekten REDDETTİĞİ gösterilir.
+
+    Aynı gün içinde iki yayın var: biri olaydan önce (hücre YOK), biri
+    olaydan sonra (hücre VAR). Eski ölçüt gün eşleştirdiği için sonrakini
+    de sayardı ve "listede vardı" derdi. Yeni ölçüt zamana bakar.
+    """
+    from src.operational import son_depremler as S
+
+    monkeypatch.setattr(S, "PUBLISH", tmp_path)
+    _sahte_yayin(tmp_path, "2026-08-27T03:30:00", hucreler=[])        # önce
+    _sahte_yayin(tmp_path, "2026-08-27T09:30:00", hucreler=[4032])    # sonra
+
+    olay = pd.Timestamp("2026-08-27T06:00:00")
+    yayin = S._yayin_hucreleri(olay, gun=1)
+
+    assert yayin is not None, "olaydan önce yayın vardı, None dönmemeli"
+    assert 4032 not in yayin, (
+        "İLERİ BAKIŞ: olaydan SONRA üretilmiş yayın sayılmış — "
+        "bir tahmin, olaydan önce yayımlanmadıysa o olay hakkında "
+        "hiçbir şey söyleyemez")
+
+
+def test_olaydan_ONCEKI_yayin_sayilir(tmp_path, monkeypatch):
+    """Aynı kurulumda, olaydan önceki yayında hücre varsa SAYILIR.
+
+    Önceki test tek başına 'hiçbir şeyi saymayan' bir ölçütle de geçerdi.
+    """
+    from src.operational import son_depremler as S
+
+    monkeypatch.setattr(S, "PUBLISH", tmp_path)
+    _sahte_yayin(tmp_path, "2026-08-27T03:30:00", hucreler=[4032])
+    _sahte_yayin(tmp_path, "2026-08-27T09:30:00", hucreler=[])
+
+    yayin = S._yayin_hucreleri(pd.Timestamp("2026-08-27T06:00:00"), gun=1)
+    assert yayin is not None and 4032 in yayin
+
+
+def test_olaydan_once_hic_yayin_yoksa_None(tmp_path, monkeypatch):
+    """'Yayın yoktu' ile 'listede yoktu' ayrımı zamanda da korunur."""
+    from src.operational import son_depremler as S
+
+    monkeypatch.setattr(S, "PUBLISH", tmp_path)
+    _sahte_yayin(tmp_path, "2026-08-27T09:30:00", hucreler=[4032])
+    assert S._yayin_hucreleri(pd.Timestamp("2026-08-27T06:00:00"), gun=1) is None
+
+
+def test_ESKI_ad_bicimi_de_okunur(tmp_path, monkeypatch):
+    """Devredilen arşiv YYYY-MM-DD adlıdır; sicil onları kaybetmemeli."""
+    from src.operational import son_depremler as S
+
+    monkeypatch.setattr(S, "PUBLISH", tmp_path)
+    d = tmp_path / "2026-08-26"
+    d.mkdir()
+    (d / "manifest.json").write_text(
+        json.dumps({"uretim_zamani": "2026-08-26T03:30:00"}), encoding="utf-8")
+    (d / "forecast_1d_m45.geojson").write_text(json.dumps({
+        "type": "FeatureCollection",
+        "features": [{"type": "Feature",
+                      "properties": {"cell_id": 4032, "times_normal": 2.5}}],
+    }), encoding="utf-8")
+
+    zamanlar = [t for t, _ in S._yayin_dizini()]
+    assert len(zamanlar) == 1, "eski ad biçimindeki yayın görülmedi"
+    yayin = S._yayin_hucreleri(pd.Timestamp("2026-08-26T12:00:00"), gun=1)
+    assert yayin is not None and 4032 in yayin

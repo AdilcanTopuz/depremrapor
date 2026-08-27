@@ -49,20 +49,29 @@ MIN_TIMES_NORMAL = 2.0            # ölçülerek seçildi (forecast_now tablosu)
 # görünür, künye doğrudur, veri bayattır.
 AZAMI_KATALOG_YASI_SAAT = 48
 
-# BAYAT YAYIN EŞİĞİ -- ürün kararı, gerekçesi burada.
+# YAYIN KADANSI VE BAYAT YAYIN EŞİĞİ -- ürün kararı, gerekçesi burada.
 #
-# Hat günde bir koşar. GitHub Actions `schedule` GARANTİLİ DEĞİLDİR: 5-15 dk
-# gecikme olağandır, ender olarak bir koşu hiç çalışmayabilir. Bir koşunun
-# atlanması yayını geçersiz kılmaz; İKİ koşunun atlanması yayının artık
-# güncel sayılmaması demektir.
+# NEDEN 3 SAAT, NEDEN GÜNDE BİR DEĞİL. Modelin değeri zamanda yoğundur:
+# ölçüldüğünde olay teriminin %98,8'i 120 başlangıç içindeki en yüksek 10
+# olaylı başlangıçtan geliyordu (docs/MANSET.md). Yani ETAS "her gün biraz
+# daha iyi" değil, KRİTİK GÜNLERDE çok daha iyi. Bir M6 sonrası artçı oranı
+# saatler içinde büyüklük mertebesi değiştirir; 24 saatlik tazeleme, modelin
+# tam da en değerli olduğu anda bağlayıcı kısıt hâline gelir.
 #
-#     24 saat (günlük koşu) + 12 saat (tolerans) = 36 saat
+# Üç saat, koşu süresinin (önbellekli ~45 dk) rahatça altında kaldığı en sık
+# kadanstır. Daha sıkısı koşuları üst üste bindirir.
+#
+# GitHub Actions `schedule` GARANTİLİ DEĞİLDİR: 5-15 dk gecikme olağandır,
+# ender olarak bir koşu hiç çalışmaz. Bir koşunun atlanması yayını geçersiz
+# kılmaz; eşik bir atlamayı tolere edip ikincisinde uyarır:
+#
+#     3 saat (koşu aralığı) + 3 saat (bir atlama) + 1 saat (gecikme payı) = 7
 #
 # Eşik aşılınca arayüz AÇIKÇA UYARIR ve manifest bunu MAKİNE-OKUNUR biçimde
 # taşır: bir izleme aracı ya da kurumsal kullanıcı da bayatlığı programatik
 # görebilsin -- "sessizce eskime" hiçbir tüketici için olmasın.
-BAYAT_YAYIN_ESIGI_SAAT = 36
-YAYIN_ARALIGI_SAAT = 24
+BAYAT_YAYIN_ESIGI_SAAT = 7
+YAYIN_ARALIGI_SAAT = 3
 
 # YAYIN ADRESİ TEK YERDE DURUR. Künyeye, manifeste, sayfaların canonical ve
 # og:url etiketlerine ve sitemap'e buradan gider. İkinci bir yerde elle
@@ -477,7 +486,11 @@ def calistir(pencereler: tuple = PENCERELER, hedef_mw: float = HEDEF_MW,
 
     origin = pd.Timestamp(t0).tz_localize(None).normalize()
     durum = load_state()
-    gun_dizini = PUBLISH / f"{origin:%Y-%m-%d}"
+    # DİZİN ADINDA SAAT DE VAR. Günde sekiz yayın aynı gün adını
+    # paylaşsaydı sonuncusu öncekilerin üstüne yazar ve arşiv, o günün
+    # yalnızca son hâlini taşırdı -- oysa sicil, HANGİ AN neyin yayımlandığını
+    # bilmeye dayanır.
+    gun_dizini = PUBLISH / f"{origin:%Y-%m-%dT%H%M}"
     gun_dizini.mkdir(parents=True, exist_ok=True)
 
     kayitlar = []
@@ -540,7 +553,8 @@ def calistir(pencereler: tuple = PENCERELER, hedef_mw: float = HEDEF_MW,
               "iki katman ayrı")
 
     manifest = {
-        "uretim_zamani": t0.isoformat(), "origin": f"{origin:%Y-%m-%d}",
+        "uretim_zamani": t0.isoformat(),
+        "origin": origin.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "commit": commit, "calisma_agaci": "dirty" if izin_kirli else "clean",
         "katalog": tazelik, "urun_kapisi": kapi,
         "kalibre_parametreler": par,
@@ -552,6 +566,7 @@ def calistir(pencereler: tuple = PENCERELER, hedef_mw: float = HEDEF_MW,
             "uretim_zamani": t0.isoformat(),
             "sonraki_beklenen": (t0 + timedelta(hours=YAYIN_ARALIGI_SAAT))
                                 .isoformat(),
+            "yayin_araligi_saat": YAYIN_ARALIGI_SAAT,
             "bayatlik_esigi_saat": BAYAT_YAYIN_ESIGI_SAAT,
             "kural": ("üretim zamanı FİİLÎ zamandır, planlanan değil. "
                       "Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre "

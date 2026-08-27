@@ -189,7 +189,7 @@
       <th style="width:16%">zaman (UTC)</th>
       <th style="width:10%">büyüklük</th>
       <th style="width:28%">yer</th>
-      <th>o gün yayımlanan listede</th>
+      <th>olaydan önce yayımlanan listede</th>
     </tr></thead><tbody id="satirlar"></tbody></table>
   </div>
 
@@ -242,7 +242,7 @@ function satirlariCiz(){
   if(!o.length){
     tb.innerHTML = `<tr><td colspan="4" class="bosmesaj">
       <b>Bu ölçüte uyan kayıt yok.</b><br>
-      Sistem ${D.ilk_yayin || "—"} tarihinde yayına başladı ve o günden bu yana
+      Sistem ${D.ilk_yayin || "—"} tarihinde yayına başladı ve o tarihten bu yana
       Türkiye'de M4,5 ve üzeri bir deprem ${D.sayim.toplam === 0
         ? "kaydedilmedi" : "kaydedildi"}. Kayıt her yayınla birlikte
       kendiliğinden büyür; boş bir sicil, bir eksiklik değil bir olgudur.

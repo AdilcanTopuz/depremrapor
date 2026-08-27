@@ -20,7 +20,26 @@ bir koruyucu, koruduğu sanılıp korumuyorsa korumamaktan kötüdür.
 Aşağıdaki "son güncelleme" sütunu, her satırın hangi olayla son kez
 değerlendirildiğini taşır.
 
-**Son güncelleme:** 27 Ağustos 2026 (ikinci) — **hiçbir sayı etkilenmedi.** `pipeline.py`'ye `YAYIN_ADRESI` sabiti ve manifeste `yayin_adresi` alanı eklendi; alan adı (depremrapor.com) künyeye, sayfaların canonical/og etiketlerine ve üretilen sitemap'e oradan gider. Model, katalog, parametre ve eşiklerde değişiklik yok; yayımlanan tüm sayılar geçerliliğini korur.
+**Son güncelleme:** 27 Ağustos 2026 (üçüncü) — **YAYIMLANAN OLASILIKLAR
+DEĞİŞTİ.** Tahmin başlangıcı artık gece yarısına yuvarlanmıyor, koşunun kendi
+anından başlıyor (`forecast_now._simdi`), ve hat günde bir yerine üç saatte
+bir koşuyor.
+
+Etkilenen: yayımlanan `probability` ve `times_normal` değerlerinin **tamamı**.
+Sayılar yanlış değildi; **pencereleri** farklıydı. Eskiden "bugün 00:00'dan
+itibaren N gün" deniyordu ve koşu 06:30'da yapıldığı için pencerenin 6,5 saati
+üretim anında çoktan geçmişti. Şimdi pencere üretim anından başlıyor, yani
+"önümüzdeki N gün" ifadesi harfiyen doğru.
+
+Geçersiz kılınan bir ölçüm YOK: geriye dönük değerlendirmeler
+(`csep_results*.json`, `daily_backtest.json`, `gain_breakdown.json`,
+FAZ3/NPP sonuçları) kendi ilan edilmiş başlangıçlarıyla üretildi ve bu
+değişiklikten etkilenmez. Değişen şey CANLI yayının pencere tanımıdır.
+
+Tazelik sözleşmesi de değişti: `YAYIN_ARALIGI_SAAT` 24 -> 3,
+`BAYAT_YAYIN_ESIGI_SAAT` 36 -> 7.
+
+daha önce (aynı gün): **hiçbir sayı etkilenmedi.** `pipeline.py`'ye `YAYIN_ADRESI` sabiti ve manifeste `yayin_adresi` alanı eklendi; alan adı (depremrapor.com) künyeye, sayfaların canonical/og etiketlerine ve üretilen sitemap'e oradan gider. Model, katalog, parametre ve eşiklerde değişiklik yok; yayımlanan tüm sayılar geçerliliğini korur.
 daha önce (aynı gün): **hiçbir sayı etkilenmedi.** `forecast_now.py`'deki tek değişiklik, uyarı metninin sonundaki gönderme yolunun `docs/ROADMAP.md` yerine `metodoloji.html` olmasıdır (V57). Metin sha256 ile kilitli olduğu için `ONAYLI_UYARI_SHA` da yenilendi; model, katalog, parametre ya da eşiklerde değişiklik yok. Yayımlanan tüm sayılar geçerliliğini korur. Aynı toplu değişiklikte harita altlığı ve ölçüm betiği değişti (V56) — bunlar sunum katmanındadır ve hiçbir sayıyı üretmez;
 daha önce: **grid_features yapısal engelden geçirildi
 (CellHistory); çıktı BİREBİR AYNI: 694.328 satır, 61 kolon, hiçbir fark yok**;

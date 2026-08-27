@@ -193,6 +193,23 @@ def load_state() -> tuple[dict, pd.DataFrame]:
     return trained, eb.etas_catalog(trained["mc"])
 
 
+def _simdi() -> "pd.Timestamp":
+    """Tahmin başlangıcı = ŞU AN (saate yuvarlanmış), gece yarısı DEĞİL.
+
+    Önceden `.normalize()` ile gece yarısına yuvarlanıyordu. Hat günde bir
+    kez, sabah 06:30'da koştuğu sürece bu yalnızca 6,5 saatlik bir sapmaydı.
+    Hat üç saatte bir koşunca aynı yuvarlama SAÇMA bir çıktı üretir: saat
+    21:30'daki koşu "bugün 00:00'dan itibaren 1 gün" der ve pencerenin 21,5
+    saati ÇOKTAN GEÇMİŞTİR -- geleceğe dair bir olasılık gibi sunulan sayı,
+    çoğunlukla geçmişi anlatır.
+
+    Pencere, koşunun kendi anından başlar. ETAS sürekli zamanlı bir modeldir;
+    gün sınırına ihtiyacı yoktur, yuvarlama yalnızca bir sunum alışkanlığıydı.
+    Saate yuvarlama, künyenin okunabilir kalması içindir.
+    """
+    return pd.Timestamp(datetime.now(timezone.utc)).tz_localize(None).floor("h")
+
+
 def run_forecast_analytic(days: int = 7, target_mw: float = 4.5,
                           origin: pd.Timestamp | None = None,
                           state: tuple[dict, pd.DataFrame] | None = None,
@@ -212,9 +229,9 @@ def run_forecast_analytic(days: int = 7, target_mw: float = 4.5,
     from src.models.etas_branching import expected_counts
 
     trained, cat = state if state is not None else load_state()
-    origin = origin or pd.Timestamp(datetime.now(timezone.utc)).tz_localize(None).normalize()
+    origin = origin or _simdi()
     mags = mags or (target_mw,)
-    print(f"tahmin başlangıcı: {origin:%Y-%m-%d}, pencere {days} gün, "
+    print(f"tahmin başlangıcı: {origin:%Y-%m-%d %H:%M}, pencere {days} gün, "
           f"M>={target_mw} (ANALİTİK -- simülasyon yok)")
 
     # Arka plan oranı mu, HER BAŞLANGIÇTA yerel geçmişten yeniden kestirilir;
@@ -249,8 +266,8 @@ def run_forecast(days: int = 7, n_sim: int = 2000, target_mw: float = 4.5,
     from src.models import etas_baseline as eb
 
     trained, cat = state if state is not None else load_state()
-    origin = origin or pd.Timestamp(datetime.now(timezone.utc)).tz_localize(None).normalize()
-    print(f"tahmin başlangıcı: {origin:%Y-%m-%d}, pencere {days} gün, "
+    origin = origin or _simdi()
+    print(f"tahmin başlangıcı: {origin:%Y-%m-%d %H:%M}, pencere {days} gün, "
           f"M>={target_mw}, {n_sim} simülasyon")
 
     calc = eb._calculation_at(origin, cat, trained)

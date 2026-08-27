@@ -218,7 +218,14 @@ function tazelik(kunye) {
   const t = kunye.tazelik || {};
   const uretim = new Date(t.uretim_zamani || kunye.yayin_uretim);
   const saat = (Date.now() - uretim.getTime()) / 3.6e6;
-  const esik = t.bayatlik_esigi_saat || 36;
+  const esik = t.bayatlik_esigi_saat || 7;
+  // KADANS KÜNYEDEN OKUNUR, SAYFAYA ELLE YAZILMAZ. Önceki sürümde metin
+  // "sistem günde bir kez yenilenir" diye sabitti; kadans üç saate inince
+  // sayfa YANLIŞ bir şey söylemeye devam ederdi ve bunu hiçbir şey haber
+  // vermezdi (V42 kalıbı).
+  const s_ara = t.yayin_araligi_saat || 3;
+  const aralik = s_ara >= 24 ? `${Math.round(s_ara / 24)} günde bir`
+                             : `${s_ara} saatte bir`;
   const yas = saat < 1  ? "az önce"
             : saat < 24 ? `${Math.round(saat)} saat önce`
             : `${Math.floor(saat / 24)} gün ${Math.round(saat % 24)} saat önce`;
@@ -226,7 +233,7 @@ function tazelik(kunye) {
     yas, esik, saat, bayat: saat > esik,
     metin: `${kunye.yayin_origin} tarihli tahmin · ${yas} üretildi · ` +
            `katalogdaki son olay ${kunye.katalog.son_olay.slice(0, 16)}`,
-    bayatMetni: `${yas} üretildi; sistem günde bir kez yenilenir ve ${esik} ` +
+    bayatMetni: `${yas} üretildi; sistem ${aralik} yenilenir ve ${esik} ` +
       `saati aşan yayınlar güncel sayılmaz. Gösterilen sayılar o tarihteki ` +
       `duruma aittir — <b>bugünün durumu farklı olabilir.</b>`,
   };

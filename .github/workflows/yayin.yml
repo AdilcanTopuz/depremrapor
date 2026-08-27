@@ -14,10 +14,15 @@ name: Günlük yayın
 
 on:
   schedule:
-    # 03:30 UTC = 06:30 TRT. Actions schedule GARANTİLİ DEĞİLDİR: 5-15 dk
-    # gecikme olağandır. Künyedeki üretim zamanı FİİLÎ zamandır (bkz.
-    # gecikme olağandır); site 36 saati aşan yayında uyarır.
-    - cron: "30 3 * * *"
+    # ÜÇ SAATTE BİR. Modelin değeri kritik günlerde yoğunlaşır (olay
+    # teriminin %98,8'i en yüksek 10 başlangıçtan; docs/MANSET.md) ve bir
+    # dizi sırasında artçı oranı saatler içinde değişir; günde tek koşu,
+    # modelin en değerli olduğu anda bağlayıcı kısıt oluyordu.
+    #
+    # Actions schedule GARANTİLİ DEĞİLDİR: 5-15 dk gecikme olağandır, ender
+    # olarak bir koşu hiç çalışmaz. Künyedeki üretim zamanı FİİLÎ zamandır;
+    # site, bayatlık eşiğini (7 saat) aşan yayında uyarır.
+    - cron: "30 */3 * * *"
   workflow_dispatch:
     inputs:
       sebep:

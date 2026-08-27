@@ -3,7 +3,8 @@
 İKİ ÇIKTI ÜRETİR:
 
   son_depremler.json  son N saatte Türkiye'de kaydedilen olaylar; her olayın
-                      yanında, o gün yayımlanmış listede yer alıp almadığı
+                      yanında, olaydan ÖNCE yayımlanmış listede yer alıp
+                      almadığı
   tahmin_kaydi.json   arşivdeki BÜTÜN yayınlar üzerinden aynı eşleştirmenin
                       birikimli dökümü
 
@@ -11,8 +12,9 @@
 BURADA NE İDDİA EDİLİYOR, NE EDİLMİYOR — bu dosyanın en önemli kısmı
 --------------------------------------------------------------------------
 
-Bir deprem, o gün yayımlanmış bir hücrenin içinde olduysa bunu söyleriz:
-**"bu alan o gün yayımlanan listede vardı."** Söylediğimiz şey budur ve
+Bir deprem, kendisinden ÖNCE yayımlanmış bir hücrenin içinde olduysa bunu
+söyleriz: **"bu alan, olay olmadan önce yayımlanan listede vardı."**
+Söylediğimiz şey budur ve
 yalnızca budur.
 
 SÖYLEMEDİĞİMİZ ŞEY: "tahmin tuttu", "doğru bildik", "yöntem başarılı".
@@ -42,7 +44,7 @@ YAYIN ÖNCESİ OLAYLAR
 --------------------------------------------------------------------------
 Sistem 26 Ağustos 2026'da yayına başladı. Ondan önceki olaylar için
 "listede miydi" sorusunun cevabı YOK'tur -- yanlış değil, YOK. Bu durum
-`tahminde: null` ile işaretlenir ve arayüzde "o tarihte yayın yoktu" diye
+`tahminde: null` ile işaretlenir ve arayüzde "olaydan önce yayın yoktu" diye
 yazılır. Yokluğu "listede değildi" diye göstermek, olmayan bir başarısızlık
 uydurmak olurdu.
 """
@@ -93,15 +95,69 @@ def _hucre(lat, lon) -> np.ndarray:
     return cell_id(np.asarray(lat, dtype=float), np.asarray(lon, dtype=float))
 
 
-def _yayin_hucreleri(tarih: str, gun: int = 1) -> dict | None:
-    """Belirli bir tarihte yayımlanmış hücreler. Yayın yoksa None.
+def _yayin_dizini() -> list:
+    """Arşivdeki yayınlar, üretim zamanına göre sıralı: [(zaman, dizin), ...].
+
+    İki ad biçimi bir arada bulunur ve ikisi de okunur:
+      YYYY-MM-DD        devir öncesi, günde tek yayın dönemi
+      YYYY-MM-DDTHHMM   üç saatlik kadans
+
+    Zaman, dizin adından DEĞİL manifestteki `uretim_zamani`ndan alınır --
+    ad bir etikettir, üretim zamanı ölçümdür. Manifest okunamazsa ada
+    düşülür (devredilen eski dizinlerin bir kısmı için gerekebilir).
+    """
+    if not PUBLISH.exists():
+        return []
+    kayitlar = []
+    for d in PUBLISH.iterdir():
+        if not d.is_dir() or d.name == "latest":
+            continue
+        t = None
+        man = d / "manifest.json"
+        if man.exists():
+            try:
+                t = pd.Timestamp(json.loads(man.read_text(encoding="utf-8"))
+                                 ["uretim_zamani"]).tz_localize(None)
+            except Exception:
+                t = None
+        if t is None:
+            try:
+                t = pd.Timestamp(d.name.replace("T", " ") if "T" in d.name
+                                 else d.name)
+            except Exception:
+                continue
+        kayitlar.append((t, d))
+    return sorted(kayitlar)
+
+
+def _yayin_hucreleri(olay_zamani, gun: int = 1) -> dict | None:
+    """Olaydan ÖNCE üretilmiş en son yayının hücreleri. Yoksa None.
+
+    İLERİ BAKIŞ BURADAN GİRİYORDU. Önceki sürüm, olayın kendi TARİHİNE ait
+    yayına bakıyordu. O yayın sabah 06:30'da üretiliyor ve katalogunda o
+    saate kadarki olaylar bulunuyordu; dolayısıyla gece 02:00'deki bir olay,
+    KENDİSİNİ ZATEN GÖRMÜŞ bir listeyle karşılaştırılıyordu. Üstelik M4,5
+    bir olay o hücrenin ETAS oranını yükselttiği için "listede vardı" sonucu
+    neredeyse garantiydi -- sicil, tahmin gücünü değil olayın kendisini
+    ölçüyordu.
+
+    Ölçüt artık zamana dayanır: olaydan ÖNCE üretilmiş en son yayın. Bir
+    tahminin o olay hakkında bir şey söyleyebilmesi için olaydan önce
+    yayımlanmış olması gerekir; bu, tartışılacak bir tercih değil bir
+    tanımdır.
 
     None ile boş sözlük ARASINDAKİ FARK ÖNEMLİDİR:
-      None  -> o gün yayın YAPILMADI (soru sorulamaz)
-      {}    -> yayın yapıldı ama eşik üstü hücre yoktu (soru sorulur, cevap hayır)
+      None  -> olaydan önce yayın YOKTU (soru sorulamaz)
+      {}    -> yayın vardı ama eşik üstü hücre yoktu (soru sorulur, cevap hayır)
     """
     ad = f"forecast_{gun}d_m{str(HEDEF_MW).replace('.', '')}.geojson"
-    yol = PUBLISH / tarih / ad
+    t_olay = pd.Timestamp(olay_zamani)
+    if t_olay.tz is not None:
+        t_olay = t_olay.tz_convert("UTC").tz_localize(None)
+    onceki = [(t, d) for t, d in _yayin_dizini() if t < t_olay]
+    if not onceki:
+        return None
+    yol = onceki[-1][1] / ad
     if not yol.exists():
         return None
     gj = json.loads(yol.read_text(encoding="utf-8"))
@@ -110,29 +166,31 @@ def _yayin_hucreleri(tarih: str, gun: int = 1) -> dict | None:
 
 
 def _olay_kaydi(satir, yerler: dict, onbellek: dict) -> dict:
-    """Tek bir olayı, o günün yayımlanmış listesiyle eşleştirir."""
+    """Tek bir olayı, kendisinden ÖNCE yayımlanmış listeyle eşleştirir."""
     from src.operational.kapsam import icinde
 
     cid = int(_hucre([satir.lat], [satir.lon])[0])
-    tarih = satir.time.strftime("%Y-%m-%d")
-    if tarih not in onbellek:
-        onbellek[tarih] = _yayin_hucreleri(tarih, gun=1)
-    yayin = onbellek[tarih]
+    # Önbellek anahtarı SAAT çözünürlüğünde: aynı saatteki olaylar aynı
+    # yayına bakar, farklı saattekiler bakmayabilir.
+    anahtar = satir.time.strftime("%Y-%m-%dT%H")
+    if anahtar not in onbellek:
+        onbellek[anahtar] = _yayin_hucreleri(satir.time, gun=1)
+    yayin = onbellek[anahtar]
 
     y = yerler.get(str(cid)) or {}
     hedefte = float(satir.mag) >= HEDEF_MW
 
     if yayin is None:
-        tahminde, kat, gerekce = None, None, "o tarihte yayın yoktu"
+        tahminde, kat, gerekce = None, None, "olaydan önce yayın yoktu"
     elif cid in yayin:
         tahminde = True
         kat = yayin[cid].get("times_normal")
-        gerekce = "o gün yayımlanan listede vardı"
+        gerekce = "olaydan önce yayımlanmış listede vardı"
     else:
         tahminde = False
         kat = None
-        gerekce = ("o gün yayımlanan listede yoktu — bu, olasılığın sıfır "
-                   "olduğu anlamına gelmez, alan eşiğin altındaydı")
+        gerekce = ("olaydan önce yayımlanmış listede yoktu — bu, olasılığın "
+                   "sıfır olduğu anlamına gelmez, alan eşiğin altındaydı")
 
     return {
         "zaman": satir.time.isoformat(),
@@ -198,12 +256,17 @@ def tahmin_kaydi(asgari_mag: float = HEDEF_MW) -> dict:
     """
     from src.ingest.catalog_io import read_catalog
 
-    tarihler = sorted(d.name for d in PUBLISH.iterdir()
-                      if d.is_dir() and len(d.name) == 10 and d.name[4] == "-")
-    if not tarihler:
+    # DİZİN ADI UZUNLUĞUNA GÖRE SÜZMEK KIRILGANDI. Önceki sürüm yalnızca
+    # 10 karakterlik (YYYY-MM-DD) adları sayıyordu; kadans üç saate inip
+    # adlar YYYY-MM-DDTHHMM olunca bu süzgeç YENİ YAYINLARIN HEPSİNİ sessizce
+    # atardı -- sicil boş görünür, hiçbir şey hata vermezdi. Ad biçimini
+    # tanıyan tek yer `_yayin_dizini()`; burası da oradan okur.
+    yayinlar = _yayin_dizini()
+    if not yayinlar:
         return {
             "uretim_zamani": datetime.now(timezone.utc).isoformat(),
-            "yayin_gunu": 0, "ilk_yayin": None, "son_yayin": None,
+            "yayin_gunu": 0, "yayin_sayisi": 0,
+            "ilk_yayin": None, "son_yayin": None,
             "asgari_buyukluk": asgari_mag, "olaylar": [],
             "sayim": {"toplam": 0, "listede": 0, "listede_degil": 0},
             "not": "Henüz arşivlenmiş yayın yok.",
@@ -213,7 +276,7 @@ def tahmin_kaydi(asgari_mag: float = HEDEF_MW) -> dict:
     if not yol.exists():
         raise KayitHatasi(f"{yol} yok")
     df = read_catalog(yol)
-    bas = pd.Timestamp(tarihler[0] + " 00:00:00", tz="UTC")
+    bas = pd.Timestamp(yayinlar[0][0], tz="UTC")
     df = df[(df.time >= bas) & (df.mag >= asgari_mag)].sort_values(
         "time", ascending=False)
 
@@ -228,9 +291,12 @@ def tahmin_kaydi(asgari_mag: float = HEDEF_MW) -> dict:
 
     return {
         "uretim_zamani": datetime.now(timezone.utc).isoformat(),
-        "yayin_gunu": len(tarihler),
-        "ilk_yayin": tarihler[0],
-        "son_yayin": tarihler[-1],
+        # Kadans üç saate indiği için "kaç yayın" ile "kaç gün yayın
+        # yapıldı" ayrı sayılardır; ikisi de verilir, karıştırılmaz.
+        "yayin_gunu": len({t.strftime("%Y-%m-%d") for t, _ in yayinlar}),
+        "yayin_sayisi": len(yayinlar),
+        "ilk_yayin": yayinlar[0][0].strftime("%Y-%m-%d"),
+        "son_yayin": yayinlar[-1][0].strftime("%Y-%m-%d"),
         "asgari_buyukluk": asgari_mag,
         "olaylar": olaylar,
         "sayim": {"toplam": len(olaylar), "listede": listede,

@@ -653,7 +653,20 @@ def test_manifest_ham_sayilari_tasiyor():
 # --- 14. TAZELİK SÖZLEŞMESİ (Actions taşıması, adım 4) ---------------------
 
 def test_bayatlik_esigi_ilan_edildigi_gibi():
-    assert P.BAYAT_YAYIN_ESIGI_SAAT == 36 and P.YAYIN_ARALIGI_SAAT == 24
+    """İlan edilmiş kadans ve eşik; sessizce kaymasınlar diye sabitlenir."""
+    assert P.YAYIN_ARALIGI_SAAT == 3 and P.BAYAT_YAYIN_ESIGI_SAAT == 7
+
+
+def test_esik_BIR_atlamayi_tolere_eder_IKINCISINDE_uyarir():
+    """Sayılar keyfî değil, ilan edilmiş kuralın sonucudur.
+
+    Kural: bir koşunun atlanması yayını geçersiz kılmaz, ikincisi kılar.
+    Sayılar değişirse bu ilişki de sınanmış olur -- yalnızca iki sabitin
+    eşleşmesi, aralarındaki gerekçenin korunduğunu göstermez.
+    """
+    a, esik = P.YAYIN_ARALIGI_SAAT, P.BAYAT_YAYIN_ESIGI_SAAT
+    assert esik > 2 * a, "bir atlama tolere edilmiyor"
+    assert esik < 3 * a, "iki atlama da tolere ediliyor -- eşik çok gevşek"
 
 
 def test_manifest_tazelik_sozlesmesi_tasiyor():
@@ -663,9 +676,14 @@ def test_manifest_tazelik_sozlesmesi_tasiyor():
         pytest.skip("henüz yayın yok")
     t = json.loads(y.read_text(encoding="utf-8")).get("tazelik")
     assert t, "tazelik sözleşmesi YOK"
-    for a in ("uretim_zamani", "sonraki_beklenen", "bayatlik_esigi_saat"):
+    for a in ("uretim_zamani", "sonraki_beklenen", "yayin_araligi_saat",
+              "bayatlik_esigi_saat"):
         assert t.get(a), a
-    assert t["bayatlik_esigi_saat"] == 36
+    # SABİT SAYI YAZILMAZ: yayımlanan değer, KODDA İLAN EDİLENLE
+    # karşılaştırılır. Sabit yazılsaydı, kod ile yayın arasındaki kayma
+    # ancak biri elle güncellenirse görülürdü.
+    assert t["bayatlik_esigi_saat"] == P.BAYAT_YAYIN_ESIGI_SAAT
+    assert t["yayin_araligi_saat"] == P.YAYIN_ARALIGI_SAAT
 
 
 # --- KURAL 9: kalibre parametre koruması reddediyor mu (V49) --------------
