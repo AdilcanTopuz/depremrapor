@@ -26,36 +26,43 @@ def _sayfalar():
     return sorted(p for p in WEB.glob("*.html"))
 
 
-def test_her_sayfa_olcum_betigini_cagirir():
-    eksik = [p.name for p in _sayfalar()
-             if 'src="analitik.js"' not in p.read_text(encoding="utf-8")]
-    assert not eksik, f"ölçüm betiği bağlanmamış sayfalar: {eksik}"
+def test_hicbir_sayfa_UCUNCU_TARAF_OLCUM_YUKLEMEZ():
+    """yasal.html §5'in beyanı: tarayıcıda hiçbir ölçüm betiği çalışmaz.
 
+    Beyan bir cümle olarak kalırsa, ileride "sadece bir tanecik" eklenir ve
+    sayfadaki söz sessizce yalan olur. Ölçüt burada duruyor.
 
-def test_olcum_kontrolu_EKSIK_SAYFAYI_YAKALAR(tmp_path):
-    """Kural 9: koruma, bir şeyi REDDETTİĞİ gösterilene kadar kurulu değildir.
-
-    Yukarıdaki test her zaman geçiyor olabilir çünkü hiçbir şeye bakmıyordur.
-    Burada betiği çağırmayan bir sayfa üretilir ve aynı ölçütün onu ayırt
-    ettiği gösterilir.
+    Harita kütüphanesi ve yazı tipi üçüncü taraftan gelir ve bu §5'te
+    AYRICA yazılıdır; yasak olan şey üçüncü taraf değil, ÖLÇÜMDÜR.
     """
-    sahte = tmp_path / "yeni.html"
-    sahte.write_text("<html><head></head><body></body></html>", encoding="utf-8")
-    assert 'src="analitik.js"' not in sahte.read_text(encoding="utf-8")
+    yasak = ("cloudflareinsights", "google-analytics", "googletagmanager",
+             "gtag(", "plausible.io", "matomo", "hotjar", "mixpanel",
+             "segment.com", "clarity.ms", "analitik.js")
+    for sayfa in _sayfalar():
+        metin = sayfa.read_text(encoding="utf-8")
+        for k in yasak:
+            assert k not in metin, f"{sayfa.name}: ölçüm betiği/izleyici — {k}"
 
 
-def test_olcum_etiketi_girilmeden_istek_yapilmaz():
-    """Yer tutucu etiketle üçüncü taraf bir adrese BAĞLANILMAZ.
+def test_olcum_yasagi_SAHTE_SAYFAYI_YAKALAR(tmp_path):
+    """Kural 9: yukarıdaki denetimin boş çalışmadığı gösterilir."""
+    sahte = tmp_path / "olculen.html"
+    sahte.write_text(
+        '<html><head><script src="https://www.googletagmanager.com/gtag/js">'
+        "</script></head><body></body></html>", encoding="utf-8")
+    metin = sahte.read_text(encoding="utf-8")
+    assert any(k in metin for k in ("googletagmanager", "gtag(")),         "senaryo kurulamadı: ölçüm betiği taşıyan sayfa üretilemedi"
 
-    "Ölçülüyor sanmak ama ölçmemek" kadar, "ölçmüyoruz demek ama bağlanmak"
-    da hatadır; ikincisi yasal.html §5'teki beyanı yanlış yapardı.
-    """
-    s = (WEB / "analitik.js").read_text(encoding="utf-8")
-    assert 'const ANALITIK_ETIKET = "ETIKET_GIRILMEDI"' in s or \
-        re.search(r'ANALITIK_ETIKET = "[0-9a-f]{32}"', s), \
-        "etiket ya yer tutucu ya da 32 haneli onaltılık olmalı"
-    assert re.search(r'/\^\[0-9a-f\]\{32\}\$/\.test\(ANALITIK_ETIKET\)', s), \
-        "biçim sınaması kaldırılmış: yer tutucuyla istek yapılabilir"
+
+def test_her_sayfa_SOSYAL_KART_tasir():
+    """og:image olmadan paylaşılan bağlantı görselsiz ve cansız çıkar."""
+    from src.operational.pipeline import YAYIN_ADRESI
+
+    for sayfa in _sayfalar():
+        metin = sayfa.read_text(encoding="utf-8")
+        assert f'content="{YAYIN_ADRESI}/og.png"' in metin,             f"{sayfa.name}: og:image yok ya da yanlış adreste"
+        assert 'content="summary_large_image"' in metin,             f"{sayfa.name}: twitter:card büyük görsel değil"
+    assert (WEB / "og.png").exists(), "web/og.png üretilmemiş"
 
 
 def test_altlik_ve_atif_AYNI_KALEMDE_degisir():
@@ -168,3 +175,16 @@ def test_yayin_adresi_TEK_KAYNAKTAN():
         s = sayfa.read_text(encoding="utf-8")
         assert 'rel="canonical"' in s, f"{sayfa.name}: canonical yok"
         assert YAYIN_ADRESI in s, f"{sayfa.name}: canonical yanlış adreste"
+
+
+def test_her_sayfa_KAYNAK_KODUNA_baglanir():
+    """Kamuya açık depoya giden bağlantı yedi sayfada da bulunmalı.
+
+    Projenin iddiası her sayının doğrulanabilir olması; doğrulayacak kişinin
+    koda ulaşabilmesi o iddianın parçasıdır. Bağlantı yedi yerde elle
+    yazıldığı için bir sayfada unutulması kolaydır -- ölçüt burada.
+    """
+    depo = "https://github.com/AdilcanTopuz/depremrapor"
+    eksik = [p.name for p in _sayfalar()
+             if depo not in p.read_text(encoding="utf-8")]
+    assert not eksik, f"kaynak kodu bağlantısı olmayan sayfalar: {eksik}"

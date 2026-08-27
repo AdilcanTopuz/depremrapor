@@ -107,7 +107,11 @@ SABLON = """<!DOCTYPE html>
 <meta property="og:url" content="{adres}/{dosya}">
 <meta property="og:title" content="{baslik} — depremrapor.com">
 <meta property="og:description" content="{alt}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="{adres}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Türkiye haritası üzerinde depremrapor.com başlığı ve olasılık renk ölçeği">
+<meta name="twitter:card" content="summary_large_image">
 <title>{baslik} — Türkiye Deprem Olasılık Haritası</title>
 <style>
  :root{{--bg:#0f1216;--kart:#171b21;--cizgi:#2a3038;--metin:#e6e9ee;--soluk:#9aa4b2}}
@@ -133,8 +137,7 @@ SABLON = """<!DOCTYPE html>
  a{{color:#7fb3e8}} .geri{{display:inline-block;margin-bottom:14px}}
  .ust{{background:var(--kart);border:1px solid var(--cizgi);border-radius:9px;
    padding:12px 15px;margin:12px 0 20px;font-size:13.5px}}
-</style>
-<script defer src="analitik.js"></script></head><body><div class="kap">
+</style></head><body><div class="kap">
 <a class="geri" href="index.html">← haritaya dön</a>
 <h1>{baslik}</h1>
 <div class="soluk">{alt}</div>
@@ -142,7 +145,7 @@ SABLON = """<!DOCTYPE html>
 {govde}
 <hr><div class="soluk">Bu sayfa <code>{kaynak}</code> belgesinden otomatik
 üretilmiştir; elle düzenlenmez. <a href="metodoloji.html">Yöntem ve
-sınırlılıklar</a> · <a href="index.html">Harita</a></div>
+sınırlılıklar</a> · <a href="index.html">Harita</a> · <a href="https://github.com/AdilcanTopuz/depremrapor" target="_blank" rel="noopener">Kaynak kodu (GitHub)</a></div>
 </div></body></html>"""
 
 ONSOZ = {
