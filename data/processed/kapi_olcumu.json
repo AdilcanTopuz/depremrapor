@@ -1,0 +1,19 @@
+{
+  "olcum_tarihi": "2026-08-26",
+  "tablo": "etas_analytic_weekly",
+  "pencere_gun": 7,
+  "hedef_mw": 4.5,
+  "donem": "2021-01-01 .. 2024-12-20",
+  "n_satir": 436800,
+  "gozlenen": 252,
+  "modeller": {
+    "ETAS": {
+      "gozlenen": 252,
+      "beklenen": 231.50356983581392
+    },
+    "Poisson": {
+      "gozlenen": 252,
+      "beklenen": 203.24572503385556
+    }
+  }
+}

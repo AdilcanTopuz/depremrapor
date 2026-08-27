@@ -1,0 +1,19 @@
+# ÜRETİM HATTININ BAĞIMLILIKLARI — yalnızca gerekli olanlar.
+#
+# requirements.txt geliştirme/araştırma bağımlılıklarını da içerir
+# (pycsep, cutde, shap, lightgbm, matplotlib, folium). Bunlar kırılgan
+# derlemelerdir ve üretim hattında KULLANILMAZ.
+#
+# Hattın gerçek import zinciri ÖLÇÜLDÜ (ast ile, src/operational/pipeline.py
+# kökünden): etas · numpy · pandas · scipy. Başka hiçbir şey.
+#
+# BİLEŞEN, GEREKLİLİĞİ ÖLÇÜLMEDEN EKLENMEZ -- altyapı kuralının bağımlılık
+# tarafındaki karşılığı.
+pandas>=2.0
+numpy>=1.24
+scipy>=1.11
+requests>=2.31
+
+# ETH Zürich ETAS implementasyonu; PyPI'da yok, git'ten kurulur.
+etas @ git+https://github.com/lmizrahi/etas.git
+seismostats

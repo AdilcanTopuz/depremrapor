@@ -1,0 +1,74 @@
+.venv/
+__pycache__/
+data/raw/*
+data/processed/*
+!data/**/.gitkeep
+*.pyc
+data/operational/*.geojson
+data/operational/score_archive.csv
+
+# SONUC VE PARAMETRE JSON'LARI IZLENIR.
+# Gerekce: kunye zinciri. Bunlar sayi ureten ya da sayilarin kimligini tasiyan
+# dosyalardir; izlenmezlerse (a) onceki surum yeniden uretimde kaybolur ve
+# "beklenen/gerceklesen" karsilastirmasi yapilamaz, (b) sayi haritasi
+# koruyucusu bunlari HIC goremez -- git diff izlenmeyen dosyayi listelemez.
+# Olculdu (24 Agu 2026): etas_params.json degistirildiginde koruyucu 0 donuyordu.
+!data/processed/etas_params.json
+!data/processed/mw_conversion.json
+!data/processed/daily_backtest.json
+!data/processed/gain_breakdown.json
+!data/processed/csep_results.json
+!data/processed/csep_results_analytic.json
+!data/processed/csep_diagnostics.json
+
+# Yayin ciktilari URUNDUR, kaynak degil. Gitignore edilmezse hat KENDI
+# ciktisiyla kendi on sartini bozar: ilk pencere yazilinca agac kirlenir ve
+# sonraki pencerelerin kunyesi "dirty" damgasi alir (V36).
+data/publish/
+
+# Site verisi URUNDUR, kaynak degil (V36 ile ayni gerekce): site kurucusu
+# calisinca agac kirlenir ve sonraki yayinin kunyesi "dirty" damgasi alir.
+web/data/
+
+# ---------------------------------------------------------------------------
+# HATTIN BAGLI OLDUGU KUCUK ESERLER -- depoda DURUR.
+#
+# Gerekce: uretim hatti GitHub Actions'ta TAZE CHECKOUT'la calisir; bu
+# dosyalar yoksa korumalar (urun kapisi, yayin kapsami) her kosuda duser.
+# Toplam ~1 MB; degerlendirme tablosu (109 MB) dondurulmus bulguya
+# indirgendigi icin buyuk esere gerek kalmadi.
+#
+# BUYUK esereler (katalog, degerlendirme tablosu, ham veri) DEPODA DURMAZ:
+# katalog her kosuda ham veriden yeniden uretilir, ham veri onbellekten gelir.
+!data/processed/etas_params.json
+!data/processed/baseline_poisson.csv
+# DOĞRU AD. Önce '!data/processed/mc_b.csv' yazılmıştı; böyle bir dosya
+# yok (V49). Sonra doğru ad SATIR İÇİ YORUMLA yazıldı -- ama .gitignore
+# satır içi yorum desteklemez: yorum desenin PARÇASI olur ve istisna
+# sessizce hiçbir şeyi kapsamaz (V55). Yorum kendi satırında durur.
+!data/processed/mc_by_period.csv
+!data/processed/tr_sinir.geojson
+!data/processed/hucre_yer_adlari.json
+!data/processed/kapi_olcumu.json
+!data/processed/bolge_bulgu_dondurulmus.json
+
+# ÜRETİLMİŞ BELGE SAYFALARI -- kaynak docs/*.md, tek kaynak ilkesi (V42).
+#
+# Bunlar `site_kur` tarafından HER KURULUMDA yeniden üretilir. İzlenirlerse
+# yerel bir site kurulumu çalışma ağacını kirletir ve bir sonraki hat koşusu
+# KİRLİ AĞAÇ korumasınca reddedilir -- V42'nin aynısı, sadece bu kez
+# üretilmiş HTML üzerinden (V51).
+#
+# `yayin` dalına iş akışı tarafından üretilmiş hâlleriyle girerler; `main`
+# yalnızca kaynağı taşır.
+web/vaka-defteri.html
+web/denetim-mirasi.html
+# sitemap ve robots da uretilir (site_kur), elle tutulmaz
+web/sitemap.xml
+web/robots.txt
+
+# Yerel araclar -- depoya girmez (kullanici karari)
+.claude/
+
+# Yerel isletim notlari -- panel adimlari, hesap ayarlari; depoya girmez
+_yerel/

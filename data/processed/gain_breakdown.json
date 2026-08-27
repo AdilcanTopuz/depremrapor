@@ -1,0 +1,12 @@
+{
+  "window_days": 7,
+  "target_mw": 4.5,
+  "n_positive": 252,
+  "total_gain": 1.0683750826939178,
+  "event_term": 1.1805092924521483,
+  "exposure_term": -0.1121342097582305,
+  "top10_day_share": 0.9881963657209362,
+  "negative_days": 61,
+  "n_days": 120,
+  "lost_events": 121
+}

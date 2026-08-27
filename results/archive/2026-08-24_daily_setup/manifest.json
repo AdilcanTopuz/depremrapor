@@ -1,0 +1,68 @@
+{
+  "parametreler": {
+    "params": {
+      "log10_mu": -6.139291718364055,
+      "log10_k0": 5.674164988167024,
+      "a": 4.276765065226305,
+      "log10_c": -3.9459974811074083,
+      "omega": -0.037712087752478994,
+      "log10_tau": 3.5294274308105793,
+      "log10_d": 2.1105386811675855,
+      "gamma": 0.6546241470349298,
+      "rho": 3.513270254466964
+    },
+    "mc": 3.3,
+    "delta_m": 0.1,
+    "beta": 2.9325555599926787,
+    "n_events": 30172,
+    "neg_log_likelihood": 240107.8776889973,
+    "branching_ratio": 0.8208761936950996,
+    "chosen_restart": 1,
+    "n_restarts": 5,
+    "from_anchor": false,
+    "seed": 20260823,
+    "mc_mode": "positive",
+    "auxiliary_start": "1990-01-01",
+    "timewindow_start": "1992-01-01",
+    "timewindow_end": "2016-01-01",
+    "region": [
+      [
+        35.0,
+        25.0
+      ],
+      [
+        35.0,
+        45.0
+      ],
+      [
+        43.0,
+        45.0
+      ],
+      [
+        43.0,
+        25.0
+      ]
+    ]
+  },
+  "dosyalar": {
+    "daily_backtest.json": "b472b414f124ec94082c77c0dd1e4906fbb0ed1110f98d9f672dc3d88abde6d1",
+    "gain_breakdown.json": "835c32931698a146b43666e24d5c02c0e9992dee32520563c50452dfb9ea6870",
+    "csep_results.json": "9e88cbdaa0fd5c25d5b26a18437ad266866e7b437658227e56f427809bd64e4b"
+  },
+  "etas_params_sha256": "5ab1f75edccd7c968858fcf5e72371a267130853f383035820b6095ba0f5281a",
+  "etas_daily_shards": {
+    "shard_0.csv": "c1c59b2b5fc3d8b5df93100ebbe9886f178fb6dc2fc3f019a782aaf6db619ef6",
+    "shard_1.csv": "156a0bd279aad5f22a8d3292962670ec6dd76ce28bdb7ad7db35e320b64e9301",
+    "shard_10.csv": "31bdedb679a05d3adb8d68d5834b14d6c3c292b4bcb2ba162d61ca570a30590c",
+    "shard_11.csv": "ebe5402795ebba68b354173a3300d4bb111a49168bdcf1ea88d6fc803c9ced63",
+    "shard_2.csv": "911f41b4a55eedea2afd9dd6fae61b2e7abdedc766204768e0d99ffe70f6a772",
+    "shard_3.csv": "d45e8ec80567ff2d779c84acc26b9ea63d46589d9e0e501d078a9e3461800642",
+    "shard_4.csv": "1e70c300dc556aeebbd5c65a984139cc5c88f44e33762c3e100129188d9ef1d9",
+    "shard_5.csv": "be163f50667d4c935ece18f6ea10435b00b99e0eb7ff5dc58bf8034db261457d",
+    "shard_6.csv": "689f3de0c713b023a26525abce0d369495f2c35a471870cbf901027e2705adf4",
+    "shard_7.csv": "5822a833f5b4f7730d8560e0516b96edef1e29426ddb2b34df35630335c2a5b3",
+    "shard_8.csv": "75abe43ee467c91da191a46735ee6aaaddae4538a365e40e67787c906ac494bf",
+    "shard_9.csv": "2acbe78ca54839704fc9217bb5d3aaa091bd0302f36684d46062637257f2677a"
+  },
+  "git_commit": "8bdafd4d0cb7ce4d36981c5ae2195394ae5031b4"
+}

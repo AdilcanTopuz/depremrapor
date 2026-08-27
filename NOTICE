@@ -1,0 +1,37 @@
+depremrapor.com — Türkiye Deprem Olasılık ve Tahmin Haritası
+Copyright 2026 Adil Can Topuz
+
+Bu ürün Apache License 2.0 ile lisanslanmıştır (bkz. LICENSE).
+
+--------------------------------------------------------------------------
+VERİ KAYNAKLARI — kodun lisansı verilerin lisansı DEĞİLDİR
+--------------------------------------------------------------------------
+
+Bu depodaki kod Apache-2.0'dır. Kodun işlediği ve ürettiği veriler kendi
+koşullarına tâbidir:
+
+  AFAD (deprem.afad.gov.tr)   ana katalog, 2003–. Kamuya açık veri;
+                              ticari kullanım için izin talebi iletildi,
+                              yanıt beklenmektedir.
+  KOERI / B.Ü. Kandilli       tarihsel katalog, 1900–. Kamuya açık;
+                              atıf zorunludur.
+  EMSC                        bölgesel tamamlama; EMSC kullanım
+                              koşullarına tâbi.
+  USGS                        çapraz doğrulama; kamu malı (ABD federal
+                              eseri).
+  Natural Earth               10m admin-0 sınırları; kamu malı.
+  OpenStreetMap               harita altlığı verisi ve karoları;
+                              © OpenStreetMap katkıcıları, ODbL.
+  etas (ETH Zürich, L. Mizrahi)
+                              ETAS parametre kestirimi; açık kaynak,
+                              akademik atıf yapılır.
+
+--------------------------------------------------------------------------
+ÜRETİLEN SAYILARA ATIF
+--------------------------------------------------------------------------
+
+Model çıktıları, künyeler ve ölçüm tabloları serbestçe alıntılanabilir.
+Atıf, sayının hangi künyeyle üretildiğini içermelidir: künyesiz alıntılanan
+bir sayı, hangi katalogla ve hangi kodla üretildiği bilinmediği için
+doğrulanamaz hâle gelir. Önerilen biçim depremrapor.com/metodoloji.html
+sayfasında, o günün künyesiyle birlikte gösterilir.

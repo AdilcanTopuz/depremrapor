@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Yayımlanmış tahminlerin sicili: hangi olay hangi gün listedeydi. Bu bir sicildir, bir başarı puanı değildir.">
+<link rel="canonical" href="https://depremrapor.com/tahmin-kaydi.html">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="depremrapor.com">
+<meta property="og:url" content="https://depremrapor.com/tahmin-kaydi.html">
+<meta property="og:title" content="Tahmin Kaydı — depremrapor.com">
+<meta property="og:description" content="Yayımlanmış tahminlerin sicili: hangi olay hangi gün listedeydi. Bu bir sicildir, bir başarı puanı değildir.">
+<meta name="twitter:card" content="summary">
+<title>Tahmin Kaydı — Türkiye Deprem Olasılık ve Tahmin Haritası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Overpass+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --zemin:#0B0E11; --panel:#12171C; --panel2:#171D23; --cizgi:#232B33;
+    --cizgi2:#1A2026; --metin:#DDE4EA; --soluk:#7E8B98; --parlak:#FFFFFF;
+    --vurgu:#F0883E; --mavi:#5AA9E6; --yesil:#5CC98A; --kirmizi:#E8705F;
+    --odak:#8AB4F8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--zemin);color:var(--metin);
+    font:400 14.5px/1.6 "Overpass",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  :focus-visible{outline:2px solid var(--odak);outline-offset:2px}
+  button,a,summary,label,select,input{cursor:pointer}
+  a{color:var(--mavi);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .om{font-family:"Overpass Mono",ui-monospace,monospace;
+      font-variant-numeric:tabular-nums}
+
+  .ust{display:flex;align-items:stretch;background:var(--panel);
+    border-bottom:1px solid var(--cizgi);overflow-x:auto;min-height:46px}
+  .ust>*{display:flex;align-items:center;padding:0 14px;white-space:nowrap;
+    border-right:1px solid var(--cizgi);gap:8px;color:inherit;
+    text-decoration:none}
+  .marka{font-weight:700;color:var(--parlak);background:var(--panel2)}
+  .marka i{font-style:normal;color:var(--vurgu)}
+  .sekme{font-size:13.5px;color:var(--soluk)}
+  .sekme:hover{color:var(--metin);background:var(--panel2);text-decoration:none}
+  .sekme[aria-current="page"]{color:var(--parlak);
+    box-shadow:inset 0 -2px 0 var(--vurgu)}
+  .kv{font-family:"Overpass Mono",monospace;font-size:12px;color:var(--soluk)}
+  .kv b{color:var(--metin);font-weight:500}
+  .ust .sag{margin-left:auto;border-right:0}
+
+  .kap{max-width:62rem;margin:0 auto;padding:18px 14px 48px}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+  .altbaslik{color:var(--soluk);font-size:14px;margin:0 0 18px;max-width:76ch;
+    line-height:1.65}
+  h2{font-size:16px;margin:28px 0 8px;font-weight:700;padding-top:14px;
+    border-top:1px solid var(--cizgi)}
+
+  /* EN ÜSTTE UYARI: bu bir skor değil */
+  .cerceve{border:2px solid var(--vurgu);padding:14px 16px;margin:0 0 18px;
+    background:rgba(240,136,62,.06)}
+  .cerceve .bas{font-family:"Overpass Mono",monospace;font-size:10.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--vurgu);
+    display:block;margin-bottom:7px}
+  .cerceve p{margin:0 0 9px;font-size:14px;line-height:1.65}
+  .cerceve p:last-child{margin-bottom:0}
+  .cerceve b{color:var(--parlak)}
+  .cerceve ol{margin:0 0 9px;padding-left:20px}
+  .cerceve li{margin:6px 0;line-height:1.6}
+
+  .rakamlar{display:grid;grid-template-columns:repeat(auto-fit,minmax(10rem,1fr));
+    gap:10px;margin-bottom:16px}
+  .rakam{background:var(--panel);border:1px solid var(--cizgi);padding:11px 13px}
+  .rakam .et{font-family:"Overpass Mono",monospace;font-size:9.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--soluk)}
+  .rakam .dg{font-family:"Overpass Mono",monospace;font-size:26px;
+    font-weight:600;line-height:1.15;margin-top:3px}
+  .rakam .dg small{font-size:12px;font-weight:400;color:var(--soluk)}
+  .rakam.vurgulu .dg{color:var(--yesil)}
+
+  .tablosar{border:1px solid var(--cizgi);overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{background:var(--panel2);text-align:left;padding:0 10px;height:30px;
+    border-bottom:1px solid var(--cizgi);font-family:"Overpass Mono",monospace;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    font-weight:500;color:var(--soluk);white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--cizgi2)}
+  tbody tr:hover{background:var(--panel)}
+  tbody td{padding:9px 10px;vertical-align:top}
+  .num{font-family:"Overpass Mono",monospace;font-variant-numeric:tabular-nums;
+    white-space:nowrap}
+  .mag{font-family:"Overpass Mono",monospace;font-size:16px;font-weight:600;
+    white-space:nowrap}
+  .yer{font-weight:600;color:var(--parlak)}
+  .yer small{display:block;color:var(--soluk);font-weight:400;font-size:12px}
+  .rozet{font-family:"Overpass Mono",monospace;font-size:9.5px;
+    letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;
+    border:1px solid currentColor;white-space:nowrap;display:inline-block}
+  .r-vardi{color:var(--yesil)} .r-yoktu{color:var(--soluk)}
+  .r-yayinyok{color:var(--soluk);opacity:.75}
+  .gerekce{font-size:12px;color:var(--soluk);line-height:1.5;margin-top:4px;
+    max-width:44ch}
+  .bosmesaj{padding:26px 14px;color:var(--soluk);font-size:14px;line-height:1.7}
+  .bosmesaj b{color:var(--metin)}
+
+  .sekmeler{display:flex;border:1px solid var(--cizgi);margin-bottom:12px;
+    flex-wrap:wrap}
+  .sekmeler button{background:var(--panel);border:0;
+    border-right:1px solid var(--cizgi);padding:0 14px;height:38px;
+    color:var(--soluk);font:600 13px/1 "Overpass",sans-serif;display:flex;
+    align-items:center;gap:7px;transition:background 160ms ease,color 160ms ease}
+  .sekmeler button:last-child{border-right:0}
+  .sekmeler button:hover{background:var(--panel2);color:var(--metin)}
+  .sekmeler button[aria-pressed="true"]{background:var(--metin);color:var(--zemin)}
+  .sekmeler .rakam2{font-family:"Overpass Mono",monospace;font-size:12px;
+    background:rgba(126,139,152,.22);padding:1px 5px}
+
+  footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--cizgi);
+    font-size:12.5px;color:var(--soluk);line-height:1.7}
+  footer b{color:var(--metin)}
+  .baglar{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:8px}
+
+  @media(max-width:44rem){
+    body{font-size:15px}
+    .ust{flex-wrap:wrap;min-height:0}
+    .ust>*{flex:1 1 auto;min-width:50%;height:42px;border-right:0;
+      border-bottom:1px solid var(--cizgi2)}
+    .marka{min-width:100%;height:46px;font-size:16px}
+    .ust .sag{margin-left:0}
+    thead{display:none}
+    table,tbody,tr,td{display:block;width:100%}
+    tbody tr{padding:11px 12px;display:grid;grid-template-columns:1fr auto;
+      gap:3px 10px;align-items:baseline;border-bottom:1px solid var(--cizgi)}
+    tbody td{padding:0}
+    .t-zaman{grid-column:1;grid-row:1;font-size:12px;color:var(--soluk)}
+    .t-mag{grid-column:2;grid-row:1;text-align:right}
+    .t-yer{grid-column:1/3;grid-row:2}
+    .t-durum{grid-column:1/3;grid-row:3;margin-top:4px}
+  }
+</style>
+<script defer src="analitik.js"></script>
+</head>
+<body>
+
+<nav class="ust">
+  <a class="marka" href="index.html">Deprem<i> </i>Tahminleri</a>
+  <a class="sekme" href="index.html">Harita</a>
+  <a class="sekme" href="son-depremler.html">Son Depremler</a>
+  <a class="sekme" href="tahmin-kaydi.html" aria-current="page">Tahmin Kaydı</a>
+  <a class="sekme" href="metodoloji.html">Yöntem</a>
+  <span class="kv sag" id="u-kunye">—</span>
+</nav>
+
+<div class="kap">
+  <h1>Tahmin kaydı</h1>
+  <p class="altbaslik">Yayına başladığımız günden bu yana Türkiye'de kaydedilen
+    <b>M4,5 ve üzeri</b> her deprem burada. Her birinin yanında, olduğu gün
+    yayımlanmış listede yer alıp almadığı yazıyor.</p>
+
+  <div class="cerceve">
+    <span class="bas">bu sayfa bir sicildir, bir skor değildir</span>
+    <p>Aşağıdaki "listede vardı" sayısı, <b>yöntemin başarısını ölçmez.</b>
+      Üç sebeple:</p>
+    <ol>
+      <li><b>Listeyi büyütmek bu sayıyı şişirir.</b> Yayım eşiği normalin 2
+        katı yerine 1,1 katı olsaydı liste birkaç katına çıkar ve neredeyse
+        her deprem "listede" olurdu. Genişleyen bir liste daha isabetli
+        görünür ama daha bilgili değildir.</li>
+      <li><b>Karşılaştırma noktası yok.</b> Bir olayın listede olması, ancak
+        "liste olmasaydı ne beklerdik" ile karşılaştırıldığında anlam taşır.
+        O karşılaştırma bilgi kazancı ölçümüdür ve güven aralığıyla birlikte
+        <a href="metodoloji.html">yöntem sayfasındadır</a>.</li>
+      <li><b>Bir olasılık, bir olay bildirmez.</b> Liste "burada olacak"
+        demez; "burada oran normalin şu kadar katı" der. Listede olmayan bir
+        yerde deprem olması yöntemin yanıldığı anlamına gelmez.</li>
+    </ol>
+    <p>Bu kayıt yine de tutulur: yayımlanmış bir tahminin ne olduğu ve ne
+      olduğuyla nasıl karşılaştığı <b>geriye dönük olarak görülebilmelidir.</b>
+      Sicil budur.</p>
+  </div>
+
+  <div class="rakamlar" id="rakamlar"></div>
+
+  <h2>Kayıt</h2>
+  <div class="sekmeler" id="sekmeler" role="group" aria-label="Süzgeç"></div>
+  <div class="tablosar">
+    <table><thead><tr>
+      <th style="width:16%">zaman (UTC)</th>
+      <th style="width:10%">büyüklük</th>
+      <th style="width:28%">yer</th>
+      <th>o gün yayımlanan listede</th>
+    </tr></thead><tbody id="satirlar"></tbody></table>
+  </div>
+
+  <footer>
+    <div class="baglar">
+      <a href="index.html">Harita</a><a href="son-depremler.html">Son depremler</a>
+      <a href="metodoloji.html">Yöntem ve sınırlılıklar</a>
+      <a href="yasal.html">Yasal bilgiler</a>
+      <a href="vaka-defteri.html">Vaka defteri</a>
+      <a href="data/tahmin_kaydi.json">tahmin_kaydi.json</a>
+    </div>
+    <p id="sicil-notu"></p>
+    <p id="kaynaklar"></p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+<script>
+let D = null, suzgec = "hepsi";
+
+function durumRozeti(o){
+  if(o.tahminde === null)
+    return {sinif:"r-yayinyok", metin:"yayın yoktu", gerekce:o.gerekce};
+  if(o.tahminde)
+    return {sinif:"r-vardi",
+      metin:"listede vardı" + (o.kat ? ` · ${o.kat}x` : ""), gerekce:o.gerekce};
+  return {sinif:"r-yoktu", metin:"listede yoktu", gerekce:o.gerekce};
+}
+
+function sekmeleriCiz(){
+  const s = D.sayim;
+  const et = {hepsi:["tümü", s.toplam],
+              vardi:["listede vardı", s.listede],
+              yoktu:["listede yoktu", s.listede_degil],
+              yayinyok:["yayın yoktu", s.yayin_yoktu || 0]};
+  document.getElementById("sekmeler").innerHTML =
+    Object.entries(et).map(([k,[m,n]])=>
+      `<button type="button" data-s="${k}" aria-pressed="${suzgec===k}">
+        ${m}<span class="rakam2">${n}</span></button>`).join("");
+  document.querySelectorAll("#sekmeler button").forEach(b=>
+    b.onclick = ()=>{suzgec = b.dataset.s; sekmeleriCiz(); satirlariCiz();});
+}
+
+function satirlariCiz(){
+  let o = D.olaylar.slice();
+  if(suzgec === "vardi")     o = o.filter(x=>x.tahminde === true);
+  if(suzgec === "yoktu")     o = o.filter(x=>x.tahminde === false);
+  if(suzgec === "yayinyok")  o = o.filter(x=>x.tahminde === null);
+  const tb = document.getElementById("satirlar");
+  if(!o.length){
+    tb.innerHTML = `<tr><td colspan="4" class="bosmesaj">
+      <b>Bu ölçüte uyan kayıt yok.</b><br>
+      Sistem ${D.ilk_yayin || "—"} tarihinde yayına başladı ve o günden bu yana
+      Türkiye'de M4,5 ve üzeri bir deprem ${D.sayim.toplam === 0
+        ? "kaydedilmedi" : "kaydedildi"}. Kayıt her yayınla birlikte
+      kendiliğinden büyür; boş bir sicil, bir eksiklik değil bir olgudur.
+      </td></tr>`; return;}
+  tb.innerHTML = o.map(x=>{
+    const r = durumRozeti(x);
+    const zaman = new Date(x.zaman).toISOString().slice(0,16).replace("T"," ");
+    return `<tr>
+      <td class="t-zaman num">${zaman}</td>
+      <td class="t-mag mag">M ${x.buyukluk.toFixed(1).replace(".",",")}</td>
+      <td class="t-yer yer">${x.yer || (x.hucre_id + " numaralı alan")}
+        <small>${[x.il, x.ilce].filter(Boolean).join(" · ")} · ${x.kaynak}</small></td>
+      <td class="t-durum"><span class="rozet ${r.sinif}">${r.metin}</span>
+        <div class="gerekce">${r.gerekce}</div></td>
+    </tr>`;}).join("");
+}
+
+(async()=>{try{
+  D = await al("data/tahmin_kaydi.json");
+  const k = await al("data/kunye.json");
+  const t = tazelik(k);
+  document.getElementById("u-kunye").innerHTML =
+    `yayın <b>${k.yayin_origin}</b> · ${t.yas}`;
+  const s = D.sayim;
+  const oran = s.toplam ? Math.round(100 * s.listede / s.toplam) : null;
+  document.getElementById("rakamlar").innerHTML = `
+    <div class="rakam"><div class="et">Yayın günü</div>
+      <div class="dg">${D.yayin_gunu}<small> gün</small></div></div>
+    <div class="rakam"><div class="et">Kayda giren deprem (M4,5+)</div>
+      <div class="dg">${s.toplam}</div></div>
+    <div class="rakam vurgulu"><div class="et">Listede yer alan</div>
+      <div class="dg">${s.listede}${oran !== null
+        ? `<small> / ${s.toplam} · %${oran}</small>` : ""}</div></div>
+    <div class="rakam"><div class="et">Listede yer almayan</div>
+      <div class="dg">${s.listede_degil}</div></div>`;
+  document.getElementById("sicil-notu").innerHTML = "<b>Sicil</b> — " + D.not;
+  document.getElementById("kaynaklar").textContent = METIN.kaynaklar;
+  sekmeleriCiz(); satirlariCiz();
+}catch(e){
+  document.getElementById("rakamlar").innerHTML =
+    `<div class="rakam"><div class="et">Hata</div><div class="dg"
+      style="font-size:14px">Veri yüklenemedi: ${e.message}</div></div>`;}})();
+</script>
+</body>
+</html>

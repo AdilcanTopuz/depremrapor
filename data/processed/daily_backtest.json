@@ -1,0 +1,17 @@
+{
+  "window_days": 7,
+  "target_mw": 4.5,
+  "n_origins": 208,
+  "n_rows": 436800,
+  "n_positive": 252,
+  "auc_poisson": 0.6502510824097454,
+  "auc_etas": 0.7909409969063202,
+  "information_gain": 1.068375082693918,
+  "block_days": 7,
+  "n_blocks": 208,
+  "auc_diff_mean": 0.1432506542456534,
+  "auc_diff_ci": [
+    0.07607040171788153,
+    0.21436097887178318
+  ]
+}

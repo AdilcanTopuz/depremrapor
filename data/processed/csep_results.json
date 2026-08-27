@@ -1,0 +1,45 @@
+{
+  "period": [
+    "2021-01-01 00:00:00+00:00",
+    "2023-12-31 00:00:00+00:00"
+  ],
+  "n_origins": 36,
+  "observed": 102,
+  "expected": {
+    "ETAS": 37.575572,
+    "Poisson": 45.265374894692194,
+    "ETAS_fiziksel_taban": 40.3543241402697
+  },
+  "ETAS": {
+    "n_test_quantile": [
+      0.0,
+      1.0
+    ],
+    "s_test_quantile": 1.0
+  },
+  "Poisson": {
+    "n_test_quantile": [
+      3.1308289294429414e-13,
+      0.9999999999998634
+    ],
+    "s_test_quantile": 0.0
+  },
+  "t_test": {
+    "information_gain": 2.39903458259825,
+    "ci_low": 2.1095395481377,
+    "ci_high": 2.6885296170588,
+    "etas_beats_poisson": true
+  },
+  "t_test_physical_floor": {
+    "information_gain": 2.3782167764902327,
+    "ci_low": 2.089738941178131,
+    "ci_high": 2.6666946118023342,
+    "etas_beats_poisson": true
+  },
+  "ETAS_fiziksel_taban": {
+    "n_test_quantile": [
+      3.3306690738754696e-16,
+      0.9999999999999999
+    ]
+  }
+}

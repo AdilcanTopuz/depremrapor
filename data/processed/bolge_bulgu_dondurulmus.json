@@ -1,0 +1,80 @@
+{
+  "katman": "dondurulmuş bulgu",
+  "ne_soyler": "modelin o bölgede uzun vadeli orana göre AYIRT EDİCİ olup olmadığı",
+  "donem": "2021-01-01 .. 2024-12-20",
+  "pencere_gun": 7,
+  "hedef_mw": 4.5,
+  "tablo": "etas_analytic_weekly",
+  "n_olay": 252,
+  "bolgeler": {
+    "Batı Anadolu (Ege grabenleri)": {
+      "olay": 17,
+      "hukum": "fark gösterilemedi",
+      "ig": 0.567,
+      "ga": [
+        -0.106,
+        1.295
+      ],
+      "mde": 1.106
+    },
+    "Doğu Anadolu (Maraş-Malatya)": {
+      "olay": 105,
+      "hukum": "ETAS üstün",
+      "ig": 1.559,
+      "ga": [
+        0.952,
+        2.166
+      ],
+      "mde": 0.885
+    },
+    "Ege denizi / Yunanistan": {
+      "olay": 13,
+      "hukum": "ETAS üstün",
+      "ig": 1.319,
+      "ga": [
+        0.254,
+        2.442
+      ],
+      "mde": 1.728
+    },
+    "Kuzey Anadolu batı (Marmara)": {
+      "olay": 6,
+      "hukum": "fark gösterilemedi",
+      "ig": -0.345,
+      "ga": [
+        -1.053,
+        0.186
+      ],
+      "mde": 1.136
+    },
+    "Kuzey Anadolu doğu (Erzincan-Erzurum)": {
+      "olay": 10,
+      "hukum": "fark gösterilemedi",
+      "ig": -0.257,
+      "ga": [
+        -0.918,
+        0.515
+      ],
+      "mde": 1.173
+    },
+    "diğer": {
+      "olay": 101,
+      "hukum": "ETAS üstün",
+      "ig": 0.826,
+      "ga": [
+        0.407,
+        1.265
+      ],
+      "mde": 0.614
+    }
+  },
+  "uyari": "'fark gösterilemedi' ZAYIFLIK DEĞİL BELİRSİZLİKTİR: o bölgede fark olmadığı değil, bu veriyle GÖSTERİLEMEDİĞİ ölçülmüştür. MDE, gösterilebilecek en küçük farktır.",
+  "kunye": {
+    "uretim": "2026-08-26",
+    "kaynak_tablo": "etas_analytic_weekly",
+    "tablo_sha256": "ff6af6e68640398c7bce869b17757ae694e5b54c8617eca4091d31fa016fc423",
+    "katalog_sha256": "0ba29197fb194966a40a61fccdbde4796ac81ca7e8ec60cc5beda80423b52af3",
+    "etas_params_sha256": "5ab1f75edccd7c968858fcf5e72371a267130853f383035820b6095ba0f5281a",
+    "not": "DONDURULMUŞ BULGU -- değerlendirme dönemine aittir ve yayından yayına değişmez. Zemin değişirse bu dosya yeniden üretilmelidir; künyedeki sha'lar farkı görünür kılar."
+  }
+}

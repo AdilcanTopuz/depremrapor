@@ -1,0 +1,228 @@
+# GÜNLÜK YAYIN — üretim hattı
+#
+# Bu iş akışı, yerel cron'un yerini alır. Korumalar HATTIN İÇİNDEDİR
+# (src/operational/pipeline.py); bu dosya onları atlamaz, yalnızca çalıştırır.
+#
+# YAPISAL OLARAK KAPANAN İKİ ŞEY:
+#   * kirli ağaç      -> her koşu taze checkout; kirli ağaç MÜMKÜN DEĞİL
+#   * sessiz hata     -> günlüğü platform saklar, başarısız koşu bildirir
+#
+# SONUÇ DEPOYA YAZILIR (`yayin` dalı): koşunun ne yaptığı, Actions arayüzüne
+# girmeden de okunabilsin -- künye zincirinin işletim tarafındaki karşılığı.
+
+name: Günlük yayın
+
+on:
+  schedule:
+    # 03:30 UTC = 06:30 TRT. Actions schedule GARANTİLİ DEĞİLDİR: 5-15 dk
+    # gecikme olağandır. Künyedeki üretim zamanı FİİLÎ zamandır (bkz.
+    # gecikme olağandır); site 36 saati aşan yayında uyarır.
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      sebep:
+        description: "Elle tetikleme sebebi (künyeye yazılır)"
+        required: false
+        default: "elle tetiklendi"
+  push:
+    # İş akışının KENDİSİ değiştiğinde bir koşu tetiklenir: değişikliğin
+    # çalıştığı GÖSTERİLMEDEN "kurulu" sayılmaz (kural 9).
+    paths:
+      - ".github/workflows/yayin.yml"
+      # Yeniden tetikleme kancası: token'sız bir ortamda bir düzeltmenin
+      # işe yarayıp yaramadığı ancak koşularak görülür. Kanca ayrı bir
+      # dosyadadır ki iş akışı dosyası sırf yan etkisi için
+      # değiştirilmesin (bkz. `.github/tetik`).
+      - ".github/tetik"
+
+permissions:
+  contents: write
+
+concurrency:
+  # İki koşu aynı anda yayın dalına yazmasın.
+  group: yayin
+  cancel-in-progress: false
+
+jobs:
+  yayin:
+    runs-on: ubuntu-latest
+    # SOĞUK ÖNBELLEKTE 60 DAKİKA YETMİYOR. Yeni depoda ilk koşu 284 aylık
+    # AFAD dosyasını ve 57 yıllık KOERI dökümünü sıfırdan indirir; iş bu
+    # sınırda kesilir ve "canceled" görünür -- düşmüş gibi değil, iptal
+    # edilmiş gibi. Sınır, önbellekli koşunun süresine göre değil EN UZUN
+    # koşuya göre konur.
+    timeout-minutes: 150
+
+    steps:
+      - name: Kaynağı al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bağımlılıkları kur (yalnızca üretim)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-yayin.txt
+
+      - name: Ham katalog önbelleğini geri yükle
+        # ÖNBELLEK İKİ İŞLEVLİDİR:
+        #   1. hız      -- 284 aylık JSON + 57 yıllık TXT yeniden inmesin
+        #   2. KURTARMA -- veri imhası olursa buradan dönülür (V38)
+        # Tahliye edilirse İKİSİ BİRDEN kaybolur; koşu düşmez, yavaşlar.
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw/afad
+            data/raw/koeri
+          key: ham-katalog-${{ github.run_id }}
+          restore-keys: |
+            ham-katalog-
+
+      - name: Yayın arşivini geri yükle
+        # NEDEN. Taze checkout'ta geçmiş yayınlar YOKTUR; onlar `yayin`
+        # dalının `_arsiv/` dizinindedir. Hat iki şey için geçmişe muhtaç:
+        #
+        #   1. TAHMİN KAYDI -- "bu deprem o gün yayımlanan listede miydi"
+        #      sorusu, o günün yayımlanmış dosyası olmadan sorulamaz.
+        #   2. KATALOG MONOTONLUĞU -- referans, bir önceki yayının
+        #      künyesindeki ham satır sayılarıdır.
+        #      Arşiv olmadan bu koruma SESSİZCE BOŞ ÇALIŞIYORDU.
+        #
+        # `data/publish/` gitignore'dadır; buraya yazmak ağacı kirletmez.
+        continue-on-error: true
+        run: |
+          set -e
+          git fetch --no-tags --depth=1 origin yayin 2>/dev/null || exit 0
+          git rev-parse --verify -q origin/yayin >/dev/null || exit 0
+          mkdir -p "$RUNNER_TEMP/arsiv" data/publish
+          git archive origin/yayin _arsiv | tar -x -C "$RUNNER_TEMP/arsiv"
+          cp -r "$RUNNER_TEMP/arsiv/_arsiv/." data/publish/ 2>/dev/null || true
+          echo "geri yüklenen yayın dizini: $(ls -1 data/publish | wc -l)"
+
+      - name: Üretim hattı (korumalar dâhil)
+        id: hat
+        shell: bash
+        run: |
+          # GÜNLÜK DEPO DIŞINA YAZILIR (V54).
+          #
+          # İlk yazımda `tee hat_cikti.log` depo köküne yazıyordu. Bu, TAKİPSİZ
+          # bir dosya yaratır ve çalışma ağacını KİRLETİR; hattın ilk koruması
+          # (kirli ağaç) hemen reddeder. Yani ölçüm aracı, ölçtüğü şeyi bozdu
+          # ve sonraki HER koşuyu düşürecekti.
+          #
+          # $RUNNER_TEMP depo ağacının dışındadır.
+          set -o pipefail
+          python -u -m src.operational.pipeline 2>&1 | tee "$RUNNER_TEMP/hat_cikti.log"
+
+      - name: Siteyi kur
+        run: python -u -m src.operational.site_kur
+
+      - name: Koşu özeti yaz
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, datetime
+          d = pathlib.Path("kosu_ozeti.json")
+          man = pathlib.Path("data/publish/latest/manifest.json")
+          ozet = {
+              "kosu_id": os.environ.get("GITHUB_RUN_ID"),
+              "tetikleyici": os.environ.get("GITHUB_EVENT_NAME"),
+              "commit": os.environ.get("GITHUB_SHA"),
+              "okundu": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "hat_sonucu": os.environ.get("HAT_SONUCU", "bilinmiyor"),
+          }
+          log = pathlib.Path(os.environ.get("RUNNER_TEMP", ".")) / "hat_cikti.log"
+          if log.exists():
+              sat = log.read_text(encoding="utf-8", errors="replace").splitlines()
+              ozet["hat_son_satirlar"] = sat[-40:]
+          if man.exists():
+              m = json.loads(man.read_text(encoding="utf-8"))
+              ozet["manifest"] = {
+                  k: m.get(k) for k in
+                  ("origin", "uretim_zamani", "commit", "calisma_agaci",
+                   "korumalar", "katalog", "urun_kapisi", "tazelik",
+                   "ham_satir_sayilari", "min_times_normal")
+              }
+              ozet["dosyalar"] = [
+                  {"dosya": x["dosya"], "n_hucre": x.get("n_hucre"),
+                   "sha256": x["sha256"][:16]} for x in m.get("dosyalar", [])
+              ]
+          d.write_text(json.dumps(ozet, indent=2, ensure_ascii=False),
+                       encoding="utf-8")
+          print(json.dumps(ozet, indent=2, ensure_ascii=False)[:1500])
+          PY
+        env:
+          HAT_SONUCU: ${{ steps.hat.outcome }}
+
+      - name: Yayın dalına it
+        # `yayin` dalını YALNIZCA bu iş akışı yazar. `main` kaynak kalır;
+        # üretilmiş çıktı oraya girmez.
+        if: success()
+        run: |
+          set -e
+          git config user.name  "deprem-tahmin-bot"
+          git config user.email "bot@users.noreply.github.com"
+          rm -rf /tmp/yayin && mkdir -p /tmp/yayin
+          cp -r web/. /tmp/yayin/
+          cp kosu_ozeti.json /tmp/yayin/
+          cp -r data/publish /tmp/yayin/_arsiv || true
+          git checkout --orphan yayin-gecici
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find . -maxdepth 1 -not -name '.git' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
+          cp -r /tmp/yayin/. .
+          git add -A
+          git commit -m "yayın $(date -u +%Y-%m-%dT%H:%M:%SZ) · koşu ${GITHUB_RUN_ID}"
+          git push -f origin yayin-gecici:yayin
+
+      - name: Başarısızlık kaydı (ayrı dal)
+        # SESSİZ BAŞARISIZLIK YOKTUR (V41) -- ama kaydın OKUNABİLİR olması
+        # gerekir. Başarılı koşu `yayin` dalına yazar; başarısız koşu oraya
+        # DOKUNMAZ. O hâlde başarısızlığın kaydı nereye yazılacak?
+        #
+        # Ayrı bir dala: `kosu-gunlugu`. Bu dal siteyi servis etmez, yalnızca
+        # koşu kaydını taşır. Böylece "yayın değişmedi" ile "koşu neden düştü"
+        # aynı anda görülebilir -- ve bunun için Actions arayüzüne ya da bir
+        # token'a gerek kalmaz.
+        if: failure()
+        continue-on-error: true
+        run: |
+          set -e
+          git config user.name  "deprem-tahmin-bot"
+          git config user.email "bot@users.noreply.github.com"
+          rm -rf /tmp/gunluk && mkdir -p /tmp/gunluk
+          cp kosu_ozeti.json /tmp/gunluk/ 2>/dev/null || true
+          cp "$RUNNER_TEMP/hat_cikti.log" /tmp/gunluk/ 2>/dev/null || true
+          cat > /tmp/gunluk/DUSTU.md <<KAYIT
+          # KOŞU DÜŞTÜ
+
+          koşu   : ${GITHUB_RUN_ID}
+          commit : ${GITHUB_SHA}
+          zaman  : $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          Yayın dalı DEĞİŞMEDİ; site bir önceki yayını göstermeye devam eder
+          ve tarihi görünür kalır (36 saati aşarsa uyarır).
+
+          Gerekçe için hat_cikti.log dosyasına bakınız.
+          KAYIT
+          git checkout --orphan gunluk-gecici
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find . -maxdepth 1 -not -name '.git' -not -name '.' -exec rm -rf {} + 2>/dev/null || true
+          cp -r /tmp/gunluk/. .
+          git add -A
+          git commit -m "koşu DÜŞTÜ $(date -u +%Y-%m-%dT%H:%M:%SZ) · ${GITHUB_RUN_ID}"
+          git push -f origin gunluk-gecici:kosu-gunlugu
+
+      - name: Başarısızlık özeti
+        if: failure()
+        run: |
+          echo "::error::Yayın koşusu DÜŞTÜ — hiçbir şey yayımlanmadı."
+          echo "Korumalardan biri reddetmiş olabilir; yukarıdaki adım"
+          echo "günlüğünde gerekçe yazılıdır. Sessiz başarısızlık yoktur:"
+          echo "yayın dalı DEĞİŞMEZ, site bir önceki yayını göstermeye devam"
+          echo "eder ve tarihi görünür kalır (36 saati aşarsa uyarır)."
