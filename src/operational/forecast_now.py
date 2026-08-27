@@ -193,6 +193,16 @@ def load_state() -> tuple[dict, pd.DataFrame]:
     return trained, eb.etas_catalog(trained["mc"])
 
 
+def saate_yuvarla(t) -> "pd.Timestamp":
+    """Tahmin başlangıcının TEK KURALI: saate yuvarla, güne DEĞİL.
+
+    Kural iki yerde duruyordu (burada ve pipeline.calistir); biri
+    düzeltilince öbürü sessizce eski davranışı sürdürdü ve yayımlanan
+    başlangıç yine gece yarısı çıktı. Kural artık tek yerde.
+    """
+    return pd.Timestamp(t).tz_localize(None).floor("h")         if pd.Timestamp(t).tz is not None else pd.Timestamp(t).floor("h")
+
+
 def _simdi() -> "pd.Timestamp":
     """Tahmin başlangıcı = ŞU AN (saate yuvarlanmış), gece yarısı DEĞİL.
 
@@ -207,7 +217,7 @@ def _simdi() -> "pd.Timestamp":
     gün sınırına ihtiyacı yoktur, yuvarlama yalnızca bir sunum alışkanlığıydı.
     Saate yuvarlama, künyenin okunabilir kalması içindir.
     """
-    return pd.Timestamp(datetime.now(timezone.utc)).tz_localize(None).floor("h")
+    return saate_yuvarla(datetime.now(timezone.utc))
 
 
 def run_forecast_analytic(days: int = 7, target_mw: float = 4.5,
@@ -478,8 +488,7 @@ def main() -> None:
     if not args.no_update:
         update_catalog()
 
-    origin = (pd.Timestamp(args.origin) if args.origin
-              else pd.Timestamp(datetime.now(timezone.utc)).tz_localize(None).normalize())
+    origin = (pd.Timestamp(args.origin) if args.origin else _simdi())
     block = (run_forecast(args.days, args.n_sim, args.mw, origin) if args.sim
              else run_forecast_analytic(args.days, args.mw, origin))
     if block.empty:

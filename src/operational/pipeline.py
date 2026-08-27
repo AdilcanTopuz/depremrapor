@@ -484,7 +484,13 @@ def calistir(pencereler: tuple = PENCERELER, hedef_mw: float = HEDEF_MW,
         print(f"katalog son olay {tazelik['son_olay']} "
               f"({tazelik['yas_saat']} saat önce)")
 
-    origin = pd.Timestamp(t0).tz_localize(None).normalize()
+    # PENCERE KOŞU ANINDAN BAŞLAR. Burası `.normalize()` ile gece yarısına
+    # yuvarlıyordu; forecast_now içindeki aynı yuvarlama düzeltilmiş olsa da
+    # origin BURADAN geçirildiği için düzeltme devreye girmiyordu -- iki
+    # yerde duran aynı kural, birinde düzeltilince öbürü sessizce eskisi
+    # gibi çalışır; kural artık forecast_now'da TEK YERDE.
+    from src.operational.forecast_now import saate_yuvarla
+    origin = saate_yuvarla(t0)
     durum = load_state()
     # DİZİN ADINDA SAAT DE VAR. Günde sekiz yayın aynı gün adını
     # paylaşsaydı sonuncusu öncekilerin üstüne yazar ve arşiv, o günün

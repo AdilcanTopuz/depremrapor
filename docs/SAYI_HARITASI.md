@@ -20,8 +20,16 @@ bir koruyucu, koruduğu sanılıp korumuyorsa korumamaktan kötüdür.
 Aşağıdaki "son güncelleme" sütunu, her satırın hangi olayla son kez
 değerlendirildiğini taşır.
 
-**Son güncelleme:** 27 Ağustos 2026 (üçüncü) — **YAYIMLANAN OLASILIKLAR
-DEĞİŞTİ.** Tahmin başlangıcı artık gece yarısına yuvarlanmıyor, koşunun kendi
+**Son güncelleme:** 27 Ağustos 2026 (dördüncü) — **YAYIMLANAN OLASILIKLAR
+DEĞİŞTİ; bir önceki kayıt bunu erken ilan etmişti.**
+
+Üçüncü güncellemede değişikliğin yürürlüğe girdiği yazılmıştı, ama girmemişti:
+`forecast_now` tarafındaki yuvarlama kaldırılmıştı, `pipeline.calistir`
+ise `origin`'i kendisi hesaplayıp geçiriyordu ve orada yuvarlama duruyordu.
+Hat gerçekten çalıştırılınca görüldü (yayın dizini `2026-08-27T0000`).
+Kural artık `forecast_now.saate_yuvarla` içinde tek yerde ve iki testle
+sabitlendi. **Değişiklik bu kayıttan itibaren yürürlüktedir.**
+ Tahmin başlangıcı artık gece yarısına yuvarlanmıyor, koşunun kendi
 anından başlıyor (`forecast_now._simdi`), ve hat günde bir yerine üç saatte
 bir koşuyor.
 

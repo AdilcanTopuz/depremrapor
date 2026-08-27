@@ -849,3 +849,43 @@ def test_guncel_VARSAYILAN_YOL_KABUL_ETMEZ():
         par = list(inspect.signature(f).parameters.values())
         assert par and par[0].default is inspect.Parameter.empty, (
             f"{f.__name__} ilk parametresi varsayılan taşıyor — V53 geri döner")
+
+
+# --- TAHMİN BAŞLANGICI GECE YARISINA YUVARLANMAZ --------------------------
+#
+# Kural iki yerde duruyordu (forecast_now ve pipeline.calistir). forecast_now
+# tarafı düzeltildiğinde pipeline hâlâ `.normalize()` çağırıyordu ve origin
+# yine gece yarısı çıkıyordu -- düzeltme "yapıldı" ama devreye girmedi.
+# Ancak hat GERÇEKTEN çalıştırıldığında görüldü: dizin adı 2026-08-27T0000.
+
+def test_baslangic_SAATE_yuvarlanir_gune_degil():
+    from src.operational.forecast_now import saate_yuvarla
+
+    t = pd.Timestamp("2026-08-27T21:37:12")
+    assert saate_yuvarla(t) == pd.Timestamp("2026-08-27T21:00:00"), \
+        "başlangıç saate yuvarlanmıyor"
+    assert saate_yuvarla(t).hour == 21, (
+        "GECE YARISINA yuvarlanmış: 21:30'daki bir koşu 'bugün 00:00'dan "
+        "itibaren 1 gün' derse pencerenin 21,5 saati çoktan geçmiştir")
+
+
+def test_kural_TEK_YERDE_duruyor():
+    """`.normalize()` başka bir yerden geri gelmesin.
+
+    İki kopyalı hâlde biri düzeltilip öbürü unutulmuştu; testin işi kuralın
+    ikinci bir kopyasının yeniden belirmediğini göstermek.
+    """
+    import ast
+
+    kok = pathlib.Path(__file__).resolve().parents[1] / "src" / "operational"
+    for ad in ("pipeline.py", "forecast_now.py"):
+        agac = ast.parse((kok / ad).read_text(encoding="utf-8"))
+        # Metinde aramak yorumlara ve döküman dizgelerine takılır; burada
+        # GERÇEK çağrı aranır -- desen değil kimlik (V35).
+        cagrilar = [d for d in ast.walk(agac)
+                    if isinstance(d, ast.Call)
+                    and isinstance(d.func, ast.Attribute)
+                    and d.func.attr == "normalize"]
+        assert not cagrilar, (
+            f"{ad}: başlangıç gece yarısına yuvarlanıyor "
+            f"(satır {[c.lineno for c in cagrilar]})")
