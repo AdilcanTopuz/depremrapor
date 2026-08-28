@@ -1,0 +1,35 @@
+name = "depremrapor-tetikleyici"
+main = "src/tetik.js"
+compatibility_date = "2026-08-01"
+
+# ON DAKİKADA BİR UYANIR, HER SEFERİNDE TETİKLEMEZ.
+#
+# Uyanma sıklığı ile tetikleme sıklığı ayrı şeylerdir. Worker sık uyanır ki
+# bir olay olduğunda geç kalmasın; tetikleyip tetiklemeyeceğine ise
+# yayımlanmış künyeye ve kataloğa bakarak karar verir. Sakin bir günde
+# günde 144 kez uyanır ve 8 kez tetikler.
+[triggers]
+crons = ["*/10 * * * *"]
+
+[vars]
+DEPO = "AdilcanTopuz/depremrapor"
+IS_AKISI = "yayin.yml"
+DAL = "main"
+SITE = "https://depremrapor.com"
+
+# Sakin dönemde yayın aralığı (saat). Actions `schedule` ile aynı sayı
+# olması tesadüf değil: Worker onun yerini alıyor.
+TABAN_SAAT = "3"
+
+# Olay tetiği için asgari ara (dakika). Bir dizi sırasında dakikada bir
+# M4,5 gelebilir; her biri için koşmak, koşu ~50 dakika sürdüğü için
+# anlamsız bir kuyruk üretir.
+ASGARI_ARA_DK = "25"
+
+# Tetikleyen büyüklük eşiği. Ürünün hedef büyüklüğüyle aynı (M4,5):
+# hedefin altındaki bir olay, hedef tahmini hakkında bilgi taşımaz.
+ESIK_MW = "4.5"
+
+# GITHUB_TOKEN burada YAZMAZ; secret olarak girilir:
+#     wrangler secret put GITHUB_TOKEN
+# ya da Cloudflare panosu -> Worker -> Settings -> Variables -> Encrypt

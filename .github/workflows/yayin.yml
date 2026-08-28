@@ -14,15 +14,21 @@ name: Günlük yayın
 
 on:
   schedule:
-    # ÜÇ SAATTE BİR. Modelin değeri kritik günlerde yoğunlaşır (olay
-    # teriminin %98,8'i en yüksek 10 başlangıçtan; docs/MANSET.md) ve bir
-    # dizi sırasında artçı oranı saatler içinde değişir; günde tek koşu,
-    # modelin en değerli olduğu anda bağlayıcı kısıt oluyordu.
+    # BU TAKVİM ARTIK YEDEKTİR, BİRİNCİL TETİK DEĞİL.
     #
-    # Actions schedule GARANTİLİ DEĞİLDİR: 5-15 dk gecikme olağandır, ender
-    # olarak bir koşu hiç çalışmaz. Künyedeki üretim zamanı FİİLÎ zamandır;
-    # site, bayatlık eşiğini (7 saat) aşan yayında uyarır.
-    - cron: "30 */3 * * *"
+    # Actions `schedule` ölçülerek elendi: 28 Ağustos 2026'da 00:30 yuvası
+    # ~1 saat 45 dakika gecikmeyle başladı, 03:30 ve 06:30 yuvaları hiç
+    # çalışmadı; "üç saatte bir" ilan edilen sistemde yayın yaşı 5,4 saate
+    # çıktı. Sözleşme gereği bu bir arıza değil -- `schedule` "en iyi çaba"
+    # niteliğindedir ve kamuya açık depolarda yoğunlukta koşu düşürür.
+    #
+    # Birincil tetik artık `cloudflare/tetikleyici` Worker'ıdır: on dakikada
+    # bir uyanır, taban aralık dolduysa ya da eşik üstü YENİ BİR OLAY varsa
+    # workflow_dispatch ile koşu başlatır.
+    #
+    # Buradaki takvim seyrekleştirilerek BIRAKILDI: Worker ölürse (ör.
+    # token süresi dolarsa) yayın büsbütün durmasın, yavaşlasın.
+    - cron: "30 */6 * * *"
   workflow_dispatch:
     inputs:
       sebep:
@@ -143,6 +149,12 @@ jobs:
           ozet = {
               "kosu_id": os.environ.get("GITHUB_RUN_ID"),
               "tetikleyici": os.environ.get("GITHUB_EVENT_NAME"),
+              # NEDEN KOŞTUĞU DA YAZILIR. `sebep` girdisi ilan edilmişti ve
+              # açıklaması "künyeye yazılır" diyordu, ama hiçbir yerde
+              # kullanılmıyordu -- beyan edilip yapılmayan bir şey.
+              # Tetikleyici Worker buraya "taban: ..." ya da "olay: M4.8 ..."
+              # yazar; koşunun neden başladığı kayda geçer.
+              "sebep": os.environ.get("TETIK_SEBEBI") or None,
               "commit": os.environ.get("GITHUB_SHA"),
               "okundu": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "hat_sonucu": os.environ.get("HAT_SONUCU", "bilinmiyor"),
@@ -169,6 +181,7 @@ jobs:
           PY
         env:
           HAT_SONUCU: ${{ steps.hat.outcome }}
+          TETIK_SEBEBI: ${{ github.event.inputs.sebep }}
 
       - name: Yayın dalına it
         # `yayin` dalını YALNIZCA bu iş akışı yazar. `main` kaynak kalır;
