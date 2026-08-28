@@ -1,6 +1,6 @@
 # depremrapor.com
 
-**Türkiye için olasılıksal deprem tahmini.** Her gün ETAS modeliyle
+**Türkiye için olasılıksal deprem tahmini.** ETAS modeliyle üç saatte bir
 üretilen, ölçülmüş ve künyelenmiş bir olasılık haritası.
 
 **Canlı site: [depremrapor.com](https://depremrapor.com)**
@@ -15,7 +15,9 @@ hesaplar. Yöntem **ETAS**'tır (Epidemic-Type Aftershock Sequence): her
 deprem, kendisinden sonra gelenlerin oranını geçici olarak yükseltir.
 Hesap analitiktir; simülasyon kullanılmaz.
 
-Sonuç her sabah otomatik olarak yeniden üretilir ve siteye yayımlanır.
+Sonuç üç saatte bir otomatik olarak yeniden üretilir ve siteye yayımlanır.
+Pencere, koşunun kendi anından başlar: "önümüzdeki 1 gün" ifadesi
+harfiyen o anlama gelir.
 
 ## Bu proje neyi yapmaz
 
@@ -100,10 +102,13 @@ onlara bağlı testler sebebi yazılarak atlanır ve hat bir kez
 çalıştırıldıktan sonra kendiliğinden koşar. "Veri yok" ile "bozuk" ayrı
 şeylerdir ve ayrı görünürler (`tests/conftest.py`).
 
-Günlük yayın GitHub Actions üzerinde koşar (`.github/workflows/yayin.yml`)
-ve sonucu `yayin` dalına yazar. Düşen bir koşu `yayin` dalına dokunmaz:
-site bir önceki yayını göstermeye devam eder ve **yayının yaşını her zaman
-gösterir**; 36 saati aşarsa uyarır. Sessiz başarısızlık yoktur.
+Yayın GitHub Actions üzerinde üç saatte bir koşar
+(`.github/workflows/yayin.yml`) ve sonucu `yayin` dalına yazar. Düşen bir
+koşu `yayin` dalına dokunmaz: site bir önceki yayını göstermeye devam eder
+ve **yayının yaşını her zaman gösterir**; bayatlık eşiği aşılırsa uyarır.
+Eşik künyede makine-okunur biçimde taşınır (`tazelik.bayatlik_esigi_saat`);
+buraya sayı yazılmaz, çünkü elle yazılan bir sayı kaynağından ayrışır.
+Sessiz başarısızlık yoktur.
 
 ## Veri kaynakları
 
