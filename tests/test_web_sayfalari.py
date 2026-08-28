@@ -188,3 +188,43 @@ def test_her_sayfa_KAYNAK_KODUNA_baglanir():
     eksik = [p.name for p in _sayfalar()
              if depo not in p.read_text(encoding="utf-8")]
     assert not eksik, f"kaynak kodu bağlantısı olmayan sayfalar: {eksik}"
+
+
+# --- İZLENEN DOSYALARDA KİŞİSEL VERİ -------------------------------------
+#
+# `scripts/gizli_tara.py` dışa aktarımın son adımı olarak yazılmıştı ve
+# orada işe yaradı. Ama SIRADAN bir commit onu çalıştırmıyordu: wrangler,
+# çalıştırıldığı dizinde `.wrangler/cache/wrangler-account.json` üretti,
+# `git add -A` onu süpürdü ve içindeki hesap adı -- yani sahibinin kişisel
+# e-postası -- kamuya açık depoya gitti.
+#
+# Ders, taramanın ne zaman yapıldığıyla ilgili: bir kerelik bir onay değil,
+# her commit'te sınanan bir ölçüt olmalı. Üçüncü taraf bir araç depoda
+# çalıştığında ne bıraktığını kimse elle kontrol etmez.
+
+def test_izlenen_dosyalarda_KISISEL_EPOSTA_yok():
+    import sys as _sys
+
+    kok = pathlib.Path(__file__).resolve().parents[1]
+    _sys.path.insert(0, str(kok / "scripts"))
+    import gizli_tara
+
+    bulgu = gizli_tara.tara(kok)
+    epostalar = bulgu.get("e-posta", [])
+    # Yayımlanmak ÜZERE yazılmış adres beklenen tek bulgudur.
+    kalan = [(d, n, e) for d, n, e in epostalar
+             if e != "iletisim@depremrapor.com"]
+    assert not kalan, (
+        "izlenen dosyalarda beklenmeyen e-posta:\n  " +
+        "\n  ".join(f"{d}:{n} -> {e}" for d, n, e in kalan))
+
+
+def test_wrangler_artiklari_IZLENMIYOR():
+    """Üçüncü taraf araçların bıraktığı yerel dosyalar depoya girmez."""
+    import subprocess
+
+    kok = pathlib.Path(__file__).resolve().parents[1]
+    izlenen = subprocess.run(["git", "ls-files"], cwd=kok,
+                             capture_output=True, text=True).stdout
+    for desen in (".wrangler/", "node_modules/", ".dev.vars"):
+        assert desen not in izlenen, f"izleniyor olmamalı: {desen}"

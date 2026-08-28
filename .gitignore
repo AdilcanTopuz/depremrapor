@@ -72,3 +72,9 @@ web/robots.txt
 
 # Yerel isletim notlari -- panel adimlari, hesap ayarlari; depoya girmez
 _yerel/
+
+# Wrangler'in yerel urettikleri -- hesap kimligi ve e-posta tasir
+.wrangler/
+node_modules/
+.dev.vars
+.dev.vars.*

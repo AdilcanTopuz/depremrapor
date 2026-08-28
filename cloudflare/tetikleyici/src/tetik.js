@@ -74,10 +74,15 @@ export async function kararVer(env) {
   const esikMw = Number(env.ESIK_MW ?? 4.5);
   const simdi = Date.now();
 
-  // 1. Zaten koşan/kuyrukta bekleyen bir koşu var mı?
-  const mesgul = await kosuVarMi(env);
-  if (mesgul) {
-    return { tetikle: false, gerekce: `koşu sürüyor (${mesgul})` };
+  // 1. GitHub'a sorulabiliyor mu, ve koşan/kuyrukta koşu var mı?
+  const gh = await kosuDurumu(env);
+  if (!gh.ok) {
+    // KÖRLEMESİNE TETİKLENMEZ: soramadıysak muhtemelen tetikleyemeyiz de.
+    // Uzun süren bir kesinti, sitedeki yayın yaşı göstergesinden okunur.
+    return { tetikle: false, gerekce: `GitHub sorulamadı — ${gh.hata}`, github: gh };
+  }
+  if (gh.acik) {
+    return { tetikle: false, gerekce: `koşu sürüyor (${gh.acik})`, github: gh };
   }
 
   // 2. Yayımlanmış künye: son üretim ve katalogun gördüğü son olay
@@ -93,7 +98,7 @@ export async function kararVer(env) {
     return {
       tetikle: true,
       sebep: `taban: son yayın ${yasSaat.toFixed(1)} saat önce`,
-      yasSaat,
+      yasSaat, github: gh,
     };
   }
 
@@ -102,7 +107,7 @@ export async function kararVer(env) {
     return {
       tetikle: false,
       gerekce: `son yayın ${(yasSaat * 60).toFixed(0)} dk önce, asgari ara ${asgariAraDk} dk`,
-      yasSaat,
+      yasSaat, github: gh,
     };
   }
   const olay = await yeniOlay(esikMw, kunye.katalog_son_olay);
@@ -111,14 +116,14 @@ export async function kararVer(env) {
       tetikle: true,
       sebep: `olay: M${olay.mag} ${olay.zaman} (${olay.kaynak})` +
              ` — yayımlanmış katalog ${kunye.katalog_son_olay} tarihine kadar görüyor`,
-      yasSaat,
+      yasSaat, github: gh,
     };
   }
 
   return {
     tetikle: false,
     gerekce: `taban dolmadı (${yasSaat.toFixed(1)}/${tabanSaat} saat), yeni olay yok`,
-    yasSaat,
+    yasSaat, github: gh,
   };
 }
 
@@ -133,15 +138,46 @@ function ghBaslik(env) {
   };
 }
 
-async function kosuVarMi(env) {
+/* "SORAMADIM" İLE "KOŞU YOK" AYNI ŞEY DEĞİLDİR.
+ *
+ * İlk yazımda bu işlev, API'ye ulaşamadığında da `null` döndürüyordu ve
+ * `null` "koşan koşu yok" anlamına geliyordu. Sonuç: girilmemiş ya da
+ * geçersiz bir token, sağlıklı bir kurulumdan AYIRT EDİLEMİYORDU --
+ * karar ucu "tetikle" diyor, tetikleme 401 ile sessizce düşüyordu.
+ *
+ * Nitekim ilk kurulumda tam bu oldu: süren bir koşu varken uç "koşu yok"
+ * dedi. Kusur token'da değil, kusuru görünmez kılan bu satırdaydı.
+ */
+async function kosuDurumu(env) {
+  if (!env.GITHUB_TOKEN) {
+    return { ok: false, hata: "GITHUB_TOKEN secret'ı girilmemiş" };
+  }
   const u = `https://api.github.com/repos/${env.DEPO}/actions/workflows/` +
             `${env.IS_AKISI}/runs?per_page=5`;
-  const r = await fetch(u, { headers: ghBaslik(env) });
-  if (!r.ok) return null;                 // sorulamadıysa engel çıkarma
+  let r;
+  try {
+    r = await fetch(u, { headers: ghBaslik(env) });
+  } catch (e) {
+    return { ok: false, hata: `GitHub'a ulaşılamadı: ${e}` };
+  }
+  if (!r.ok) {
+    const ek = r.status === 401 ? " — token geçersiz ya da süresi dolmuş"
+             : r.status === 403 ? " — token bu depoya yetkili değil (Actions izni?)"
+             : r.status === 404 ? " — depo ya da iş akışı adı yanlış, veya token"
+                                  + " bu depoyu görmüyor"
+             : "";
+    return { ok: false, hata: `GitHub API ${r.status}${ek}` };
+  }
   const d = await r.json();
   const acik = (d.workflow_runs || []).find(
     (x) => x.status === "in_progress" || x.status === "queued");
-  return acik ? `${acik.status} #${acik.id}` : null;
+  const son = (d.workflow_runs || [])[0];
+  return {
+    ok: true,
+    acik: acik ? `${acik.status} #${acik.id}` : null,
+    sonKosu: son ? { tetik: son.event, durum: son.status,
+                     sonuc: son.conclusion, zaman: son.created_at } : null,
+  };
 }
 
 async function tetikle(env, sebep) {

@@ -70,6 +70,16 @@ Beklenen çıktı, o anki duruma göre şunlardan biri:
     {"tetikle": false, "gerekce": "taban dolmadı (1.2/3 saat), yeni olay yok"}
     {"tetikle": true,  "sebep": "taban: son yayın 3.1 saat önce"}
 
+Yanıttaki **`github`** alanı token'ın sağlığını söyler; bakılacak ilk yer
+orasıdır:
+
+    "github": { "ok": true, "acik": null, "sonKosu": {...} }   -> token çalışıyor
+    "github": { "ok": false, "hata": "GitHub API 401 — token geçersiz..." }
+    "github": { "ok": false, "hata": "GITHUB_TOKEN secret'ı girilmemiş" }
+
+`ok: false` iken Worker **tetiklemez**: soramadıysa muhtemelen
+tetikleyemez de, körlemesine denemek sessiz bir başarısızlık üretirdi.
+
 `"künye okunamadı"` görüyorsan site erişilemiyordur; `"koşu sürüyor"`
 görüyorsan zaten bir koşu vardır.
 
