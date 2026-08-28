@@ -228,3 +228,45 @@ def test_wrangler_artiklari_IZLENMIYOR():
                              capture_output=True, text=True).stdout
     for desen in (".wrangler/", "node_modules/", ".dev.vars"):
         assert desen not in izlenen, f"izleniyor olmamalı: {desen}"
+
+
+def test_ekranda_HAM_UTC_gosterilmiyor():
+    """Zamanlar ekranda TSİ, veride UTC.
+
+    Sitenin okuyucusu Türkiye'dedir; ekranda etiketsiz UTC göstermek üç
+    saatlik sessiz bir yanılgı üretir. Deprem zamanlarının okunduğu bir
+    üründe bu ciddidir -- nitekim site sahibi de "TR saati mi?" diye
+    sormak zorunda kaldı. Bir kullanıcı sorduysa kusur kullanıcıda değildir.
+
+    Ölçüt: künyeden/veriden gelen zaman alanları ekrana `tsiZaman()`
+    üzerinden basılmalı; ham dilimleme (`.slice(0,16)`) ya da
+    `toISOString()` ile basılmamalı.
+    """
+    ham = ("kunye.katalog.son_olay.slice", "k.katalog.son_olay.slice",
+           "new Date(x.zaman).toISOString()", "t.toISOString().slice")
+    for sayfa in list(_sayfalar()) + [WEB / "script.js"]:
+        metin = sayfa.read_text(encoding="utf-8")
+        for k in ham:
+            assert k not in metin, (
+                f"{sayfa.name}: zaman ham UTC olarak basılıyor -> {k}")
+
+
+def test_veri_katmani_UTC_kaliyor():
+    """Saat dilimi künye zincirine BULAŞMAMALI.
+
+    Gösterimi çevirmek doğru; üretilen dosyaları çevirmek yanlış olurdu --
+    arşivdeki bir sayının hangi ana ait olduğu saat dilimi kuralına
+    bağlanırsa sonradan tartışmalı hâle gelir.
+    """
+    import datetime as _dt
+    import json as _json
+
+    kok = pathlib.Path(__file__).resolve().parents[1]
+    man = kok / "data" / "publish" / "latest" / "manifest.json"
+    if not man.exists():
+        pytest.skip("henüz yayın yok")
+    m = _json.loads(man.read_text(encoding="utf-8"))
+    u = _dt.datetime.fromisoformat(m["uretim_zamani"])
+    assert u.utcoffset() == _dt.timedelta(0), \
+        f"manifest UTC değil: {m['uretim_zamani']}"
+    assert m["origin"].endswith("Z"), f"origin UTC değil: {m['origin']}"

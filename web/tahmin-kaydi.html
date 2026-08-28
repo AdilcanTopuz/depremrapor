@@ -192,7 +192,7 @@
   <div class="sekmeler" id="sekmeler" role="group" aria-label="Süzgeç"></div>
   <div class="tablosar">
     <table><thead><tr>
-      <th style="width:16%">zaman (UTC)</th>
+      <th style="width:16%">zaman (TSİ)</th>
       <th style="width:10%">büyüklük</th>
       <th style="width:28%">yer</th>
       <th>olaydan önce yayımlanan listede</th>
@@ -255,7 +255,7 @@ function satirlariCiz(){
       </td></tr>`; return;}
   tb.innerHTML = o.map(x=>{
     const r = durumRozeti(x);
-    const zaman = new Date(x.zaman).toISOString().slice(0,16).replace("T"," ");
+    const zaman = tsiZaman(x.zaman, {etiket:false});
     return `<tr>
       <td class="t-zaman num">${zaman}</td>
       <td class="t-mag mag">M ${x.buyukluk.toFixed(1).replace(".",",")}</td>
@@ -271,7 +271,7 @@ function satirlariCiz(){
   const k = await al("data/kunye.json");
   const t = tazelik(k);
   document.getElementById("u-kunye").innerHTML =
-    `yayın <b>${k.yayin_origin}</b> · ${t.yas}`;
+    `yayın <b>${tsiZaman(k.yayin_origin, {etiket:false})}</b> TSİ · ${t.yas}`;
   const s = D.sayim;
   const oran = s.toplam ? Math.round(100 * s.listede / s.toplam) : null;
   document.getElementById("rakamlar").innerHTML = `

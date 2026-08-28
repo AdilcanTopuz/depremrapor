@@ -600,9 +600,9 @@ function ipuclariBagla(){
   veri = {1:g1, 7:D.gj, 30:g30};
   const t = tazelik(D.kunye), kp = D.kunye.urun_kapisi, m = D.kunye.model_kunyesi;
   document.getElementById("u-yayin").innerHTML =
-    `yayın <b>${D.kunye.yayin_origin}</b> · ${t.yas}`;
+    `yayın <b>${tsiZaman(D.kunye.yayin_origin, {etiket:false})}</b> TSİ · ${t.yas}`;
   document.getElementById("u-katalog").innerHTML =
-    `katalog <b>${D.kunye.katalog.son_olay.slice(0,16)}</b>`;
+    `katalog <b>${tsiZaman(D.kunye.katalog.son_olay, {etiket:false})}</b> TSİ`;
   document.getElementById("u-kapi").innerHTML = kp
     ? `ürün kapısı <b>${kp.oran.toFixed(3)}</b> [${kp.band[0]}, ${kp.band[1]}]`
     : "ürün kapısı <b>ölçüm yok</b>";

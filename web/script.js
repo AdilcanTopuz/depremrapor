@@ -214,6 +214,47 @@ function hukumEtiketi(h) {
 }
 
 /* ---- tazelik ---- */
+/* ZAMANLAR EKRANDA TSİ, VERİDE UTC.
+ *
+ * Sitenin okuyucusu Türkiye'dedir; ekranda etiketsiz UTC göstermek üç
+ * saatlik sessiz bir yanılgı üretir. Deprem zamanlarının okunduğu bir
+ * üründe bu ciddidir: "son olay 05:19" yazısını okuyan biri, olayın üç
+ * saat sonrasını sanır.
+ *
+ * VERİ KATMANI UTC KALIR. Künye, manifest, GeoJSON ve arşiv dosyalarının
+ * hepsi UTC'dir ve öyle kalmalıdır -- saat dilimi künye zincirine bulaşırsa
+ * arşivdeki bir sayının hangi ana ait olduğu sonradan tartışmalı hâle
+ * gelir. Çevrilen yalnızca EKRANDA OKUNAN şeydir ve yanına "TSİ" yazılır.
+ *
+ * Sabit +3 yazılmadı: `Europe/Istanbul` kullanılıyor ki saat dilimi kuralı
+ * ileride değişirse gösterim kendiliğinden doğru kalsın.
+ */
+const TSI = "Europe/Istanbul";
+
+function zamanCoz(m) {
+  if (!m) return null;
+  let t = String(m).trim().replace(" ", "T");
+  // Saat dilimi yoksa UTC varsayılır: hattın ürettiği bütün zamanlar UTC.
+  if (!/[Zz]|[+-]\d{2}:?\d{2}$/.test(t)) t += "Z";
+  const v = new Date(t);
+  return isNaN(v.getTime()) ? null : v;
+}
+
+/* Ekrana yazılacak biçim. etiket=false ise "TSİ" eklenmez -- tablo başlığı
+   zaten söylüyorsa her satırda tekrar etmesin diye. */
+function tsiZaman(m, { tarih = true, etiket = true } = {}) {
+  const d = zamanCoz(m);
+  if (!d) return "—";
+  const secim = tarih
+    ? { day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit" }
+    : { hour: "2-digit", minute: "2-digit" };
+  const metin = new Intl.DateTimeFormat("tr-TR", { timeZone: TSI, ...secim })
+    .format(d).replace(",", "");
+  return etiket ? metin + " TSİ" : metin;
+}
+
+
 function tazelik(kunye) {
   const t = kunye.tazelik || {};
   const uretim = new Date(t.uretim_zamani || kunye.yayin_uretim);
@@ -231,8 +272,9 @@ function tazelik(kunye) {
             : `${Math.floor(saat / 24)} gün ${Math.round(saat % 24)} saat önce`;
   return {
     yas, esik, saat, bayat: saat > esik,
-    metin: `${kunye.yayin_origin} tarihli tahmin · ${yas} üretildi · ` +
-           `katalogdaki son olay ${kunye.katalog.son_olay.slice(0, 16)}`,
+    metin: `${tsiZaman(kunye.yayin_origin)} başlangıçlı tahmin · ` +
+           `${yas} üretildi · katalogdaki son olay ` +
+           `${tsiZaman(kunye.katalog.son_olay)}`,
     bayatMetni: `${yas} üretildi; sistem ${aralik} yenilenir ve ${esik} ` +
       `saati aşan yayınlar güncel sayılmaz. Gösterilen sayılar o tarihteki ` +
       `duruma aittir — <b>bugünün durumu farklı olabilir.</b>`,
@@ -280,7 +322,7 @@ function kunyeSatirlari(k) {
     ["yöntem", m.method],
     ["parametre sha256", m.etas_params_sha256.slice(0, 16) + "…"],
     ["katalog sha256", m.catalog_sha256.slice(0, 16) + "…"],
-    ["katalogdaki son olay", k.katalog.son_olay.slice(0, 16)],
+    ["katalogdaki son olay", tsiZaman(k.katalog.son_olay)],
     ["commit", m.commit.slice(0, 12)],
     ["çalışma ağacı", m.worktree],
     ["yayımlama eşiği", "normalin " + k.min_times_normal + " katı"],

@@ -189,7 +189,7 @@
 
   <div class="tablosar">
     <table><thead><tr>
-      <th style="width:15%">zaman (UTC)</th>
+      <th style="width:15%">zaman (TSİ)</th>
       <th style="width:9%">büyüklük</th>
       <th style="width:26%">yer</th>
       <th style="width:10%">derinlik</th>
@@ -249,8 +249,9 @@ function satirlariCiz(){
       dışında kalmış olabilir.</td></tr>`; return;}
   tb.innerHTML = o.map(x=>{
     const r = durumRozeti(x);
-    const t = new Date(x.zaman);
-    const zaman = t.toISOString().slice(0,16).replace("T"," ");
+    // Veri UTC, gösterim TSİ (script.js: tsiZaman). Sütun başlığı zaten
+    // "TSİ" dediği için her satırda tekrar edilmez.
+    const zaman = tsiZaman(x.zaman, {etiket:false});
     return `<tr>
       <td class="t-zaman num">${zaman}</td>
       <td class="t-mag mag">M ${x.buyukluk.toFixed(1).replace(".",",")}</td>
@@ -269,7 +270,7 @@ function satirlariCiz(){
   const k = await al("data/kunye.json");
   const t = tazelik(k);
   document.getElementById("u-kunye").innerHTML =
-    `yayın <b>${k.yayin_origin}</b> · ${t.yas}`;
+    `yayın <b>${tsiZaman(k.yayin_origin, {etiket:false})}</b> TSİ · ${t.yas}`;
   document.getElementById("altbaslik").textContent = D.kapsam_notu;
   document.getElementById("iddia-notu").innerHTML = D.iddia_notu +
     ` Ayrıntı için <a href="tahmin-kaydi.html">tahmin kaydı</a> ve
