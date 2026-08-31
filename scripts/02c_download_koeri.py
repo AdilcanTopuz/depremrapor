@@ -29,6 +29,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from src.ingest.ham_yaz import guvenli_yaz
+
 BASE = "http://udim.koeri.boun.edu.tr/zeqdb"
 RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
 CACHE = RAW / "koeri"
@@ -153,10 +155,12 @@ def main() -> None:
     args = ap.parse_args()
 
     frames = []
+    alinamayan = []
     for year in range(args.start, args.end):
         text = fetch_year(year, args.minmag)
         if not text:
             print(f"{year}: alınamadı")
+            alinamayan.append(year)
             continue
         df = normalize(parse(text), args.keep_blasts)
         print(f"{year}: {len(df)} olay")
@@ -164,12 +168,32 @@ def main() -> None:
             frames.append(df)
         time.sleep(1.0)
 
+    # KISMİ İNDİRME BAŞARI SAYILMAZ.
+    #
+    # Eskiden alınamayan yıl `continue` ile atlanıyor, elde kalan neyse
+    # yazılıp 0 ile çıkılıyordu. 28 Ağustos 2026'da KOERI sunucusu yılların
+    # çoğuna yanıt vermedi; betik 19.339 satırı 72.473 satırlık dosyanın
+    # üzerine yazdı ve BAŞARILI göründü. Kırpılmayı ancak hattaki monotonluk
+    # koruması yakaladı -- yani ham dosya çoktan gitmişti.
+    #
+    # Artık eksik yıl varsa yazılmaz ve gürültüyle durulur. Yıl bazlı
+    # önbellek sayesinde yeniden çalıştırmak yalnızca eksikleri çeker;
+    # durmanın maliyeti düşük, sessizce devam etmenin maliyeti yüksekti.
+    if alinamayan:
+        raise SystemExit(
+            f"! KOERI: {len(alinamayan)} yıl alınamadı.\n"
+            f"  Eksik yıllar: {alinamayan}\n"
+            f"  Kırpılmış katalog YAZILMADI; var olan dosya olduğu gibi kaldı.\n"
+            f"  Yeniden çalıştırınız -- yıl bazlı önbellek sayesinde yalnızca\n"
+            f"  eksik yıllar ağdan çekilir."
+        )
+
     if not frames:
         print("Hiç veri alınamadı.")
         return
     out = pd.concat(frames, ignore_index=True)
     dst = RAW / "koeri_catalog.csv"
-    out.to_csv(dst, index=False)
+    guvenli_yaz(out, dst, ad="koeri_catalog.csv")
     print(f"Toplam {len(out)} olay -> {dst}")
     both = out[out["mag_ml"].notna() & (out["mag_ml"] > 0)
                & out["mag_mw"].notna() & (out["mag_mw"] > 0)] \

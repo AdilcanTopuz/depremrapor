@@ -2018,3 +2018,56 @@ kopyasını tutuyordu. Kaynaktaki metin değişip hash güncellenmeseydi, test
 kendi kopyasıyla çalışacağı için **yine geçerdi** — yani korumanın
 bozulduğunu göstermezdi. Test artık metni `forecast_now.DISCLAIMER`'dan
 içe aktarır. V52'nin ("beyan sistemden türetilir") doğrudan devamı.
+
+---
+
+## V59 — koruma yayımı durdurdu, imhayı durduramadı
+
+**Nasıl bulundu.** 28 Ağustos 2026, bulut koşusu #42 düştü:
+
+    ! KATALOG KÜÇÜLDÜ -- güncelleme veri İMHA ETMİŞ olabilir:
+        koeri_catalog.csv: 72,473 -> 19,339
+
+Monotonluk koruması (V38) çalıştı ve yayımı reddetti. Site etkilenmedi.
+
+**Ama kaynağa bakınca asıl mesele göründü.** `scripts/02c_download_koeri.py`
+kataloğu yıl yıl çekiyor. `fetch_year`, üç denemeden sonra başaramazsa
+**boş dize döndürüyordu**; çağıran taraf `continue` ile o yılı atlıyor,
+elde kalan neyse yazıyor ve **0 ile çıkıyordu**. KOERI sunucusu yılların
+çoğuna yanıt vermeyince 19.339 satır, 72.473 satırlık dosyanın **üzerine
+yazıldı** ve betik başarılı göründü.
+
+**Kritik ayrım.** V38'in koruması yayım yolundadır: yapabildiği şey yayımı
+durdurmaktı, yapamadığı şey ham dosyanın imhasını engellemekti. Koruma
+tetiklendiğinde dosya çoktan gitmişti. Yani bu bir "korumanın çalışmaması"
+vakası değil, **korumanın yanlış yerde olması** vakasıdır.
+
+**Dersin genel hâli.** *Bir kaynağı korumak, onu KULLANAN yolu korumakla
+olmaz; YAZAN yolu korumakla olur.* Yayım kapısına konan bir kontrol,
+girdinin bozulmasını ancak bozulduktan sonra haber verir. V38 doğru kuralı
+bulmuş ama yanlış kata koymuştu.
+
+**İkinci ders, tanıdık aileden.** Kısmi başarı, başarı olarak raporlanıyordu.
+`return ""` ve `continue` ikilisi, "yılların yarısını alamadım" ile
+"hepsini aldım"ı aynı çıkış koduna indirgiyordu.
+
+**Düzeltme, iki katman.**
+
+1. `src/ingest/ham_yaz.guvenli_yaz` — var olan ham katalogun üzerine daha
+   **az** satırla yazmayı reddeder; büyüme ve eşitlik serbesttir, küçülme
+   açıklama ister (`izin_kucultme=True`). **Dört indiricinin dördü de**
+   buradan geçiyor ve bir testi doğrudan `to_csv` çağrısı arıyor -- koruma
+   yalnızca hatırlanan betikte olursa kusur öbüründen geri gelir.
+
+2. KOERI indiricisi, alınamayan yıl varsa **hiç yazmadan** durur ve eksik
+   yılları listeler. Yıl bazlı önbellek sayesinde yeniden çalıştırmanın
+   maliyeti düşüktür; sessizce devam etmenin maliyeti yüksekti.
+
+**Kanıt.** Beş test; biri korumanın reddettiğini VE reddederken **dosyayı
+bozmadığını** ayrıca sınıyor -- reddederken bozsaydı koruma zararlı olurdu.
+
+**Açık kalan.** Kırpılmanın neden bu koşuda olduğu kesinleşmedi. Günlükte
+"katalog yok" satırı var; Actions önbelleği ıskalanmış ve 57 yıl birden
+sıfırdan çekilmiş olabilir, bu da KOERI'nin hız sınırlamasını tetiklemiş
+olabilir. Ölçülmedi, yazılmadı sayılmaz: **bu bir tahmindir.** Önbellek
+davranışı ayrıca izlenecek.

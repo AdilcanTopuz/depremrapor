@@ -15,6 +15,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from src.ingest.ham_yaz import guvenli_yaz
+
 BASE = "https://deprem.afad.gov.tr/apiv2/event/filter"
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw" / "afad"
 
@@ -159,7 +161,7 @@ def main() -> None:
     check_schema(df)
     df["source"] = "AFAD"
     out_csv = RAW_DIR.parent / "afad_catalog.csv"
-    df.to_csv(out_csv, index=False, encoding="utf-8")
+    guvenli_yaz(df, out_csv, ad="afad_catalog.csv")
     print(f"Toplam {len(df)} olay -> {out_csv}")
 
 

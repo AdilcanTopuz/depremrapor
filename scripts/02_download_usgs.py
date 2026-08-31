@@ -12,6 +12,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+from src.ingest.ham_yaz import guvenli_yaz
+
 BASE = "https://earthquake.usgs.gov/fdsnws/event/1/query"
 RAW = Path(__file__).resolve().parents[1] / "data" / "raw"
 BBOX = dict(minlatitude=35.0, maxlatitude=43.0, minlongitude=25.0, maxlongitude=45.0)
@@ -57,7 +59,7 @@ def main() -> None:
                             "id": "event_id"})
     df["source"] = "USGS"
     out = RAW / "usgs_catalog.csv"
-    df.to_csv(out, index=False)
+    guvenli_yaz(df, out, ad="usgs_catalog.csv")
     print(f"Toplam {len(df)} olay -> {out}")
 
 
