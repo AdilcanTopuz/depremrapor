@@ -29,7 +29,15 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from src.ingest.ham_yaz import guvenli_yaz
+# BETİK OLARAK ÇALIŞTIRILDIĞINDA DEPO KÖKÜ sys.path'TE DEĞİLDİR.
+# Hat bu dosyaları `python scripts/xx.py` diye çağırır (`-m` ile değil --
+# modül adı rakamla başladığı için mümkün de değil), o zaman sys.path[0]
+# `scripts/` olur ve `src` paketi görünmez. Kök elle eklenir.
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
+
+from src.ingest.ham_yaz import guvenli_yaz  # noqa: E402
 
 BASE = "http://udim.koeri.boun.edu.tr/zeqdb"
 RAW = Path(__file__).resolve().parents[1] / "data" / "raw"

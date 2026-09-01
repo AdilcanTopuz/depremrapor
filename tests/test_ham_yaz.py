@@ -81,3 +81,31 @@ def test_BUTUN_indiriciler_bu_yoldan_yaziyor():
                         if not s.strip().startswith("#"))
         assert ".to_csv(" not in kod, \
             f"{ad}: ham katalogu doğrudan to_csv ile yazıyor"
+
+
+def test_INDIRICILER_BETIK_OLARAK_CALISIYOR():
+    """Hattın çağırdığı BİÇİMDE çalıştıklarını gösterir.
+
+    V60'ın kaynağı: `guvenli_yaz` korumasını eklerken dört indiriciye
+    `from src.ingest...` importu koydum. Testler geçti, çünkü testler modülü
+    doğrudan içe aktarıyor ve o sırada depo kökü zaten sys.path'te. Ama hat
+    betikleri `python scripts/xx.py` diye çağırıyor; o zaman sys.path[0]
+    `scripts/` olur ve `src` görünmez.
+
+    Sonuç: üç kaynağın üçü de ModuleNotFoundError ile çöktü ve ~20 koşu
+    boyunca hiçbir yayın yapılamadı. Bir betiği DEĞİŞTİRİP bir kez bile
+    ÇALIŞTIRMAMIŞ olmanın bedeli.
+
+    `--help` ağ kullanmaz; sınanan şey yalnızca modülün ayağa kalkabilmesi.
+    """
+    import subprocess
+    import sys
+
+    kok = pathlib.Path(__file__).resolve().parents[1]
+    for ad in ("01_download_afad.py", "02_download_usgs.py",
+               "02b_download_emsc.py", "02c_download_koeri.py"):
+        r = subprocess.run([sys.executable, f"scripts/{ad}", "--help"],
+                           cwd=kok, capture_output=True, text=True)
+        assert r.returncode == 0, (
+            f"scripts/{ad} betik olarak ayağa kalkmıyor:\n"
+            f"{(r.stderr or r.stdout).strip()[-400:]}")

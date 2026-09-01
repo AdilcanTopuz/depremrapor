@@ -2071,3 +2071,53 @@ bozmadığını** ayrıca sınıyor -- reddederken bozsaydı koruma zararlı olu
 sıfırdan çekilmiş olabilir, bu da KOERI'nin hız sınırlamasını tetiklemiş
 olabilir. Ölçülmedi, yazılmadı sayılmaz: **bu bir tahmindir.** Önbellek
 davranışı ayrıca izlenecek.
+
+---
+
+## V60 — düzeltmeyi yazdım, düzelttiğim şeyi bir kez bile çalıştırmadım
+
+**Nasıl bulundu.** V59'un düzeltmesi yayımlandıktan sonra **koşu #43'ten
+itibaren hepsi düştü.** Yaklaşık yirmi koşu, hiçbiri yayımlayamadı:
+
+    AFAD: ALINAMADI (Traceback (most recent call last):)
+    KOERI: ALINAMADI (Traceback (most recent call last):)
+    EMSC: ALINAMADI (Traceback (most recent call last):)
+    ! hiçbir kaynak güncellenemedi
+
+**Bulgu.** V59'da dört indiriciye `from src.ingest.ham_yaz import
+guvenli_yaz` satırını ekledim. Hat bu betikleri `python scripts/xx.py`
+diye çağırır — `-m` ile değil, çünkü modül adları rakamla başlıyor ve
+`-m` bunu kabul etmez. Betik olarak çalıştırıldığında `sys.path[0]`
+**`scripts/` dizinidir**, depo kökü değil; dolayısıyla `src` paketi
+görünmez ve dördü de `ModuleNotFoundError` ile çöker.
+
+**Neden testler geçti.** Testler modülü doğrudan içe aktarıyor ve pytest
+çalışırken depo kökü zaten `sys.path`'te. Yani test ortamı, üretim
+ortamının **sahip olmadığı bir kolaylığı** sağlıyordu. Beş yeni test
+yazmıştım; hiçbiri betiği hattın çağırdığı BİÇİMDE çalıştırmıyordu.
+
+**Dersin genel hâli.** *Bir şeyi değiştirdiysen, değiştirdiğin şeyi
+kullanıldığı biçimde bir kez çalıştır.* V56'da aynı ders altlık için
+çıkmıştı ("tek karo denemesi bir altlığın çalıştığını göstermez") ve
+buraya taşınmadı. İki vaka arasındaki ortak nokta şudur: doğrulama,
+sınanan şeyin **gerçek kullanım biçimini** almalıdır — kütüphane olarak
+içe aktarmak, betik olarak çalıştırmanın yerine geçmez.
+
+Kendi payıma daha keskin bir hâli var: koruma eklerken üretimi kırdım ve
+kırdığımı fark etmedim çünkü betiklerden hiçbirini **bir kez bile
+çalıştırmadım.**
+
+**Düzeltme.** Dört betiğe de depo kökünü `sys.path`'e ekleyen üç satırlık
+bir açılış kondu, gerekçesi yerinde yazılı.
+
+**Kanıt.** `test_INDIRICILER_BETIK_OLARAK_CALISIYOR`: dördünü de
+`python scripts/xx.py --help` ile çalıştırır (ağ kullanmaz, yalnızca
+modülün ayağa kalkabilmesini sınar). Açılış satırı kaldırılınca testin
+düştüğü gösterildi.
+
+**Zarar.** Yaklaşık yirmi koşu boşa gitti ve site ~20 saat boyunca
+güncellenmedi. Sitenin yayın yaşı göstergesi bunu doğru şekilde
+bildiriyordu; sessiz bir bozulma değildi -- ama kimse bakmıyorsa görünür
+olmak yetmiyor. `kosu-gunlugu` dalı düşen koşuların gerekçesini taşıyor;
+onu düzenli okumak ayrı bir alışkanlık gerektiriyor ve bu alışkanlık
+kurulmadı.
