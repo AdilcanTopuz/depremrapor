@@ -1,0 +1,22 @@
+kalibre parametreler: mc=3.3 · b=1.0450
+ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ
+commit 726e126fd552 · ağaç temiz
+katalog yok
+  AFAD: güncellendi
+  KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt çıkarıldı)
+  EMSC: güncellendi
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 623, in <module>
+    main()
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 619, in main
+    calistir(guncelle=not a.no_update, izin_kirli=a.allow_dirty)
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 481, in calistir
+    update_catalog(quiet=quiet)
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/forecast_now.py", line 168, in update_catalog
+    raise KatalogKuculdu(
+src.operational.forecast_now.KatalogKuculdu: ! KATALOG KÜÇÜLDÜ -- güncelleme veri İMHA ETMİŞ olabilir:
+    koeri_catalog.csv: 72,473 -> 0
+  Ham önbellek (data/raw/afad/, data/raw/koeri/) dokunulmamışsa tam aralıkla yeniden çalıştırarak kurtarılabilir.
+  Bilinçli bir temizlikse: izin_kucultme=True
