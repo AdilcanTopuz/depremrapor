@@ -151,8 +151,19 @@ def update_catalog(quiet: bool = False,
             if not quiet:
                 print(f"  {name}: güncellendi")
         elif not quiet:
-            first = (r.stdout or r.stderr).strip().splitlines()
-            print(f"  {name}: ALINAMADI ({first[0][:70] if first else '?'})")
+            # GERÇEK HATA GÖSTERİLİR, İLK ÇIKTI SATIRI DEĞİL.
+            #
+            # Önceden `(r.stdout or r.stderr)` yazıyordu: stdout boş
+            # olmadığı sürece stderr'e hiç bakılmıyordu, üstelik İLK satır
+            # alınıyordu. Sonuç, 28 Ağustos 2026'da şu oldu -- gerçek hata
+            # yerine alakasız bir ilerleme satırı basıldı:
+            #     KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt ...)
+            # Bir hata mesajı, hatayı göstermiyorsa mesaj değildir.
+            kaynak = (r.stderr or r.stdout).strip().splitlines()
+            son = [x for x in kaynak if x.strip()][-3:]
+            print(f"  {name}: ALINAMADI")
+            for satir in son:
+                print(f"      {satir[:110]}")
     if ok == 0:
         raise SystemExit("! hiçbir kaynak güncellenemedi — ağ bağlantısını kontrol edin.")
 

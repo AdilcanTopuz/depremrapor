@@ -184,16 +184,27 @@ def main() -> None:
     # üzerine yazdı ve BAŞARILI göründü. Kırpılmayı ancak hattaki monotonluk
     # koruması yakaladı -- yani ham dosya çoktan gitmişti.
     #
-    # Artık eksik yıl varsa yazılmaz ve gürültüyle durulur. Yıl bazlı
-    # önbellek sayesinde yeniden çalıştırmak yalnızca eksikleri çeker;
-    # durmanın maliyeti düşük, sessizce devam etmenin maliyeti yüksekti.
+    # AMA DURMAK DA TEK BAŞINA DOĞRU DEĞİL. İlk düzeltmede burada koşulsuz
+    # `SystemExit` vardı; o, kırpılmış yazma sorununu çözerken yenisini
+    # yarattı: tek bir yıl bile alınamadığında hiç dosya yazılmıyor, var
+    # olan dosya da (önbellek onu kapsamadığı için) bulunmuyordu -> 0 satır
+    # -> hattaki monotonluk koruması reddediyor -> HİÇBİR ZAMAN YAYIN YOK.
+    # "Sessizce kırpılmış" yerine "hiç yayımlamayan" bir sistem geçmişti.
+    #
+    # Korunması gereken şey DOSYADIR, durmanın kendisi değil. Dosya varsa
+    # kırpılmış sonuç atılır ve hat eldeki (biraz eski) katalogla devam
+    # eder. Dosya yoksa düşülecek bir yer yoktur; ancak o zaman durulur.
     if alinamayan:
+        mevcut = RAW / "koeri_catalog.csv"
+        ozet = f"! KOERI: {len(alinamayan)} yıl alınamadı: {alinamayan}"
+        if mevcut.exists():
+            print(ozet)
+            print(f"  Kırpılmış sonuç YAZILMADI; {mevcut.name} olduğu gibi kaldı.")
+            print("  Hat eldeki katalogla devam eder; eksik yıllar bir sonraki")
+            print("  koşuda önbellekten tamamlanır.")
+            return
         raise SystemExit(
-            f"! KOERI: {len(alinamayan)} yıl alınamadı.\n"
-            f"  Eksik yıllar: {alinamayan}\n"
-            f"  Kırpılmış katalog YAZILMADI; var olan dosya olduğu gibi kaldı.\n"
-            f"  Yeniden çalıştırınız -- yıl bazlı önbellek sayesinde yalnızca\n"
-            f"  eksik yıllar ağdan çekilir."
+            ozet + "\n  Düşülecek mevcut bir katalog da yok; durduruldu."
         )
 
     if not frames:

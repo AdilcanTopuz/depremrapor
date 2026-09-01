@@ -20,7 +20,16 @@ bir koruyucu, koruduğu sanılıp korumuyorsa korumamaktan kötüdür.
 Aşağıdaki "son güncelleme" sütunu, her satırın hangi olayla son kez
 değerlendirildiğini taşır.
 
-**Son güncelleme:** 27 Ağustos 2026 (dördüncü) — **YAYIMLANAN OLASILIKLAR
+**Son güncelleme:** 28 Ağustos 2026 — **hiçbir sayı etkilenmedi.**
+`forecast_now.py`'deki tek değişiklik, indirici başarısızlığında ekrana
+hangi satırın basılacağıdır (V61 yan bulgusu: hata mesajı hatayı
+göstermiyordu). Model, katalog, parametre ve eşiklerde değişiklik yok.
+
+Not: 28 Ağustos'ta koşu #43–#63 arası yayın yapılamadı (V60, V61).
+Yayımlanmış hiçbir sayı geçersiz olmadı; yalnızca yenisi üretilemedi ve
+site bu süre boyunca yayın yaşını doğru şekilde gösterdi.
+
+daha önce: — **YAYIMLANAN OLASILIKLAR
 DEĞİŞTİ; bir önceki kayıt bunu erken ilan etmişti.**
 
 Üçüncü güncellemede değişikliğin yürürlüğe girdiği yazılmıştı, ama girmemişti:

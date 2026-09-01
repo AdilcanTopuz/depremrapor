@@ -2121,3 +2121,70 @@ bildiriyordu; sessiz bir bozulma değildi -- ama kimse bakmıyorsa görünür
 olmak yetmiyor. `kosu-gunlugu` dalı düşen koşuların gerekçesini taşıyor;
 onu düzenli okumak ayrı bir alışkanlık gerektiriyor ve bu alışkanlık
 kurulmadı.
+
+---
+
+## V61 — kök neden önbellekteydi; düzeltmelerim belirtileri kovalamış
+
+**Nasıl bulundu.** V60'ın düzeltmesinden sonra koşu #63 yine düştü. Bu
+sefer AFAD ve EMSC güncellendi, KOERI düştü ve şu yazdı:
+
+    KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt çıkarıldı)
+    ! KATALOG KÜÇÜLDÜ: koeri_catalog.csv: 72,473 -> 0
+
+Sıfır. Oysa V59'da tam olarak bunu engellemek için `guvenli_yaz` eklenmişti.
+
+**Üç ayrı kusur bulundu ve üçü birbirini besliyordu.**
+
+**1. Önbellek anahtarı her koşuda yeniydi — asıl kök neden.**
+
+    key: ham-katalog-${{ github.run_id }}
+
+`github.run_id` her koşuda değişir, yani her koşu ~240 MB'lık **yeni bir
+önbellek girdisi** kaydediyordu. Üç saatlik kadansla günde ~2 GB; GitHub'ın
+depo başına 10 GB sınırı birkaç günde doluyor ve en eskiler tahliye
+ediliyordu. Günlüklerdeki "katalog yok" satırı, V59'daki KOERI kırpılması
+ve bu vaka -- hepsinin altında bu var. Anahtar artık günlüktür; anahtar
+tuttuğunda `actions/cache` yeniden kaydetmez, böylece günde en fazla bir
+kayıt yapılır.
+
+**2. Toplu CSV'ler hiç önbelleklenmiyordu.** Önbellek `data/raw/afad` ve
+`data/raw/koeri` alt dizinlerini alıyordu; ama `afad_catalog.csv`,
+`koeri_catalog.csv`, `emsc_catalog.csv` `data/raw/` **kökünde** duruyor.
+Yani her koşu onları sıfırdan üretiyordu ve **`guvenli_yaz`'ın koruyacağı
+bir dosya hiç bulunmuyordu.** V59'da yazdığım koruma, üretimde bir kez bile
+devreye giremezdi. Önbellek artık `data/raw`'ın tamamını kapsıyor.
+
+**3. Kendi düzeltmem sistemi kilitlemişti.** V59'da KOERI kısmi indirmede
+koşulsuz `SystemExit` ediyordu. Bu, "kırpılmış yazma"yı çözerken yenisini
+yarattı: dosya yazılmıyor, var olan dosya da (2. madde yüzünden) yok, sonuç
+0 satır, monotonluk koruması reddediyor -- **hiçbir zaman yayın yok.**
+"Sessizce kırpılmış" bir sistemi "hiç yayımlamayan" bir sistemle
+değiştirmiştim.
+
+Korunması gereken şey **dosyadır**, durmanın kendisi değil. Dosya varsa
+kırpılmış sonuç atılır ve hat eldeki katalogla devam eder; dosya yoksa
+düşülecek yer olmadığı için durulur.
+
+**Yan bulgu: hata mesajı hatayı göstermiyordu.** Raporlama
+`(r.stdout or r.stderr)` yazıyordu -- stdout boş olmadıkça stderr'e hiç
+bakılmıyor, üstelik **ilk** satır alınıyordu. Ekrana düşen şey buydu:
+
+    KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt çıkarıldı)
+
+Gerçek hata ise `HamKatalogKuculdu` idi. Artık stderr'in **son** satırları
+basılıyor. *Hatayı göstermeyen bir hata mesajı, mesaj değildir.*
+
+**Dersin genel hâli.** *Belirtiyi kovalayan düzeltme yeni belirti üretir.*
+V59 ve V60'ın ikisi de gerçek kusurları düzeltti, ama ikisi de zincirin
+ucundaydı; kökteki önbellek tahliyesine hiç bakmamıştım. Üç düzeltme üst
+üste bindi ve arada ~20 koşu kayboldu.
+
+**Kanıt.** Kısmi indirme gerçekten çalıştırıldı: `guvenli_yaz` reddetti ve
+`koeri_catalog.csv` 9,6 MB olarak **korundu**. Yeni hata raporlaması aynı
+koşuda gerçek hatayı bastı, eski raporlama alakasız bir ilerleme satırını.
+
+**Açık kalan.** Önbellek düzeltmesinin işe yaradığı henüz **gösterilmedi** --
+bir sonraki koşularda "Cache restored" satırının tuttuğu ve `data/raw`
+içindeki CSV'lerin geri geldiği izlenecek. Kural 9 gereği o görülene kadar
+bu düzeltme kurulu sayılmaz.

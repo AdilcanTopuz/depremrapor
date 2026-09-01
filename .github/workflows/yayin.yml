@@ -86,6 +86,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-yayin.txt
 
+      - name: Günün damgası (önbellek anahtarı)
+        id: gun
+        run: echo "gun=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Ham katalog önbelleğini geri yükle
         # ÖNBELLEK İKİ İŞLEVLİDİR:
         #   1. hız      -- 284 aylık JSON + 57 yıllık TXT yeniden inmesin
@@ -93,10 +97,25 @@ jobs:
         # Tahliye edilirse İKİSİ BİRDEN kaybolur; koşu düşmez, yavaşlar.
         uses: actions/cache@v4
         with:
-          path: |
-            data/raw/afad
-            data/raw/koeri
-          key: ham-katalog-${{ github.run_id }}
+          # TÜM data/raw. Önceden yalnızca alt dizinler (afad/, koeri/)
+          # kapsanıyordu; TOPLU CSV'ler (afad_catalog.csv, koeri_catalog.csv,
+          # emsc_catalog.csv) `data/raw/` KÖKÜNDE durduğu için hiç
+          # önbelleklenmiyordu. Sonuç: her koşu onları sıfırdan üretiyordu ve
+          # `guvenli_yaz` korumasının koruyacağı bir dosya hiç bulunmuyordu.
+          path: data/raw
+          # ANAHTAR GÜNLÜK, KOŞU BAŞINA DEĞİL.
+          #
+          # `github.run_id` her koşuda yeni bir anahtar üretiyordu, yani her
+          # koşu ~240 MB'lık YENİ bir önbellek girdisi kaydediyordu. Üç
+          # saatte bir koşuyla günde ~2 GB; GitHub'ın depo başına 10 GB
+          # sınırı birkaç günde doluyor ve en eskiler tahliye ediliyordu.
+          # 28 Ağustos 2026'daki "katalog yok" satırının ve ardından gelen
+          # KOERI kırpılmasının kök nedeni budur.
+          #
+          # Günlük anahtarla günde en fazla bir kayıt yapılır (anahtar
+          # tuttuğunda actions/cache yeniden kaydetmez); ~10 günlük geçmiş
+          # sınırın içinde kalır.
+          key: ham-katalog-${{ steps.gun.outputs.gun }}
           restore-keys: |
             ham-katalog-
 
