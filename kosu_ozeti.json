@@ -1,0 +1,120 @@
+{
+  "kosu_id": "34577055610",
+  "tetikleyici": "workflow_dispatch",
+  "sebep": "taban: son yayın 3.0 saat önce",
+  "commit": "943238267d5cd200548bcc6330c0e46803d75033",
+  "okundu": "2026-09-11T09:06:55.878719+00:00",
+  "hat_sonucu": "failure",
+  "hat_son_satirlar": [
+    "kalibre parametreler: mc=3.3 · b=1.0450",
+    "ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ",
+    "commit 943238267d5c · ağaç temiz",
+    "katalog yok",
+    "  AFAD: güncellendi",
+    "  KOERI: ALINAMADI",
+    "      ! KOERI: 1 yıl alınamadı: [2010]",
+    "        Düşülecek mevcut bir katalog da yok; durduruldu.",
+    "  EMSC: güncellendi",
+    "Traceback (most recent call last):",
+    "  File \"<frozen runpy>\", line 198, in _run_module_as_main",
+    "  File \"<frozen runpy>\", line 88, in _run_code",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 623, in <module>",
+    "    main()",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 619, in main",
+    "    calistir(guncelle=not a.no_update, izin_kirli=a.allow_dirty)",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 481, in calistir",
+    "    update_catalog(quiet=quiet)",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/forecast_now.py\", line 179, in update_catalog",
+    "    raise KatalogKuculdu(",
+    "src.operational.forecast_now.KatalogKuculdu: ! KATALOG KÜÇÜLDÜ -- güncelleme veri İMHA ETMİŞ olabilir:",
+    "    koeri_catalog.csv: 72,473 -> 0",
+    "  Ham önbellek (data/raw/afad/, data/raw/koeri/) dokunulmamışsa tam aralıkla yeniden çalıştırarak kurtarılabilir.",
+    "  Bilinçli bir temizlikse: izin_kucultme=True"
+  ],
+  "manifest": {
+    "origin": "2026-09-11T05:00:00Z",
+    "uretim_zamani": "2026-09-11T05:00:17.287408+00:00",
+    "commit": "943238267d5cd200548bcc6330c0e46803d75033",
+    "calisma_agaci": "clean",
+    "korumalar": [
+      "kirli ağaç",
+      "katalog tazeliği",
+      "katalog monotonluğu",
+      "kalibre parametreler",
+      "ürün kapısı",
+      "yayın kapsamı",
+      "şema",
+      "dil",
+      "hücre sayısı bandı",
+      "kart-tahmin tutarlılığı"
+    ],
+    "katalog": {
+      "son_olay": "2026-09-11 00:14:10+00:00",
+      "yas_saat": 5.49
+    },
+    "urun_kapisi": {
+      "model": "ETAS",
+      "gozlenen": 252,
+      "beklenen": 231.50356983581392,
+      "oran": 1.0885361300420657,
+      "gecti": true,
+      "band": [
+        0.8,
+        1.25
+      ],
+      "gerekce": "bandın içinde",
+      "olcum_kunyesi": {
+        "donem": "2021-01-01 .. 2024-12-20",
+        "pencere_gun": 7,
+        "hedef_mw": 4.5,
+        "tablo": "etas_analytic_weekly",
+        "olcum_tarihi": "2026-08-26"
+      }
+    },
+    "tazelik": {
+      "uretim_zamani": "2026-09-11T05:00:17.287408+00:00",
+      "sonraki_beklenen": "2026-09-11T08:00:17.287408+00:00",
+      "yayin_araligi_saat": 3,
+      "bayatlik_esigi_saat": 7,
+      "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+    },
+    "ham_satir_sayilari": {
+      "afad_catalog.csv": 265885,
+      "koeri_catalog.csv": 72473,
+      "emsc_catalog.csv": 60779
+    },
+    "min_times_normal": 2.0
+  },
+  "dosyalar": [
+    {
+      "dosya": "forecast_1d_m45.geojson",
+      "n_hucre": 88,
+      "sha256": "b62e5ff0ac600b51"
+    },
+    {
+      "dosya": "forecast_7d_m45.geojson",
+      "n_hucre": 103,
+      "sha256": "5e5d7ecdb74287d8"
+    },
+    {
+      "dosya": "forecast_30d_m45.geojson",
+      "n_hucre": 121,
+      "sha256": "087367c47be98164"
+    },
+    {
+      "dosya": "bolge_kartlari.json",
+      "n_hucre": null,
+      "sha256": "3619333f1a66c609"
+    },
+    {
+      "dosya": "son_depremler.json",
+      "n_hucre": null,
+      "sha256": "15b91564f43aa2a2"
+    },
+    {
+      "dosya": "tahmin_kaydi.json",
+      "n_hucre": null,
+      "sha256": "db3400343d6aef9b"
+    }
+  ]
+}
