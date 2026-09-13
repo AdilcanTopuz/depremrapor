@@ -1,0 +1,26 @@
+kalibre parametreler: mc=3.3 · b=1.0450
+ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ
+commit 943238267d5c · ağaç temiz
+katalog yok
+  AFAD: güncellendi
+  KOERI: güncellendi
+  EMSC: güncellendi
+güncel katalog son olay: 2026-09-13 05:27
+katalog son olay 2026-09-13 05:27:37+00:00 (4.02 saat önce)
+tahmin başlangıcı: 2026-09-13 08:00, pencere 1 gün, M>=4.5 (ANALİTİK -- simülasyon yok)
+  Rounding issues found. Check if delta_m and mc_current are set correctly.
+  kuşak 6, mu oranı 0.394
+   1 gün ·   87 hücre · forecast_1d_m45.geojson
+tahmin başlangıcı: 2026-09-13 08:00, pencere 7 gün, M>=4.5 (ANALİTİK -- simülasyon yok)
+  Rounding issues found. Check if delta_m and mc_current are set correctly.
+  kuşak 8, mu oranı 0.394
+   7 gün ·  102 hücre · forecast_7d_m45.geojson
+tahmin başlangıcı: 2026-09-13 08:00, pencere 30 gün, M>=4.5 (ANALİTİK -- simülasyon yok)
+  Rounding issues found. Check if delta_m and mc_current are set correctly.
+  kuşak 9, mu oranı 0.394
+  30 gün ·  119 hücre · forecast_30d_m45.geojson
+kart-tahmin tutarlılığı: 9ea64bc4896aa137… -> GEÇTİ
+  son_depremler.json      11 olay
+  tahmin_kaydi.json        0 olay
+  bölge kartları · 6 bölge · iki katman ayrı
+-> /home/runner/work/depremrapor/depremrapor/data/publish/2026-09-13T0800  ve  /home/runner/work/depremrapor/depremrapor/data/publish/latest
