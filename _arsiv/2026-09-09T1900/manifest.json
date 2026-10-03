@@ -1,0 +1,157 @@
+{
+  "uretim_zamani": "2026-09-09T19:51:51.275036+00:00",
+  "origin": "2026-09-09T19:00:00Z",
+  "commit": "943238267d5cd200548bcc6330c0e46803d75033",
+  "calisma_agaci": "clean",
+  "katalog": {
+    "son_olay": "2026-09-09 17:19:39+00:00",
+    "yas_saat": 3.29
+  },
+  "urun_kapisi": {
+    "model": "ETAS",
+    "gozlenen": 252,
+    "beklenen": 231.50356983581392,
+    "oran": 1.0885361300420657,
+    "gecti": true,
+    "band": [
+      0.8,
+      1.25
+    ],
+    "gerekce": "bandın içinde",
+    "olcum_kunyesi": {
+      "donem": "2021-01-01 .. 2024-12-20",
+      "pencere_gun": 7,
+      "hedef_mw": 4.5,
+      "tablo": "etas_analytic_weekly",
+      "olcum_tarihi": "2026-08-26"
+    }
+  },
+  "kalibre_parametreler": {
+    "mc": 3.3,
+    "b": 1.0450353570620587,
+    "kaynak": "mc_by_period.csv"
+  },
+  "ham_satir_sayilari": {
+    "afad_catalog.csv": 265863,
+    "koeri_catalog.csv": 72473,
+    "emsc_catalog.csv": 60775
+  },
+  "tazelik": {
+    "uretim_zamani": "2026-09-09T19:51:51.275036+00:00",
+    "sonraki_beklenen": "2026-09-09T22:51:51.275036+00:00",
+    "yayin_araligi_saat": 3,
+    "bayatlik_esigi_saat": 7,
+    "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+  },
+  "min_times_normal": 2.0,
+  "hedef_mw": 4.5,
+  "pencereler": [
+    1,
+    7,
+    30
+  ],
+  "dosyalar": [
+    {
+      "dosya": "forecast_1d_m45.geojson",
+      "pencere_gun": 1,
+      "hedef_mw": 4.5,
+      "n_hucre": 89,
+      "sha256": "b62703dc421c7a163f21faa8b4361f6e74c0d38bd58f1a9820acd14db3ab4565"
+    },
+    {
+      "dosya": "forecast_7d_m45.geojson",
+      "pencere_gun": 7,
+      "hedef_mw": 4.5,
+      "n_hucre": 105,
+      "sha256": "938cb74ea44ee42fbd775302891e7b0d578e09ad221fd8c668c68545a0739aa3"
+    },
+    {
+      "dosya": "forecast_30d_m45.geojson",
+      "pencere_gun": 30,
+      "hedef_mw": 4.5,
+      "n_hucre": 123,
+      "sha256": "70cc43e0ef43da3e36ed3402672f04ca3c6ee4c595d5f00185f06c589724c94d"
+    },
+    {
+      "dosya": "bolge_kartlari.json",
+      "n_bolge": 6,
+      "sha256": "0f8173f63b4ec02c185235836ca951a4ddb0247c9f4133e70d716a1432bdedc1"
+    },
+    {
+      "dosya": "son_depremler.json",
+      "n_olay": 12,
+      "sha256": "ed7d53ce38d76e6abbc54bbd5e117412605ba3ed1848ae5ec98937f4ac4f7e92"
+    },
+    {
+      "dosya": "tahmin_kaydi.json",
+      "n_olay": 0,
+      "sha256": "17966e7de4a5bb5e848ed2cbe7eb6568f7a77b06f44dd5b47b3af182b77401c3"
+    }
+  ],
+  "korumalar": [
+    "kirli ağaç",
+    "katalog tazeliği",
+    "katalog monotonluğu",
+    "kalibre parametreler",
+    "ürün kapısı",
+    "yayın kapsamı",
+    "şema",
+    "dil",
+    "hücre sayısı bandı",
+    "kart-tahmin tutarlılığı"
+  ],
+  "korumalar_ayrinti": [
+    {
+      "ad": "kirli ağaç",
+      "istisna": "KirliAgacHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "katalog tazeliği",
+      "istisna": "BayatKatalogHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "katalog monotonluğu",
+      "istisna": "KatalogKuculdu",
+      "nerede": "forecast_now"
+    },
+    {
+      "ad": "kalibre parametreler",
+      "istisna": "ParametreHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "ürün kapısı",
+      "istisna": "KapiHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "yayın kapsamı",
+      "istisna": "KapsamHatasi",
+      "nerede": "kapsam"
+    },
+    {
+      "ad": "şema",
+      "istisna": "SemaHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "dil",
+      "istisna": "DilHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "hücre sayısı bandı",
+      "istisna": "EsikHatasi",
+      "nerede": "pipeline"
+    },
+    {
+      "ad": "kart-tahmin tutarlılığı",
+      "istisna": "KartTutarsizligi",
+      "nerede": "pipeline"
+    }
+  ],
+  "yayin_adresi": "https://depremrapor.com",
+  "surum": 1
+}

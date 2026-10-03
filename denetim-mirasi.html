@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Vakalardan çıkarılan kalıcı kurallar">
+<link rel="canonical" href="https://depremrapor.com/denetim-mirasi.html">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="depremrapor.com">
+<meta property="og:url" content="https://depremrapor.com/denetim-mirasi.html">
+<meta property="og:title" content="Denetim ilkeleri — depremrapor.com">
+<meta property="og:description" content="Vakalardan çıkarılan kalıcı kurallar">
+<meta property="og:image" content="https://depremrapor.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Türkiye haritası üzerinde depremrapor.com başlığı ve olasılık renk ölçeği">
+<meta name="twitter:card" content="summary_large_image">
+<title>Denetim ilkeleri — Türkiye Deprem Olasılık Haritası</title>
+<style>
+ :root{--bg:#0f1216;--kart:#171b21;--cizgi:#2a3038;--metin:#e6e9ee;--soluk:#9aa4b2}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--metin);
+   font:15px/1.62 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+ .kap{max-width:860px;margin:0 auto;padding:22px 20px 70px}
+ h1{font-size:22px;margin:0 0 4px} h2{font-size:17.5px;margin:30px 0 8px;
+   padding-top:13px;border-top:1px solid var(--cizgi)}
+ h3{font-size:14.5px;margin:16px 0 6px;color:#cfd6e0}
+ h4{font-size:13.5px;margin:12px 0 5px;color:var(--soluk)}
+ p,li{color:#dbe0e8} .soluk{color:var(--soluk);font-size:13.5px}
+ table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+ th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--cizgi);
+   vertical-align:top}
+ th{color:var(--soluk);font-weight:500}
+ pre{background:#11151a;border:1px solid var(--cizgi);border-radius:7px;
+   padding:11px 13px;overflow-x:auto;font-size:12.5px;line-height:1.45}
+ code{background:#11151a;padding:1px 5px;border-radius:4px;font-size:12.5px}
+ blockquote{border-left:3px solid #b5843f;margin:12px 0;padding:8px 14px;
+   background:var(--kart);border-radius:0 7px 7px 0}
+ hr{border:0;border-top:1px solid var(--cizgi);margin:26px 0}
+ a{color:#7fb3e8} .geri{display:inline-block;margin-bottom:14px}
+ .ust{background:var(--kart);border:1px solid var(--cizgi);border-radius:9px;
+   padding:12px 15px;margin:12px 0 20px;font-size:13.5px}
+</style></head><body><div class="kap">
+<a class="geri" href="index.html">← haritaya dön</a>
+<h1>Denetim ilkeleri</h1>
+<div class="soluk">Vakalardan çıkarılan kalıcı kurallar</div>
+<div class="ust">Vakalardan çıkarılan kalıcı kurallar. Her kural bir ya da daha çok gerçek hataya dayanır; hiçbiri teorik değildir.</div>
+<h1>Denetim mirası — ne ters gidebilir ve nereden anlarım?</h1>
+<p>Bu belge bir araç listesi DEĞİLDİR. Araç listesi &quot;ne kurulu?&quot; sorusunu yanıtlar; bu belge <strong>&quot;ne ters gidebilir ve nereden anlarım?&quot;</strong> sorusunu yanıtlar. Faz 3&#x27;e giren kişi — insan ya da sistem — buradan başlar.</p>
+<h2>Neden var</h2>
+<p>Jeofizik katman ablasyonunda ölçüt &quot;fark, tohumlar arası saçılımın iki katından büyük mü?&quot; idi. Coulomb bu ölçüte göre <strong>KATKI VAR</strong> çıktı; 15 tohumla Welch p = 1,4e-13. Sonuç yayına bir adım uzaktaydı.</p>
+<p>O p-değeri yalnızca TEKRARLANABİLİRLİĞİ ölçüyordu. Asıl belirsizlik test setindeki 66 olaydan geliyordu ve olay bazlı bootstrap yapıldığında aralık sıfırı içeriyordu.</p>
+<p>**Araçların neden var olduğunun en somut kanıtı, yokluklarında neredeyse yapılacak olan hatadır.** O gün elimizde bu belgedeki hiçbir şey yoktu.</p>
+<h2>Ana fikir: vaka → örüntü → otomatik kontrol</h2>
+<p>Bir hata üç aşamada kalıcı korumaya dönüşür:</p>
+<p>1. <strong>Vaka</strong> — ne oldu, nasıl bulundu (<code>docs/VAKA_DEFTERI.md</code>, 14 vaka) 2. <strong>Örüntü</strong> — bu hata hangi SINIFA ait; hangi başka hatalar aynı sınıftan 3. <strong>Otomatik kontrol</strong> — o sınıfı yakalayan, hatırlamaya bağlı olmayan bir test ya da hook</p>
+<p>İlk örneği <code>cell_id</code> düzeltmesinde görüldü: V4&#x27;ün dersi (&quot;aynı kuralın iki yerde kurulması&quot;) bir hatıra değil, <strong>çalışan bir test</strong> hâline geldi — kaynak ağacında <code>// STEP</code> kalıbını arayıp kopya bulursa patlıyor.</p>
+<p><strong>Faz 3&#x27;ün ölçütü budur:</strong> yeni bir hata bulunduğunda iş, hatayı düzeltmekle bitmez; örüntüsü adlandırılana ve bir kontrole bağlanana kadar sürer.</p>
+<hr>
+<h2>HATA SINIFI → NASIL YAKALANIR → HANGİ ARAÇ</h2>
+<table><tr><th>#</th><th>hata sınıfı</th><th>nasıl yakalanır</th><th>araç</th><th>durum</th></tr><tr><td>1</td><td><strong>Sessiz birim/ölçek hatası</strong> (V1: zaman 1000 kat)</td><td>İki farklı hesabın TAM AYNI çıkması bir hata belirtisidir</td><td><code>test_epoch_seconds_is_real_seconds</code>; tek dönüşüm noktası <code>catalog_io.epoch_seconds</code></td><td>✅ otomatik</td></tr><tr><td>2</td><td><strong>Aynı kuralın iki yerde kurulması</strong> (V4: <code>mc=&quot;positive&quot;</code>; cell_id kopyaları)</td><td>Değişmesi beklenen bir şey değişmiyorsa değişiklik uygulanmamıştır; kaynak ağacında kalıp taraması</td><td><code>test_etas_config_is_single_source</code>, <code>test_no_module_duplicates_the_cell_id_formula</code></td><td>✅ otomatik</td></tr><tr><td>3</td><td><strong>Yerel doğru kuralın küresel etkisi</strong> (V2: tekilleştirme zinciri; V3: bayrak taşması)</td><td>Fizik dışı sayı; &quot;aynı saniyede kaç olay?&quot; gibi ham veri kontrolleri</td><td>EDA defteri kontrolleri</td><td>⚠️ elle</td></tr><tr><td>4</td><td><strong>Yanlış belirsizlik kaynağını ölçmek</strong> (V5: tohum p-değeri)</td><td>&quot;Bu p-değeri NEYİ ölçüyor?&quot; sorusu</td><td>Olay bazlı bootstrap; <code>KAPSAM_BEYANI</code></td><td>✅ kural + kod</td></tr><tr><td>5</td><td><strong>Bayat sayı</strong> (V6: STAI öncesi CSEP)</td><td>Dosya zaman damgası; parametre hash&#x27;i</td><td><code>SAYI_HARITASI.md</code> + pre-commit hook + 7 test</td><td>✅ otomatik</td></tr><tr><td>6</td><td><strong>Sonucu belirleyen keyfî düzeltme</strong> (V7: 3,42x şişik taban)</td><td>Aynı sorunun iki kurulumda FARKLI YÖNDE cevap vermesi</td><td>Analitik taban — keyfîliğin kaldırılması</td><td>✅ yapısal</td></tr><tr><td>7</td><td><strong>Toplamı koruyan hücre hatası</strong> (V8: kaynak konumu)</td><td>Toplam testleri geçer, hücre bazlı korelasyon düşer</td><td>—</td><td>❌ <strong>AÇIK</strong></td></tr><tr><td>8</td><td><strong>Kuruluma bağlı sessiz hata</strong> (V9: blok indisleme)</td><td>&quot;Bu parametre otomatik mi sabit mi?&quot; sorusu; koda bakmak</td><td><code>test_block_bootstrap</code> (5 test)</td><td>✅ otomatik</td></tr><tr><td>9</td><td><strong>Neredeyse doğru mutlaklık</strong> (V10: &quot;hiçbir hücrede&quot;)</td><td>&quot;ilk/tek/hiç/tamamen&quot; taraması + iddianın ölçülmesi</td><td>—</td><td>❌ <strong>elle</strong></td></tr><tr><td>10</td><td><strong>Sayıya gerekçe uydurma</strong> (V13: 202 vs 208)</td><td>Beyan edilen her doğrulamanın TAKİBİ</td><td>—</td><td>❌ <strong>elle</strong></td></tr><tr><td>11</td><td><strong>Gürültünün işareti yok etmesi</strong> (V14: AUC maskelemesi)</td><td>&quot;Ölçüm aracının çözünürlüğü yeterli mi?&quot;</td><td>MDE kuralı + <code>test_mde</code> (5 test)</td><td>✅ kural + kod</td></tr><tr><td>12</td><td><strong>Kontrolün kendini denetlememesi</strong> (V11/V12)</td><td>Kontrol kendi yazarını durduruyor mu?</td><td><code>test_number_map_guard</code> (9 test); künye kirli-ağaç damgası</td><td>✅ otomatik</td></tr><tr><td>12b</td><td><strong>Kontrol kurulu ama KÖR</strong> (V15: izleme listesi ↔ mekanizma örtüşmüyor)</td><td>&quot;Listede mi?&quot; değil &quot;GÖREBİLİYOR MU?&quot; -- reddettiğini gösteren deney</td><td><code>test_every_watched_path_is_git_tracked</code></td><td>✅ otomatik</td></tr><tr><td>12d</td><td><strong>Dedektörün kendisi kör</strong> (V17: performans tabanlı sızıntı tespiti kısmi sızıntıyı göremiyor)</td><td>Dedektöre bilinen bir sızıntı verilir; yakalamazsa dedektör kördür</td><td>yapısal engel: <code>HistoryView</code> + <code>test_history_view</code> (6 test)</td><td>✅ otomatik</td></tr><tr><td>12c</td><td><strong>Beyan, testin kapsamından geniş</strong> (V16: künye &quot;deterministik&quot; derken EM adımı tohumsuz)</td><td>Beyanın TAM kapsamı sınanıyor mu, alt kümesi mi?</td><td><code>test_local_params_is_deterministic</code> (uçtan uca)</td><td>✅ otomatik</td></tr></table>
+<h3>V15 + V16&#x27;nın ortak dersi</h3>
+<blockquote><strong>Bir beyanın kanıtı, beyanın TAM KAPSAMINI sınamalıdır — alt kümesini değil.</strong></blockquote>
+<p>V15&#x27;te koruma listedeydi ama mekanizma göremiyordu. V16&#x27;da test geçiyordu ama künyenin &quot;deterministik&quot; beyanı testin sınadığından geniş bir iddiaydı: <code>expected_counts</code> bit-özdeşti, oysa uçtan uca yol EM adımındaki tohumsuz <code>local_params</code>&#x27;ı içeriyordu.</p>
+<p>İkisi de &quot;yanlış bir şey yapıldı&quot; vakası değil; **doğru şeyin yanlış yeri sınandığı** vakalar. Bu yüzden ikisi de testler geçerken var oldular.</p>
+<p><strong>DÖRT sınıf hâlâ elle: 3, 7, 9, 10.</strong> Bu, belgenin en dürüst satırıdır -- bu sınıflar için otomatik kontrolümüz YOK. Faz 3&#x27;te bunlardan bir hata gelirse, onu yakalayacak olan disiplin, mekanizma değil.</p>
+<p>(İlk yazımda &quot;üç sınıf&quot; demiştim ve sayınca dört çıktı: 3 numaralı sınıfı atlamışım. Kendi belgemdeki sayının doğrulanması da aynı kurala tabi -- bkz. zorunlu kural 7.)</p>
+<hr>
+<h2>Zorunlu kurallar (Faz 3 giriş kapısı)</h2>
+<p>Yeni bir model değerlendirmesi başlamadan önce bunların KURULU olması gerekir:</p>
+<p>1. <strong>Ölçüt sonuçtan önce ilan edilir</strong> (<code>docs/KABUL_OLCUTLERI.md</code>, Ö1-Ö4). Sonuç geldikten sonra eşik değiştirilmez; ölçüt kusurluysa kusuru yazılır ama eşik yerinde kalır. 2. <strong>Yorum kuralları sonuçtan önce bağlanır</strong> (Ö4). Her sonucun yanında hangi kuralın devreye girdiği işaretlenir. 3. <strong>&quot;Fark gösterilemedi&quot; asla tek başına yazılmaz</strong> — yanında MDE durur. (<code>gain_breakdown._ig_ci</code>, küçük örneklemde t katsayısı.) 4. <strong>Her güven aralığı tablosunun altında kapsam beyanı vardır</strong> (<code>gain_breakdown.KAPSAM_BEYANI</code>, koda gömülü). 5. <strong>Künyesiz sayı yayımlanmaz</strong> (<code>scripts/17_fingerprint.py</code>). 6. <strong>Sayı üreten her değişiklik sayı haritasını günceller</strong> (pre-commit hook zorunlu kılar). 7. <strong>Bir sayının nereden geldiği gösterilmeden gerekçesi yazılmaz</strong> (V13). 8. <strong>Beklenen etki değişiklikten ÖNCE yazılır</strong>, sonra gerçekleşen ölçülür ve sapma açıklanır (<code>docs/CELLID_BEKLENEN_ETKI.md</code> örneği). 10. <strong>Eşik ilan edilmeden önce ULAŞILABİLİRLİĞİ gösterilir.</strong> Bir ölçüt,</p>
+<pre>verinin ve gürültünün izin verdiği en iyi değerin üstünde bir eşik
+koyuyorsa, yöntem ne kadar iyi olursa olsun geçilemez -- ve başarısızlık
+yöntemin kusuru sanılır.
+
+**Yöntem (φ&#x27;den korelasyon tavanı):** gözlenen korelasyon
+`r &lt;= sqrt(Var(gerçek) / (Var(gerçek) + φ·E[gerçek]/n_sim))`. Burada φ
+ölçülen aşırı dağılımdır. Ö3a&#x27;nın &quot;1-10&quot; katmanında tavan 0,7086 çıktı;
+ilan edilen eşik 0,85&#x27;ti. Gözlenen 0,6961, yani tavanın %98,2&#x27;si --
+analitik yöntem ulaşılabilir en iyi performanstaydı ve ölçüt yine de
+KALDI verdi.
+
+Bu hesap sonuçtan ÖNCE yapılabilirdi. Faz 3&#x27;te her yeni ölçüt için ön
+koşuldur.</pre>
+<p>9. <strong>Kurulum kanıtı değil, ÇALIŞMA kanıtı.</strong> Yeni bir koruyucu ya da izleme eklendiğinde, bir şeyi REDDETTİĞİNİ gösteren bir deney yapılmadan &quot;kurulu&quot; sayılmaz. (V15: dosya listedeydi, testi geçiyordu, hook kuruluydu -- ve koruma boştu. Çalıştığının kanıtı, testlerinin geçmesi değil bir şeyi reddetmesidir.)</p>
+<h2>Bilinen boşluklar</h2>
+<ul><li>Hücre düzeyi mekânsal doğruluk için otomatik kontrol yok (sınıf 7).</li><li>Mutlaklık taraması ve beyan takibi elle (sınıf 9, 10).</li><li>Çıktı json&#x27;ları izlenmiyor; künye zincirinde boşluk (dondurma sonrası 1b).</li><li>Güven aralıkları parametre belirsizliğini kapsamıyor.</li></ul>
+<h3>KARŞILAŞTIRMA KURULURKEN (V18, V19)</h3>
+<p>**1. Ortaklık iddiası, ortak elemanların SAYILMASIYLA doğrulanır -- parametrelerin karşılaştırılmasıyla değil.** İki ızgaranın aynı SIKLIKTA olması, aynı NOKTALARDA olması demek değildir. Kayma sessizdir çünkü her iki ızgara da kendi içinde kusursuzdur. (V18: <code>freq=&quot;7D&quot;</code> ile kurulmuş iki ızgaranın kesişimi SIFIR çıktı.)</p>
+<p>Bu, V4 ailesinin (aynı kuralın iki yerde kurulması) zamansal akrabasıdır: iki sistem aynı parametreyle kurulmuş ama aynı ÇAPA NOKTASINDAN değil.</p>
+<p><strong>2. Geçmişin yokluğu BİR BİLGİDİR, bilginin yokluğu değil.</strong> Eğitimde boş satır atlamak tasarruftur; DEĞERLENDİRMEDE satır atlamak KÜME DEĞİŞTİRMEKTİR. (V19: atlanan 4 satır rastgele değil, sistematik olarak en ZOR pozitiflerdi -- geçmişi olmayan hücrede hedef penceresine düşen ilk olay.)</p>
+<p>Karşılaştırmadan önce zorunlu doğrulama: iki modelin puanlandığı pozitif KÜMESİ birebir aynı mı? Sayı eşitliği yetmez.</p>
+<h3>İKİ TASARIM KURALI (kontrol yazarken)</h3>
+<p><strong>1. Sessiz başarısızlık her katmanda aynı düşmandır.</strong> Bir engel, yasak bir istek aldığında HATA vermeli; sessizce boş sonuç dönmemeli. Boş sonuç, yasak denemesini gizler: yazan kişi &quot;öznitelik hep sıfır çıkıyor&quot; deyip devam eder ve engel hiç görünmez. (<code>HistoryView.count_within(days&lt;=0)</code> -&gt; <code>LookaheadError</code>.)</p>
+<p><strong>2. Kullanılabilirlik sınaması, güvenlik sınamasının PARÇASIDIR.</strong> Doğru sonuç vermeyen bir engel kullanılmaz; kullanılmayan engel korumaz. Bu yüzden her engelin testleri arasında &quot;mevcut hesapla aynı sonucu veriyor mu?&quot; testi de bulunur -- yoksa engel kurulur, kullanılmaz ve kurulu sanılır.</p>
+<h3>TERS İLİŞKİ — düzenlileştirme sızıntıyı GİZLER</h3>
+<p>Aşırı öğrenmeye karşı alınan her önlem, aynı zamanda &quot;az satırı etkileyen sinyali&quot; bastırır. Kısmi sızıntı tam olarak budur.</p>
+<p>**Model ne kadar iyi korunursa, performans tabanlı sızıntı tespiti o kadar kör olur.** Ölçüldü: <code>min_child_samples=200</code> ve 212 pozitifle, hedefin yarısını doğrudan veren bir öznitelik AUC&#x27;yi +0,0000 değiştirdi (<code>docs/KANARYA_BULGUSU.md</code>).</p>
+<p>Sonuç: sızıntı tespiti performansa değil YAPIYA dayanmalıdır (<code>src/features/history_view.py</code>). İki mekanizma birbirinin yerine geçmez; düzenlileştirme arttıkça birincisi zayıflar, ikincisi etkilenmez.</p>
+<h3>SINIR KAYDI — otomasyonun kapsamı sonludur</h3>
+<p><strong>Koruyucular izledikleri şeyi korur; diff okumanın yerini tutmaz.</strong></p>
+<p>Somut örnek (24 Ağustos 2026): kirli-ağaç deneyinin temizlik adımı çalışmadı ve deneyin artığı README&#x27;ye girdi, neredeyse commit&#x27;lendi. Sayı haritası koruyucusu yakalayamazdı -- README izlenen dosya değil. Yakalayan şey, staged diff&#x27;in okunmasıydı.</p>
+<p>Bu satır, yukarıdaki dört elle-sınıfın beşincisi DEĞİLDİR; onların ortak zeminini tarif eder: otomasyonun kapsamı her zaman sonludur ve kapsam dışı insan gözüne kalır. Faz 3&#x27;te &quot;koruyucular var, rahatız&quot; moduna girildiği anda lazım olacak satır budur.</p>
+<p><strong>Ek kural (küçük ama tekrarlanabilir sınıf):</strong> deney ve temizlik betiklerinde <code>&amp;&amp;</code> zinciri kullanılmaz. Zincirin ortasındaki bir komut (örneğin eşleşmeyen bir <code>grep</code>) başarısız olunca temizlik adımı SESSİZCE atlanır. Ayrı satırlar ya da <code>trap cleanup EXIT</code> kullanılır.</p>
+<h2>Faz 3&#x27;ten eklenenler — &quot;koruma ile gerçeklik arasındaki boşluk&quot; ailesi</h2>
+<p>V21, V22 ve kanıtsız atıf vakası aynı aileden: **bir koruma ya da beyan mevcuttu, ama gerçeklikle arasında sessiz bir boşluk vardı.** Üçü de aynı soruyla yakalanır: <em>&quot;bu korumanın çalıştığını gösteren deney hangisi?&quot;</em></p>
+<table><tr><th>formülasyon</th><th>nereden</th></tr><tr><td><strong>Eklenen koruma bir sonraki düzenlemede fiilen patladı — kural 9&#x27;un doğum kanıtı.</strong> Koruma, kurulduğu turda değil, ilk gerçek kullanımında reddederek doğrulandı.</td><td>V21</td></tr><tr><td><strong>Hata korumada değil, korumanın geçtiği yoldaydı.</strong> Koruma reddedilseydi gerekçe &quot;işe yaramadı&quot; olurdu; gerçek gerekçe &quot;başka bir yer onu varsayıyordu&quot;.</td><td>V22</td></tr><tr><td><strong>Var olmayan bir teste atıf, kanıttan önce yazılmış iddiadır.</strong> Açıklamada geçen her dosya adı, o dosyanın varlığıyla birlikte denetlenir.</td><td><code>check_alarm</code></td></tr><tr><td><strong>Uçtan uca prova, gerçek koşudan önce.</strong> Sonuçlar üretilmişken çıkan bir çökme, üretilmiş sonuçları da götürür (NameError vakası). Sahte veriyle tam boru hattı provası bunu ucuza kapatır.</td><td>betik 22</td></tr><tr><td><strong>Sayı eşitliği değil KÜME eşitliği.</strong> İki kümede de 252 pozitif olması aynı 252 olduğunu göstermez; fark pozitifleri hiç etkilemese bile görülmelidir. &quot;Etkisi yok ama görüldü ve gerekçelendi&quot;, &quot;etkisi yok ve bilinmiyor&quot;dan kategorik olarak farklıdır.</td><td>V19, hücre 4037</td></tr><tr><td><strong>Bir koruma sabit bir alet değil, kalibre edilen bir ölçüm cihazıdır.</strong> Kanaryanın saptama tabanı bölüme göre değişti (test 3-5 gün, doğrulama 2-3 gün); her kurulumda yeniden ölçülür.</td><td>kanarya künyesi</td></tr></table>
+<h2>Güvenlik ağları ve kuralların uygulanması</h2>
+<h3>Hiç tetiklenmeyen koruma, TETİKLENEMEYEN korumadan ayırt edilmemiştir</h3>
+<p>Kural 9&#x27;un eğitim-döngüsü karşılığı. Erken durdurma, sabır parametresi, gradyan kırpma, NaN koruması — hepsi <strong>güvenlik ağıdır</strong>. Bir ağ hiç devreye girmiyorsa iki ihtimal vardır ve ayırt edilmemiştir:</p>
+<pre>(a) gerek olmadı        (b) çalışmıyor / erişilemiyor</pre>
+<p>Ölçülmüş örnek (V28): erken durdurma 40 turun hiçbirinde tetiklenmedi. Görünüşte &quot;gerek olmadı&quot;; gerçekte model yakınsamamıştı ve **&quot;en iyi tur&quot; aslında &quot;son tur&quot;du.** Seçim mekanizması fiilen devre dışıydı: karşılaştırma &quot;kim yakınsadı&quot;yı değil <strong>&quot;kim daha hızlı indi&quot;yi</strong> ölçüyordu.</p>
+<p>Bu, V9 ailesinin (kuruluma bağlı sessiz hata) eğitim-dinamiği versiyonudur: her parça doğru — sabır parametresi var, kayıp düşüyor, tur sayısı makul — ama birleşim <strong>yanlış soruyu</strong> ölçüyor.</p>
+<p><strong>Kural:</strong> her koşuda güvenlik ağlarının tetiklenip tetiklenmediği RAPORLANIR. Tetiklenmeyen ağ, raporda &quot;hiç devreye girmedi&quot; satırıyla görünür ve gerekçesi sorulur.</p>
+<h3>Kurallar teşhisin yerini TUTMAZ</h3>
+<blockquote>Bir kural, teşhis doğruysa doğru eylemi verir; **teşhissiz uygulanırsa yanlışı hızlandırır.**</blockquote>
+<p>Ölçülmüş örnek (V28): ilan paketinde &quot;tahmin tutmuyorsa arama uzayı küçültülür&quot; maddesi vardı ve doğruydu — <strong>bütçe kusurları için</strong> yazılmıştı. Buradaki kusur bütçede değil harcamanın içeriğindeydi (40 turun tamamı seviye inişine gidiyordu). Maddeyi mekanik uygulamak, kusuru **yarı fiyatına satın almak** olurdu.</p>
+<p><strong>Kural:</strong> bir kural uygulanmadan önce, kuralın varsaydığı teşhisin geçerli olup olmadığı sorulur. &quot;Kural böyle diyor&quot; bir gerekçe değil, bir adımdır.</p>
+<h2>Kurtarma kuralı — tesadüf tasarıma çevrilmelidir</h2>
+<blockquote>**Tesadüfen kurtaran şey, tasarıma çevrilmediği sürece bir sonraki sefer kurtarmaz.**</blockquote>
+<p>Ölçülmüş örnek (V38): veri hattı üç kaynağın ham dosyasını imha etti. AFAD&#x27;ın 284 aylık ve KOERI&#x27;nin 57 yıllık önbellek dosyası dokunulmamıştı ve <strong>fiilî yedek</strong> işlevi gördü — kimse onları yedek diye tasarlamamıştı. EMSC&#x27;nin önbelleği yoktu ve ağa muhtaç kalındı.</p>
+<p><strong>Aynı olayda iki kaynak önbellekten döndü, biri dönemedi.</strong> Fark, tasarımda değil tesadüfteydi.</p>
+<p>Uygulama: önbellek dizinleri <strong>resmî kurtarma katmanıdır</strong>; ağdan çekilen her şey önce önbelleğe, oradan birleştirmeye. Önbelleksiz kaynak bırakılmaz.</p>
+<h2>Koruma yönü — çıktı kadar GİRDİ</h2>
+<p>Korumalar bir yöne bakar ve bakmadıkları yön uzun süre görünmez.</p>
+<pre>YAYIN yönü   kirli ağaç · dil · şema · künye · hücre bandı
+GİRDİ yönü   (V38&#x27;e kadar BOŞTU)</pre>
+<p>V38&#x27;de hat kendi girdisini imha etti ve <strong>hiçbir koruma yakalamadı</strong> — çünkü hepsi çıktıya bakıyordu.</p>
+<blockquote><strong>Bir hat, çıktısı kadar girdisinin bütünlüğünden de sorumludur.</strong> Veriyi tazeleyen her işlem, tazeleme sonrası verinin küçülmediğini ölçmelidir.</blockquote>
+<p><strong>Bir koruma seti tasarlarken sorulacak soru:</strong> *bu korumalar hangi yöne bakıyor, ve bakmadıkları yönde ne olabilir?*</p>
+<h2>Altyapı kuralı — bileşen, gerekliliği ölçülmeden eklenmez</h2>
+<p>Denetim disiplininin <strong>altyapı kararlarına</strong> uygulanması.</p>
+<blockquote>Bir bileşen (veritabanı, önbellek, görev kuyruğu, çatı) yalnızca <strong>ölçülmüş bir ihtiyaç</strong> varsa eklenir. &quot;Standart mimari böyle&quot; bir gerekçe değildir.</blockquote>
+<p>Ölçülmüş örnek: README §4&#x27;te FastAPI + PostgreSQL + PostGIS + Redis + Celery + Next.js kayıtlıydı. Fiilî profil ölçüldü:</p>
+<pre>yayımlanan çıktı   günde bir üretilen GeoJSON
+katalog            tek dosya, 304.168 satır
+zamanlanmış görev  bir tane</pre>
+<p>Bu profil için PostGIS, Redis ve Celery <strong>gereklilik değil alışkanlıktır.</strong> Karar minimalist yığına çevrildi; reddedilen bileşenler **&quot;ihtiyaç doğduğunda&quot;** statüsüne alındı — bu da ölçülebilir bir eşiktir.</p>
+<p><strong>Bayat mimari kararı, bayat sayıdan farksızdır.</strong> README §4 yazılmış ama üretilmemiş bir mimariydi (<code>web/</code> klasörü <code>.gitkeep</code> dışında boştu); dondurulmamış bir manşet gibi teyide açıldı.</p>
+<h2>KATMAN AYRIMI — gözlemci gözler, koruyucu korur</h2>
+<blockquote>**Kayıt katmanının hata politikası, kaydettiği şeyin hata politikasından FARKLI olmalıdır.**</blockquote>
+<p>Ölçülmüş örnek (V41): zamanlanmış görevin sarmalayıcısı <code>ErrorActionPreference = &quot;Stop&quot;</code> ile yazılmıştı. PowerShell 5.1&#x27;de yerel bir programın stderr çıktısı ErrorRecord&#x27;a çevrilir ve &quot;Stop&quot; altında betiği <strong>anında sonlandırır</strong>. Python&#x27;un hata mesajı stderr&#x27;e gitti, sarmalayıcı öldü, <strong>günlüğe hiçbir şey yazılmadı</strong> — çıkış kodu 1, sebep görünmez.</p>
+<p><strong>İroni:</strong> sarmalayıcının var olma sebebi *&quot;sessiz başarısızlık kalmasın&quot;*dı.</p>
+<p><strong>Doğru kuruluş:</strong></p>
+<pre>koruyucu katman   DURDURUR   (pipeline&#x27;ın altı koruması)
+gözlemci katman   TANIKLIK EDER (sarmalayıcı: Continue, her şeyi kaydet)</pre>
+<p>Gözlemcinin durması, gözlemlenecek şeyi yok eder. Her katman kendi işini yapar; gözlemci gözler, koruyucu korur.</p>
+<p><strong>Genel uyarı.</strong> Günlükleme/izleme altyapısı kuran her yerde aynı tuzak vardır: aracın kendi hata politikası, izlediği sürecinkiyle karıştırılırsa araç, en çok ihtiyaç duyulan anda susar.</p>
+<h2>BEŞİNCİ EKSEN — ANLAM</h2>
+<p>Sızıntı taksonomisi dört eksenliydi (hedef · zaman · istatistik · rakip cevabı). Beşincisi, hiçbirine benzemez ve sızıntı bile değildir:</p>
+<table><tr><th>eksen</th><th>ne bozuk</th><th>kim yakalar</th></tr><tr><td>hedef · zaman · istatistik</td><td><strong>veri</strong></td><td>kanaryalar</td></tr><tr><td>rakip cevabı</td><td><strong>karşılaştırmanın kurgusu</strong></td><td>tasarımın okunması (V24)</td></tr><tr><td><strong>anlam</strong></td><td><strong>cümle</strong></td><td><strong>okuyucu gözüyle okuma</strong> (V44)</td></tr></table>
+<p><strong>Veri doğru, ölçüm doğru, künye doğru, kapsam beyanı doğru — cümle yanlış.</strong></p>
+<p>Ölçülmüş örnek (V44): <em>&quot;Marmara… olay sayısı düşük&quot;</em> cümlesindeki sayı (6) doğruydu ama okuyucu bundan <em>&quot;Marmara&#x27;da deprem az oluyor&quot;</em> sonucunu çıkarır. Oysa Marmara&#x27;nın uzun vadeli olay yoğunluğu (0,523/derece²/yıl) Batı Anadolu ile aynı düzeyde ve Kuzey Anadolu doğusundan yüksek. &quot;Olay sayısı&quot;, bölgenin tehlikesi değil <strong>testin örneklemiydi.</strong></p>
+<p><strong>Hiçbir otomatik ölçüm bu ekseni yakalayamaz.</strong> Sayı doğru olduğu için hiçbir kontrol ötmez.</p>
+<pre>dördüncü eksen  -&gt;  TASARIMIN okunmasıyla yakalanır
+beşinci eksen   -&gt;  OKUYUCU gözüyle okumayla yakalanır</pre>
+<p><strong>Kural:</strong> yayımlanan her sayının yanında <strong>hangi soruyu cevapladığı</strong> yazılır. &quot;6 olay&quot; iki farklı soruyu cevaplayabilir — <em>bölgede ne kadar deprem oluyor?</em> ve <em>testimizin örneklemi ne kadar?</em> — ve ikisi <strong>zıt</strong> sonuçlara götürür.</p>
+<h2>YOKLUĞUN TEMSİLİ — aynı ayrımın dört yüzü</h2>
+<blockquote><strong>&quot;Değer yok&quot; bilgisi, sayısal bir değere çevrildiği anda bozulur.</strong></blockquote>
+<p>Aynı hata üç kez, üç ayrı kılıkta çıktı. Dördüncüsü de gelecek; eşleşme adresi burasıdır.</p>
+<table><tr><th>kılık</th><th>yanlış temsil</th><th>doğrusu</th><th>vaka</th></tr><tr><td>geçmişi olmayan hücre</td><td>sayım = 0 <strong>ve</strong> istatistik = 0</td><td>sayım 0, istatistik <strong>NaN</strong></td><td>doldurma kuralı</td></tr><tr><td>nöral ağa NaN girdi</td><td><code>nan_to_num(0)</code> → &quot;b-değeri sıfır&quot;</td><td><strong>gösterge sütunu</strong> + medyan</td><td>V27</td></tr><tr><td>temel modelde olmayan hücre</td><td><code>normal=0</code> → oran = <strong>inf</strong></td><td>oran <strong>NaN</strong>, hücre elenir</td><td>V40</td></tr><tr><td><em>(dördüncüsü)</em></td><td></td><td></td><td></td></tr></table>
+<p><strong>Neden tehlikeli.</strong> Her seferinde yokluk, karşılaştırmada <strong>uç bir değer</strong> gibi davranıyor: sıfır her eşiğin altında, sonsuz her eşiğin üstünde. <code>NaN</code> ise hiçbir karşılaştırmayı geçmez — ve doğru davranış budur, çünkü tanımsız bir değer hakkında hüküm verilemez.</p>
+<p><strong>Kural:</strong> yokluk bir sayıya çevrilecekse, çevrildiği yer **açıkça beyan edilir** ve karşılaştırmada nasıl davrandığı ölçülür.</p>
+<h2>&quot;KAÇ HATA VARDI?&quot; — teşhis protokolüne eklenti</h2>
+<p>Bir düzeltmeden sonra sorun sürüyorsa, ilk soru **&quot;düzeltme işe yaramadı mı?&quot; DEĞİLDİR<strong> — o soru </strong>tek-hata varsayımı** taşır.</p>
+<blockquote>Sorulacak soru: <strong>&quot;kaç hata vardı?&quot;</strong></blockquote>
+<p>Ölçülmüş örnek (V37 → V38 → V40 zinciri): eşik teyidi iki kez &quot;AYRIŞMA&quot; verdi. Birinci koşuda gerçek bir hata vardı (katalog imhası) ve **betiğin kendi kusuru onun arkasına gizlendi**. Katalog düzeltilince kusur tek başına kaldı ve ancak o zaman görülebildi.</p>
+<blockquote><strong>Bir hata, başka bir hatanın arkasına gizlenebilir.</strong> Büyük olan düzeltildiğinde küçük olan ortaya çıkar — ve o an &quot;düzeltme başarısız&quot; denirse, ikinci hata birincinin gölgesinde kalır.</blockquote>
+<h2>Negatif beyan kuralı — üç uygulaması</h2>
+<blockquote>**Her negatif beyan, aracın o beyanı yapabilecek güçte olduğu gösterilerek ya da gücünün sınırı yazılarak anlam kazanır.**</blockquote>
+<p>Aynı kural, üç ayrı katmanda:</p>
+<table><tr><th>beyan</th><th>eksik olmadan anlamsız</th><th>ölçüm</th></tr><tr><td>&quot;fark yok&quot;</td><td><strong>MDE</strong></td><td>saptanabilir en küçük etki</td></tr><tr><td>&quot;alarm yok&quot;</td><td><strong>saptama tabanı</strong></td><td>dedektörün gördüğü en küçük sızıntı</td></tr><tr><td>&quot;teşhis edilemedi&quot;</td><td><strong>veri kapsamı</strong></td><td>teşhisin dayandığı kaydın sınırı</td></tr></table>
+<p>Üçü de aynı hatayı önler: <strong>aracın sessizliğini, dünyanın sessizliği sanmak.</strong></p>
+<h3>Beyanın ZAMANI, statüsünü belirler</h3>
+<p>Aynı bilgi, ne zaman söylendiğine göre kategori değiştirir:</p>
+<pre>SONRA söylenirse   -&gt; savunma  (&quot;elimizde yoktu&quot;)
+ÖNCE söylenirse    -&gt; kapsam   (&quot;teşhis şu sınırla yapılabilir&quot;)</pre>
+<p>Ölçülmüş örnek: <code>npp_arama.jsonl</code> tur-bazlı geçmişi saklamamıştı. Bu eksik, teşhis gerekmeden <strong>önce</strong> yazıldı (<code>docs/NPP_ILAN.md</code>, &quot;Aşama 1&#x27;in üç çıktısı&quot;) ve böylece bir mazeret değil, teşhisin ilan edilmiş sınırı oldu.</p>
+<p>Aynı ilke test-peek bildiriminden beri işliyor: görülen sayı, görüldüğü anda beyan edilirse zaman çizgisi denetlenebilir kalır.</p>
+<h2>İki kapanış ilkesi</h2>
+<h3>1. Bir bulgu, SINIFI taranmadan kapatılmaz</h3>
+<blockquote>Tekil bir kusur düzeltildiğinde sorulacak soru düzeltmenin doğruluğu değil, <strong>&quot;bu bulgunun sınıfı nedir ve o sınıfın başka örneği var mı?&quot;</strong>dır.</blockquote>
+<p>Sınıf taranmadan kapatılan bulgu, aynı sınıfın diğer örneklerini **görünmez kılar** — çünkü &quot;o sorun çözüldü&quot; duygusu aramayı durdurur.</p>
+<p>Ölçülmüş örnek: V26 (ölçekleme kapsamı) tekil olarak kapatılsaydı, aynı sınıftan iki kusur daha koşuya girecekti — eksik <code>poisson_rate</code> özniteliği ve NaN→0 dönüşümü (V27). İkisi de <strong>hata üretmeden</strong> sonucu geçersiz kılardı.</p>
+<p><strong>Kapanış şartı:</strong> her tekil bulgunun sınıfı taranmış olacak.</p>
+<h3>2. Denetimin çıktısı, kusur listesi DEĞİL; kusur + TEMİZLİK KANITLARI</h3>
+<blockquote>Temiz çıkan bir kalem, denetlenmemiş bir kalemle aynı şey değildir.</blockquote>
+<p>Taşıma denetimi tablosunun beşinci satırı (Poisson temel modelin dönemi: 1990-2016, test görünmüyor) bir kusur değildir — ama tabloda durur, çünkü ikisi birlikte <strong>&quot;neresi denetlendi&quot; haritasını</strong> verir. Yalnızca kusurları listeleyen bir denetim, kapsamını gizler.</p>
+<p>Bu satırın beklenmedik kazancı: <code>poisson_rate</code>&#x27;in test dönemi görmediğinin doğrulanması, <strong>Faz 3&#x27;ün sonuçlarını da geriye dönük sağlamlaştırdı</strong> (SHAP payı %52,5 olan öznitelik temiz).</p>
+<h2>SIZINTI TAKSONOMİSİ — dört eksen</h2>
+<p>İlk üç eksen <strong>veri</strong> üzerindedir ve kanaryalarla aranır. Dördüncüsü <strong>karşılaştırmanın kurgusu</strong> üzerindedir ve kanaryalara GÖRÜNMEZ.</p>
+<table><tr><th>eksen</th><th>ne sızar</th><th>kim yakalar</th></tr><tr><td>hedef</td><td>cevabın kendisi bir öznitelikte</td><td>kanarya 1 (KABA)</td></tr><tr><td>zaman</td><td>referans sonrası veri</td><td>katman 1 (yapısal) + kanarya 2</td></tr><tr><td>istatistik</td><td>ölçekleme/normalizasyon sabitleri</td><td>kanarya 3 (yalnızca ölçeğe duyarlı modellerde)</td></tr><tr><td><strong>rakip cevabı</strong></td><td><strong>karşılaştırılan modellerden birinin ÇIKTISI, diğerinin tasarımına</strong></td><td><strong>hiçbir kanarya — yalnızca tasarımın okunması</strong></td></tr></table>
+<h3>Dördüncü eksen neden görünmez</h3>
+<p>Performans ölçümleri bunu göremez çünkü sızıntı <strong>performansı artırır</strong> ve artış meşru bir iyileşmeden ayırt edilemez. Veri temizdir, zaman temizdir, ölçek temizdir; kirli olan <strong>karşılaştırmanın kurgusudur.</strong></p>
+<p><strong>Kontrol listesi sorusu (her karşılaştırmadan önce):</strong></p>
+<blockquote>Karşılaştırdığım iki modelden birinin cevabı, diğerinin girdisine, öznitelik seçimine, örnekleme kuralına ya da hiperparametre uzayına giriyor mu?</blockquote>
+<p><strong>Genelleme:</strong> adillik ihlalleri performans testlerine görünmez. Onları yakalayan tek şey, karşılaştırma tasarımının <strong>bağımsız gözle okunmasıdır</strong> — ve bu okuma, kod yazma anında kendiliğinden gelen &quot;bunu neye göre yapıyorum?&quot; sorusuyla tetiklenir (V24 böyle bulundu).</p>
+<h3>Bir analiz aracı, tasarım kuralına dönüştüğü an denetlenmelidir</h3>
+<p>Aynı formül, ölçüm bağlamında masum, girdi bağlamında sızıntıdır. Aracın kendisi değil, <strong>nereye bağlandığı</strong> belirler.</p>
+<h2>Metrik notları — bir skorun tek başına ne söyleyemediği</h2>
+<h3>IG tek başına okunmaz; KALİBRASYON ORANIYLA birlikte okunur</h3>
+<p>Faz 3&#x27;te görüldü: ML&#x27;nin Poisson&#x27;a karşı toplam IG&#x27;si (+1,086) ETAS&#x27;ınkini (+1,068) geçiyordu. Ayrıştırma tersini gösterdi:</p>
+<pre>ML - ETAS  +0,018  =  OLAY -0,350  +  MARUZİYET +0,368</pre>
+<p>ML <strong>gerçekleşen olaylarda daha kötüydü</strong>; toplam üstünlüğü, toplamı 1,82 kat eksik tahmin etmesinin maruziyet terimindeki ödülünden geliyordu.</p>
+<p>Rhoades IG&#x27;nin maruziyet terimi <code>-(sum b - sum a)/N</code>, az tahmin edeni ödüllendirir. Teoride optimum doğru kalibrasyondadır (saf ölçek kaymasının bedeli <code>ln c + 1 - c &lt; 0</code>), ama şekil farkı bu bedeli örtebilir. Sonuç: <strong>kalibre olmayan bir model toplam skorda önde görünebilir.</strong></p>
+<p><strong>KURAL.</strong> IG raporlanan her yerde, yanında şu ikisi bulunur:</p>
+<pre>gözlenen / beklenen oranı  (her model için)
+IG&#x27;nin OLAY ve MARUZİYET terimlerine ayrışması</pre>
+<p>Yoksa &quot;hangi model daha iyi&quot; sorusuna verilen cevap, &quot;hangi model daha az tahmin ediyor&quot; sorusunun cevabı olabilir.</p>
+<h3>Bir ölçüt, tek bir sayıyla karar veremeyebilir</h3>
+<p>36&#x27;lık dağılımın &quot;dar mı geniş mi&quot; sorusu için tek bir oran (yayılım/saçılım) ilan edilmişti. Ölçüm, uzayın <strong>ölçeğe bağlı</strong> olduğunu gösterdi: küresel olarak yapılı (iki eksenin etkisi saçılımın 3-4 katı), yerel olarak düz (ilk üç bileşim ayırt edilemez). Tek skaler ikisini birden ifade edemiyordu.</p>
+<p><strong>KURAL.</strong> Bir ölçüt ilan edilirken, ölçülen büyüklüğün <strong>tek bir ölçekte</strong> tanımlı olup olmadığı sorulur. Değilse ölçüt ölçek başına ayrı ilan edilir.</p>
+<h2>Belgeler</h2>
+<table><tr><th>belge</th><th>ne için</th></tr><tr><td><code>VAKA_DEFTERI.md</code></td><td>14 vaka: ne oldu / nasıl bulundu / örüntü / geriye kalan</td></tr><tr><td><code>SAYI_HARITASI.md</code></td><td>her sayının kurulumu; geçerli/geçersiz ayrımı</td></tr><tr><td><code>KABUL_OLCUTLERI.md</code></td><td>önceden ilan edilen ölçütler, Ö4 yorum kuralları, dondurma sonrası liste</td></tr><tr><td><code>MEKANIZMA_BULGUSU.md</code></td><td>doğrulama hiyerarşisi dersi (§6), belirsizliğin büyümesi (§8), gürültü ve anlatı (§9)</td></tr><tr><td><code>MANSET.md</code></td><td>dondurulmuş sonuçlar, künyeli</td></tr><tr><td><code>CELLID_BEKLENEN_ETKI.md</code></td><td>beklenen/gerçekleşen karşılaştırmasının örneği</td></tr></table>
+<h2>Sayılarla</h2>
+<pre>59 test          | 14 vaka (13 başlık; V11/V12 ortak)  | 1 pre-commit hook
+13 hata sınıfı   | 9 otomatik/yapısal | 4 elle ya da açık
+10 zorunlu kural | 4 bilinen boşluk
+
+(Bu sayılar doğrulanmıştır: test sayısı pytest --collect-only ile, vaka
+sayısı defterin başlıklarından, tablo sayıları satır sayımıyla.)</pre>
+<p>Bu belgenin başarı ölçütü, araç sayısı değil: **Faz 3&#x27;te bulunan bir hatanın, buradaki bir satırla &quot;bu sınıftan&quot; diye eşleştirilebilmesi.** Eşleşmiyorsa yeni bir sınıf bulunmuştur ve tabloya eklenmelidir.</p>
+<hr><div class="soluk">Bu sayfa <code>DENETIM_MIRASI.md</code> belgesinden otomatik
+üretilmiştir; elle düzenlenmez. <a href="metodoloji.html">Yöntem ve
+sınırlılıklar</a> · <a href="index.html">Harita</a> · <a href="https://github.com/AdilcanTopuz/depremrapor" target="_blank" rel="noopener">Kaynak kodu (GitHub)</a></div>
+</div></body></html>

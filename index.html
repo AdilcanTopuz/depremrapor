@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Türkiye için olasılıksal deprem tahmini: ETAS modeliyle her gün üretilen, ölçülmüş ve künyelenmiş olasılık haritası.">
+<link rel="canonical" href="https://depremrapor.com/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="depremrapor.com">
+<meta property="og:url" content="https://depremrapor.com/">
+<meta property="og:title" content="Türkiye Deprem Olasılık ve Tahmin Haritası — depremrapor.com">
+<meta property="og:description" content="Türkiye için olasılıksal deprem tahmini: ETAS modeliyle her gün üretilen, ölçülmüş ve künyelenmiş olasılık haritası.">
+<meta property="og:image" content="https://depremrapor.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Türkiye haritası üzerinde depremrapor.com başlığı ve olasılık renk ölçeği">
+<meta name="twitter:card" content="summary_large_image">
+<title>Türkiye Deprem Olasılık ve Tahmin Haritası</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Overpass+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* HARİTA MERKEZLİ OPERASYON KONSOLU.
+     Harita ekranın çoğunu kaplar; sağda üç pencere aynı anda sayılarıyla
+     durur ve tıklanınca harita değişir; altta yayımlanan bütün alanların
+     sıralanabilir listesi vardır. Süs yok, anlatı yok — alet.
+     Tipografi: Overpass / Overpass Mono (karayolu tabelası için tasarlanmış;
+     uzaktan ve hızlı okunur). Ölçek: ColorBrewer YlOrRd, CVD-güvenli. */
+  :root{
+    --zemin:#0B0E11; --panel:#12171C; --panel2:#171D23; --cizgi:#232B33;
+    --cizgi2:#1A2026; --metin:#DDE4EA; --soluk:#7E8B98; --parlak:#FFFFFF;
+    --vurgu:#F0883E; --mavi:#5AA9E6; --yesil:#5CC98A; --kirmizi:#E8705F;
+    --odak:#8AB4F8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--zemin);color:var(--metin);
+    font:400 14.5px/1.55 "Overpass",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  :focus-visible{outline:2px solid var(--odak);outline-offset:2px}
+  button,a,summary,label,tr[tabindex]{cursor:pointer}
+  a{color:var(--mavi);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .om{font-family:"Overpass Mono",ui-monospace,monospace;
+      font-variant-numeric:tabular-nums}
+
+  /* ---- ÜST DURUM ---- */
+  .ust{height:46px;display:flex;align-items:stretch;background:var(--panel);
+    border-bottom:1px solid var(--cizgi);overflow-x:auto;flex:none}
+  .ust>div,.ust>a{display:flex;align-items:center;padding:0 14px;
+    white-space:nowrap;border-right:1px solid var(--cizgi);gap:8px}
+  .sekme{font-size:13.5px;color:var(--soluk);text-decoration:none;
+    transition:background 160ms ease,color 160ms ease}
+  .depo{display:inline-flex;align-items:center;gap:6px}
+  .depo svg{flex:0 0 auto}
+  .sekme:hover{color:var(--metin);background:var(--panel2);text-decoration:none}
+  .marka{font-weight:700;letter-spacing:-.01em;color:var(--parlak);
+    background:var(--panel2)}
+  .marka i{font-style:normal;color:var(--vurgu)}
+  .kv{font-family:"Overpass Mono",monospace;font-size:12px;color:var(--soluk)}
+  .kv b{color:var(--metin);font-weight:500}
+  .ust .sag{margin-left:auto;border-right:0}
+
+  /* ---- ANA: harita + sağ ray, altta tablo ---- */
+  .govde{height:calc(100% - 46px);display:grid;
+    grid-template-columns:1fr 320px;grid-template-rows:1fr 246px}
+  .haritakutu{position:relative;border-right:1px solid var(--cizgi);
+    border-bottom:1px solid var(--cizgi)}
+  #harita{position:absolute;inset:0}
+
+  /* uyarı şeritleri haritanın üstünde */
+  .flaslar{position:absolute;top:10px;left:10px;right:10px;z-index:5;
+    display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  .flas{background:rgba(18,23,28,.94);border:1px solid var(--cizgi);
+    border-left-width:3px;padding:8px 12px;font-size:12.5px;line-height:1.5;
+    display:flex;gap:10px;pointer-events:auto;backdrop-filter:blur(6px)}
+  .f-uyari{border-left-color:var(--vurgu);color:#E8CBA8}
+  .u-bag{color:inherit;text-underline-offset:2px}
+  .f-bayat{border-left-color:var(--kirmizi);color:#F0BDB4;display:none}
+  .flas .et{font-family:"Overpass Mono",monospace;font-size:10px;
+    letter-spacing:.14em;text-transform:uppercase;opacity:.8;white-space:nowrap;
+    padding-top:1px}
+
+  /* lejant haritanın altında */
+  .lejant{position:absolute;left:10px;bottom:10px;z-index:5;display:flex;
+    background:rgba(18,23,28,.94);border:1px solid var(--cizgi);
+    backdrop-filter:blur(6px)}
+  .lej{padding:6px 9px;border-right:1px solid var(--cizgi2);font-size:10.5px;
+    color:var(--soluk);white-space:nowrap}
+  .lej:last-child{border-right:0}
+  .lej i{display:block;height:6px;margin-bottom:4px;border:1px solid #0B0E11}
+  .lej b{display:block;color:var(--metin);font-size:12px;font-weight:600;
+    font-family:"Overpass Mono",monospace}
+
+  /* ---- SAĞ RAY: üç pencere aynı anda ---- */
+  .ray{background:var(--panel);border-bottom:1px solid var(--cizgi);
+    overflow-y:auto}
+  .ray::-webkit-scrollbar{width:6px}
+  .ray::-webkit-scrollbar-thumb{background:#2A333C}
+  .gg{padding:10px 14px 12px;border-bottom:1px solid var(--cizgi2)}
+  .gg h5{margin:0 0 5px;font-family:"Overpass Mono",monospace;font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+  .gg .evet h5{color:var(--yesil)}
+  .gg .hayir h5{color:var(--kirmizi)}
+  .gg .hayir{margin-top:10px}
+  .gg ul{margin:0;padding-left:15px}
+  .gg li{font-size:11.5px;line-height:1.5;color:#B9C4CF;margin-bottom:3px}
+  .raybas{padding:10px 14px;border-bottom:1px solid var(--cizgi);
+    font-family:"Overpass Mono",monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--soluk);position:sticky;top:0;
+    background:var(--panel);z-index:2}
+  .pkart{display:block;width:100%;text-align:left;background:none;border:0;
+    border-bottom:1px solid var(--cizgi2);padding:12px 14px;color:inherit;
+    font:inherit;transition:background 160ms ease}
+  .pkart:hover{background:var(--panel2)}
+  .pkart[aria-pressed="true"]{background:var(--panel2);
+    box-shadow:inset 3px 0 0 var(--vurgu)}
+  .pkbas{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .pkbas h3{font-size:14px;margin:0;font-weight:600;color:var(--parlak)}
+  .pksay{font-family:"Overpass Mono",monospace;font-size:19px;font-weight:600;
+    color:var(--vurgu)}
+  .pkalt{font-size:11.5px;color:var(--soluk);margin:5px 0 0;line-height:1.5}
+  /* mini yoğunluk çubuğu: bantlara göre alan dağılımı */
+  .mbar{display:flex;height:5px;margin-top:7px;gap:1px}
+  .mbar i{display:block}
+
+  .bolgeler{border-top:1px solid var(--cizgi)}
+  .bolge{padding:11px 14px;border-bottom:1px solid var(--cizgi2)}
+  .bbas{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .bbas h4{font-size:13px;margin:0;font-weight:600;color:var(--parlak)}
+  .rozet{font-family:"Overpass Mono",monospace;font-size:9px;letter-spacing:.1em;
+    text-transform:uppercase;padding:2px 5px;border:1px solid currentColor;
+    white-space:nowrap}
+  .r-sinandi{color:var(--yesil)} .r-olculemedi{color:var(--vurgu)}
+  .r-yetersiz{color:var(--soluk)}
+  .bdeger{font-family:"Overpass Mono",monospace;font-size:17px;font-weight:600;
+    margin:6px 0 2px}
+  .bkucuk{font-size:11.5px;color:var(--soluk);line-height:1.5;margin:0}
+  .yokm{font-size:11.5px;color:#9FADBA;line-height:1.5;margin:6px 0 0;
+    border-left:2px solid var(--cizgi);padding-left:8px}
+  .guvenmetin{font-size:11.5px;color:#9FADBA;line-height:1.5;margin:7px 0 0}
+  .guvenmetin b{color:var(--metin)}
+  details{margin-top:5px}
+  summary{font-family:"Overpass Mono",monospace;font-size:9.5px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--mavi);
+    min-height:22px;display:flex;align-items:center}
+  .teknik{font-family:"Overpass Mono",monospace;font-size:10.5px;
+    line-height:1.75;margin-top:5px;padding:7px 9px;background:var(--zemin);
+    border:1px solid var(--cizgi2);color:var(--soluk)}
+  .hazir{margin-top:8px;border:1px solid rgba(240,136,62,.35);
+    background:rgba(240,136,62,.08);padding:7px 9px;font-size:11.5px;
+    line-height:1.45}
+  .hazir a{color:var(--vurgu)}
+
+  /* ---- ALT: tablo ---- */
+  .alt{grid-column:1/3;background:var(--panel);display:flex;flex-direction:column;
+    min-height:0}
+  .altbas{display:flex;align-items:center;gap:10px;padding:8px 12px;
+    border-bottom:1px solid var(--cizgi);flex-wrap:wrap;flex:none}
+  .altbas .t{font-family:"Overpass Mono",monospace;font-size:10px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--soluk)}
+  .altbas input,.altbas select{background:var(--zemin);border:1px solid var(--cizgi);
+    color:var(--metin);font:400 13px/1 "Overpass",sans-serif;padding:0 9px;
+    height:30px;min-width:150px}
+  .altbas .sayim{margin-left:auto;font-family:"Overpass Mono",monospace;
+    font-size:11.5px;color:var(--soluk)}
+  .tsar{flex:1;overflow:auto;min-height:0}
+  .tsar::-webkit-scrollbar{width:7px;height:7px}
+  .tsar::-webkit-scrollbar-thumb{background:#2A333C}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{position:sticky;top:0;background:var(--panel2);z-index:2;
+    text-align:left;padding:0 10px;height:28px;
+    border-bottom:1px solid var(--cizgi);font-family:"Overpass Mono",monospace;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    font-weight:500;color:var(--soluk);white-space:nowrap}
+  thead th button{background:none;border:0;padding:0;font:inherit;color:inherit;
+    display:flex;align-items:center;gap:5px;height:28px}
+  thead th button::after{content:"|";opacity:.4;transform:rotate(90deg)}
+  thead th button[data-yon="artan"]::after{content:"^";opacity:1;color:var(--metin)}
+  thead th button[data-yon="azalan"]::after{content:"v";opacity:1;color:var(--metin)}
+  tbody tr{border-bottom:1px solid var(--cizgi2);height:32px}
+  tbody tr:hover{background:var(--panel2)}
+  tbody tr[aria-selected="true"]{background:#1D2630;
+    box-shadow:inset 3px 0 0 var(--vurgu)}
+  tbody td{padding:0 10px;white-space:nowrap}
+  .yer{font-weight:600;color:var(--parlak)}
+  .yer small{color:var(--soluk);font-weight:400;margin-left:6px}
+  .num{font-family:"Overpass Mono",monospace}
+  .oran{display:inline-flex;align-items:center;gap:6px}
+  .oran i{width:11px;height:11px;border:1px solid #0B0E11;flex:none}
+  .katsoz{color:var(--soluk);font-size:11.5px}
+  .bosmesaj{padding:22px 12px;text-align:center;color:var(--soluk);font-size:13px}
+
+
+  /* =========================================================================
+     RESPONSIVE — üç kırılım
+       > 64rem   masaüstü: kaydırmasız tek ekran (harita + sağ ray + alt tablo)
+       <= 64rem  tablet:   tek sütun, sayfa kaydırılır
+       <= 44rem  telefon:  tablo satırları KARTA dönüşür, denetimler yığılır
+
+     İLKE: mobilde bilgi KIRPILMAZ, yeniden dizilir. "Normal düzey" sütunu
+     telefonda gizlenir ama alanın kendi kartında (haritaya dokununca açılan
+     baloncukta) yine durur -- yani sayı kaybolmaz, yalnızca listeden çıkar.
+     ========================================================================= */
+  @media(max-width:64rem){
+    body{overflow:auto}
+    .govde{grid-template-columns:1fr;grid-template-rows:auto auto auto;
+      height:auto}
+    /* HARİTA YÜKSEKLİĞİ: 58vh -> 90vh. Kısa bir haritada parmakla
+       gezinmek zordu. 2 katına (116vh) çıkarılmadı: ekrandan uzun bir
+       harita, sayfayı kaydırmak için tutulacak yer bırakmaz. 90vh hem
+       rahat gezinme hem de üstünden/altından tutma payı verir. */
+    .haritakutu{height:90vh;min-height:420px;border-right:0}
+    .ray{border-right:0}
+    .alt{grid-column:1;min-height:60vh}
+    .tsar{max-height:none}
+  }
+
+  @media(max-width:44rem){
+    body{font-size:15px}
+    /* üst şerit: kaydırılabilir kalır ama sıkışmaz */
+    .ust{height:auto;flex-wrap:wrap;overflow-x:visible;padding:0 0 6px}
+    .ust>div,.ust>a{height:40px;padding:0 11px;border-right:0;
+      border-bottom:1px solid var(--cizgi2);flex:1 1 auto;min-width:50%}
+    .marka{min-width:100%;height:44px;font-size:16px;
+      border-bottom:1px solid var(--cizgi)}
+    .ust .sag{margin-left:0}
+    .kv{font-size:11.5px;white-space:normal}
+
+    .haritakutu{height:90vh;min-height:400px}
+    .flaslar{left:8px;right:8px;top:8px}
+    .flas{padding:7px 10px;font-size:12px}
+    /* LEJANT KONUMLANDIRILMIŞ KALIR.
+       İlk denemede telefonda `position:static` yapılmıştı; harita
+       `position:absolute; inset:0` olduğu için statik lejant onun ALTINDA
+       kalıyor ve z-index'i yok sayılıyordu (z-index yalnız konumlandırılmış
+       öğelerde işler). Çözüm: mutlak kalsın, yalnızca tam genişliğe yayılıp
+       sarsın. */
+    .lejant{left:8px;right:8px;bottom:8px;flex-wrap:wrap}
+    .lej{flex:1 1 auto;border-bottom:1px solid var(--cizgi2)}
+    .lej:nth-last-child(-n+2){border-bottom:0}
+
+    /* alt bölüm denetimleri yığılır, dokunma hedefleri büyür */
+    .altbas{gap:8px;padding:10px 12px}
+    .altbas input,.altbas select{flex:1 1 100%;height:44px;min-height:44px;
+      font-size:16px}          /* 16px: iOS'ta odakta yakınlaştırmayı önler */
+    .altbas .sayim{margin-left:0;flex:1 1 100%}
+
+    /* TABLO -> KART */
+    thead{display:none}
+    table,tbody,tr,td{display:block;width:100%}
+    tbody tr{height:auto;padding:10px 12px;border-bottom:1px solid var(--cizgi);
+      display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+    tbody td{padding:0;white-space:normal}
+    .t-yer{grid-column:1;grid-row:1;font-size:14.5px}
+    .t-yer small{display:block;margin-left:0;margin-top:1px}
+    .t-olas{grid-column:2;grid-row:1;text-align:right;font-size:16px;
+      font-weight:600;color:var(--parlak)}
+    .t-kat{grid-column:1;grid-row:2}
+    .t-kabaca{grid-column:2;grid-row:2;text-align:right;color:var(--soluk);
+      font-size:12px}
+    .t-normal{display:none}      /* baloncukta duruyor; listeden çıkar */
+    .bossatir{display:block}
+    .bossatir td{display:block}
+
+    /* sağ ray telefonda tam genişlik; kartlar rahat nefes alsın */
+    .bolge{padding:12px}
+    .raybas{padding:11px 12px}
+    .pkart{padding:13px 12px}
+    .pksay{font-size:21px}
+
+    /* dokunma hedefleri */
+    summary{min-height:34px}
+    .kunyekat>summary{min-height:38px}
+  }
+
+  @media(max-width:24rem){
+    .ust>div,.ust>a{min-width:100%}
+    .lej{flex:1 1 50%}
+    .haritakutu{height:86vh}
+  }
+
+  .kunyekat{margin-top:10px;padding-top:8px;
+    border-top:1px solid var(--cizgi2)}
+  .kunyekat>summary{font-family:"Overpass Mono",monospace;font-size:9.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--soluk);
+    min-height:26px;display:flex;align-items:center;gap:6px}
+  .kunyekat>summary:hover{color:var(--metin)}
+  .kunyekat>summary::marker{content:""}
+  .kunyekat>summary::before{content:"+";font-weight:700;color:var(--vurgu)}
+  .kunyekat[open]>summary::before{content:"−"}
+  .kunyenot{font-size:10.5px;line-height:1.55;color:var(--soluk);
+    margin:8px 0 0;padding-left:9px;border-left:1px solid var(--cizgi2)}
+  .kunyenot b{color:var(--metin)}
+
+  /* --- rozet ipucu --- */
+  /* font KISAYOLU KULLANILMAZ. `font:inherit` yazildiginda kisayol
+     font-size'i da sifirlar ve bu kural .rozet'ten SONRA geldigi icin
+     rozet yazisi 9px'ten govde boyutuna sicrar. Yalnizca dugmenin
+     tarayici varsayilanlari geri alinir; yazi tipini .rozet verir. */
+  .ipuclu{background:none;color:inherit;display:inline-flex;align-items:center;
+    gap:5px;min-height:22px}
+  .ipuclu .soru{display:inline-flex;align-items:center;justify-content:center;
+    width:13px;height:13px;border:1px solid currentColor;border-radius:50%;
+    font-size:9px;line-height:1;opacity:.8}
+  .ipuclu:hover .soru,.ipuclu[aria-expanded="true"] .soru{opacity:1}
+  .ipucu{margin:8px 0 0;padding:9px 10px;background:var(--zemin);
+    border:1px solid var(--cizgi);border-left:3px solid var(--vurgu);
+    font-size:11.5px;line-height:1.55;color:#C5D0DA}
+  .ipucu.gizli{display:none}
+  @media(max-width:44rem){
+    .ipuclu{min-height:30px;padding:4px 7px}   /* boyut degil, dokunma alani */
+    .ipucu{font-size:12.5px;padding:11px 12px}
+  }
+
+  .maplibregl-popup-content{background:var(--panel);color:var(--metin);
+    border:1px solid var(--cizgi);border-radius:2px;padding:12px 14px;
+    max-width:280px;font:13px/1.5 "Overpass",sans-serif}
+  .maplibregl-popup-tip{border-top-color:var(--panel)!important}
+  .pop-yer{font-size:14.5px;font-weight:600;margin:0;color:var(--parlak)}
+  .pop-buyuk{font-family:"Overpass Mono",monospace;font-size:24px;font-weight:600;
+    margin:7px 0 1px;color:var(--vurgu)}
+  .pop-not{margin:9px 0 0;padding-top:8px;border-top:1px solid var(--cizgi2);
+    font-size:11.5px;color:var(--soluk);line-height:1.5}
+  .maplibregl-ctrl-group{background:var(--panel)!important;
+    border:1px solid var(--cizgi)!important}
+  .maplibregl-ctrl-group button{filter:invert(.85)}
+</style>
+</head>
+<body>
+
+<div class="ust">
+  <div class="marka">Deprem<i> </i>Tahminleri</div>
+  <div class="kv" id="u-yayin">-</div>
+  <div class="kv" id="u-katalog">-</div>
+  <div class="kv" id="u-kapi">-</div>
+  <a class="sekme" href="son-depremler.html">Son Depremler</a>
+  <a class="sekme" href="tahmin-kaydi.html">Tahmin Kaydı</a>
+  <a class="sekme depo" href="https://github.com/AdilcanTopuz/depremrapor" target="_blank" rel="noopener" title="Kaynak kodu — GitHub"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>Kaynak kodu</span></a>
+  <div class="kv sag" id="u-kapsam">kapsam <b>TR sınırları içi</b></div>
+</div>
+
+<div class="govde">
+  <div class="haritakutu">
+    <div id="harita" role="application" aria-label="Deprem olasılık haritası"></div>
+    <div class="flaslar">
+      <div class="flas f-bayat" id="bayat" role="alert">
+        <span class="et">bayat</span><div id="bayat-metin"></div></div>
+      <div class="flas f-uyari"><span class="et">uyarı</span>
+        <div id="uyari">yükleniyor…</div></div>
+    </div>
+    <div class="lejant" id="lejant"></div>
+  </div>
+
+  <div class="ray">
+    <div class="raybas">Pencereler — hepsi aynı anda</div>
+    <div id="pencereler"></div>
+    <div class="raybas" style="border-top:1px solid var(--cizgi)">Bu harita ne der</div>
+    <div class="gg" id="gg"></div>
+    <div class="raybas" style="border-top:1px solid var(--cizgi)">Bölgeler</div>
+    <div style="padding:10px 14px;font-size:11.5px;color:var(--soluk);
+      line-height:1.5;border-bottom:1px solid var(--cizgi2)" id="iki-katman"></div>
+    <div class="bolgeler" id="kartlar"></div>
+    <div class="raybas" style="border-top:1px solid var(--cizgi)">Kapsam</div>
+    <div style="padding:10px 14px;font-size:11.5px;color:var(--soluk);
+      line-height:1.55">
+      <div id="esik-notu"></div>
+      <div style="margin-top:8px" id="soyler-kisa"></div>
+      <div style="margin-top:6px" id="soylemez-kisa"></div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--cizgi2)">
+        <span id="hazirlik"></span></div>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px 12px">
+        <a href="metodoloji.html">yöntem</a><a href="yasal.html">yasal</a>
+        <a href="vaka-defteri.html">vaka defteri</a>
+        <a href="data/kunye.json">künye.json</a>
+        <a href="data/forecast_7d_m45.geojson">tahmin</a></div>
+      <details class="kunyekat">
+        <summary>künye ve doğrulama</summary>
+        <div id="kunye-kisa"></div>
+        <p class="kunyenot">Bu satırlar, yukarıdaki sayıların <b>hangi kodla ve
+          hangi veriyle</b> üretildiğini gösterir. Bir sayıyı sorgulayan
+          herkes aynı künyeyle aynı sonucu yeniden üretebilir.</p>
+      </details>
+    </div>
+  </div>
+
+  <div class="alt">
+    <div class="altbas">
+      <span class="t">Yayımlanan alanlar</span>
+      <input id="q" type="search" autocomplete="off" placeholder="yer ara…"
+             aria-label="Yer ara">
+      <select id="ilsec" aria-label="İl filtresi"><option value="">tüm iller</option></select>
+      <span class="sayim" id="sayim"></span>
+    </div>
+    <div class="tsar">
+      <table><thead><tr>
+        <th class="t-yer" style="width:34%"><button type="button" data-alan="ad">yer</button></th>
+        <th class="t-olas" style="width:16%"><button type="button" data-alan="probability">olasılık</button></th>
+        <th class="t-kabaca" style="width:14%"><button type="button" data-alan="bindeKac">kabaca</button></th>
+        <th class="t-kat" style="width:18%"><button type="button" data-alan="times_normal" data-yon="azalan">normalin katı</button></th>
+        <th class="t-normal"><button type="button" data-alan="normal_probability">normal düzey</button></th>
+      </tr></thead><tbody id="satirlar"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="script.js"></script>
+<script>
+let harita, aktifGun = 7, D = null, veri = {}, siraAlan = "times_normal",
+    siraYon = "azalan", secili = null;
+
+function hazirlikHtml(k){
+  const h = hazirlikMetni(k); if(!h) return "";
+  return `<div class="hazir">${h.metin}
+    <a href="${h.url}" target="_blank" rel="noopener">${h.baglantiMetni}</a>.</div>`;
+}
+
+function lejantCiz(){
+  document.getElementById("lejant").innerHTML = OLCEK.map((o,i)=>{
+    const ust = OLCEK[i+1] ? "-"+OLCEK[i+1].k+"x" : "+";
+    return `<div class="lej"><i style="background:${o.r}"></i>
+      <b>${o.k}x${ust}</b>${o.s}</div>`;}).join("");
+}
+
+/* Üç pencere aynı anda: her biri kendi sayısı ve bant dağılımıyla */
+function pencereleriCiz(){
+  document.getElementById("pencereler").innerHTML = PENCERELER.map(p=>{
+    const gj = veri[p.gun];
+    const n = gj.features.length;
+    const tepe = gj.features.reduce((a,f)=>
+      Math.max(a, f.properties.times_normal||0), 0);
+    const bant = OLCEK.map(()=>0);
+    gj.features.forEach(f=>{
+      const k = f.properties.times_normal;
+      for(let i=OLCEK.length-1;i>=0;i--) if(k>=OLCEK[i].k){bant[i]++;break;}});
+    const bar = OLCEK.map((o,i)=>bant[i]
+      ? `<i style="flex:${bant[i]};background:${o.r}"
+           title="${o.k}x+ : ${bant[i]} alan"></i>` : "").join("");
+    return `<button class="pkart" type="button" data-gun="${p.gun}"
+      aria-pressed="${p.gun===aktifGun}">
+      <div class="pkbas"><h3>${p.ad}</h3><span class="pksay">${n}</span></div>
+      <p class="pkalt">eşik üstü alan · tepe
+        ${tepe?tepe.toFixed(1)+"x normal":"-"}</p>
+      <div class="mbar">${bar}</div></button>`;}).join("");
+  document.querySelectorAll(".pkart").forEach(b=>
+    b.onclick = ()=>pencereyeGec(+b.dataset.gun));
+}
+
+function pencereyeGec(gun){
+  aktifGun = gun; secili = null;
+  harita.getSource("t").setData(veri[gun]);
+  D.gj = veri[gun];
+  pencereleriCiz(); kartlariCiz(gun); satirlariCiz();
+}
+
+function popupHtml(p, gun){
+  const y = D.yerAdlari[p.cell_id], ad = y ? y.ad : `${+p.cell_id} numaralı alan`;
+  return `<p class="pop-yer">${ad}</p>
+    <p style="margin:2px 0 0;color:var(--soluk);font-size:11px">25x25 km</p>
+    <p class="pop-buyuk">${yuzde(p.probability)}</p>
+    <p style="margin:0;color:var(--soluk);font-size:12px">${gun} gün · M4,5+ ·
+      kabaca ${bindeKac(p.probability)}</p>
+    <p style="margin:8px 0 0;font-size:12.5px">normal
+      ${yuzde(p.normal_probability)} → <b>${p.times_normal}x</b>
+      (${katSozcuk(p.times_normal)})</p>
+    <div class="pop-not">${katCumlesi(p.times_normal)} Olasılık düşük görünse de
+      sıfır değildir; bu bir uyarı değil, bir olasılıktır.</div>
+    ${hazirlikHtml(p.times_normal)}`;
+}
+
+function haritayaGit(id){
+  const f = D.gj.features.find(x=>+x.properties.cell_id === id);
+  if(!f || !harita) return;
+  const [lon,lat] = hucreMerkezi(f);
+  harita.flyTo({center:[lon,lat], zoom:7.3, duration:600});
+  new maplibregl.Popup({maxWidth:"290px"}).setLngLat([lon,lat])
+    .setHTML(popupHtml(f.properties, aktifGun)).addTo(harita);
+}
+
+function satirlariCiz(){
+  const q = sadelestir(document.getElementById("q").value.trim());
+  const il = document.getElementById("ilsec").value;
+  let sat = D.gj.features.map(f=>{
+    const p = f.properties, y = D.yerAdlari[p.cell_id] || {};
+    return {...p, ad:y.ad || `${p.cell_id} numaralı alan`, il:y.il||"",
+            ilce:y.ilce||"", bindeKac:1/(p.probability||1e-9)};});
+  if(q) sat = sat.filter(s=>sadelestir(s.ad).includes(q) ||
+    sadelestir(s.il).includes(q) || sadelestir(s.ilce).includes(q));
+  if(il) sat = sat.filter(s=>s.il === il);
+  const yon = siraYon === "artan" ? 1 : -1;
+  sat.sort((a,b)=>{
+    const x = a[siraAlan], y = b[siraAlan];
+    return typeof x === "string" ? yon*x.localeCompare(y,"tr") : yon*((x||0)-(y||0));});
+  document.getElementById("sayim").textContent =
+    `${sat.length} / ${D.gj.features.length} alan`;
+  const tb = document.getElementById("satirlar");
+  if(!sat.length){
+    tb.innerHTML = `<tr class="bossatir"><td colspan="5" class="bosmesaj">Bu ölçütlere uyan alan
+      yok. Bu, olasılığın sıfır olduğu anlamına gelmez — o alanlar normalin iki
+      katını aşmıyor.</td></tr>`; return;}
+  tb.innerHTML = sat.map(s=>`<tr tabindex="0" data-id="${s.cell_id}"
+    aria-selected="${secili===+s.cell_id}">
+    <td class="t-yer yer">${s.ad}<small>${s.il}${s.ilce?" · "+s.ilce:""}</small></td>
+    <td class="t-olas num">${yuzde(s.probability)}</td>
+    <td class="t-kabaca num">${bindeKac(s.probability)}</td>
+    <td class="t-kat"><span class="oran">
+      <i style="background:${katRenk(s.times_normal)}"></i>
+      <b class="num">${s.times_normal}x</b>
+      <span class="katsoz">${katSozcuk(s.times_normal)}</span></span></td>
+    <td class="t-normal num">${yuzde(s.normal_probability)}</td>
+    </tr>`).join("");
+  tb.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const git = ()=>{secili = +tr.dataset.id; satirlariCiz(); haritayaGit(secili);};
+    tr.onclick = git;
+    tr.onkeydown = e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();git();}};});
+}
+
+function kartlariCiz(gun){
+  const k1 = D.kartlar.katman1_kunyesi; let h = "";
+  for(const [ad,v] of bolgeSirali(D.kartlar)){
+    const d=v.dondurulmus_bulgu, g=v.guncel, e=hukumEtiketi(d?d.hukum:"");
+    const ipId = "ip-" + (+v.guncel.yayimlanan_hucre) + "-" +
+                 ad.replace(/[^a-zA-Z0-9]/g,"").slice(0,12);
+    h += `<div class="bolge"><div class="bbas"><h4>${ad}</h4>
+      <button type="button" class="rozet r-${e.sinif} ipuclu"
+        aria-expanded="false" aria-controls="${ipId}"
+        data-ipucu="${ipId}">${e.metin}<span class="soru"
+        aria-hidden="true">?</span></button></div>
+      <div class="ipucu gizli" id="${ipId}" role="note">${e.aciklama}</div>`;
+    if(g.yayimlanan_hucre === 0){
+      h += `<p class="yokm">Normalin 2 katını aşan alan <b>yok</b>. Olasılık
+        sıfır değil — kendi normal düzeyinde.</p>`;
+    } else {
+      h += `<div class="bdeger">${yuzde(g.bolge_olasiligi)}</div>
+        <p class="bkucuk">${gun} gün · M4,5+ · kabaca
+          ${bindeKac(g.bolge_olasiligi)}<br>${g.yayimlanan_hucre} alan eşik üstü ·
+          tepe ${g.en_yuksek_kat}x</p>${hazirlikHtml(g.en_yuksek_kat)}`;}
+    h += `<p class="guvenmetin">${guvenCumlesi(d)}</p>`;
+    if(d && d.ig !== null)
+      h += `<details><summary>ölçüm dökümü</summary><div class="teknik">
+        bilgi kazancı ${d.ig>0?"+":""}${d.ig} nat/olay<br>
+        %95 GA [${d.ga[0]}, ${d.ga[1]}]<br>en küçük fark ${d.mde}<br>
+        ${d.olay} olay · ${k1.donem}</div></details>`;
+    h += `</div>`;}
+  document.getElementById("kartlar").innerHTML = h;
+  ipuclariBagla();
+}
+
+/* İPUÇLARI.
+ *
+ * Yüzen (position:absolute) bir ipucu burada İŞE YARAMAZ: sağ ray
+ * `overflow-y:auto` taşıyor ve bu, yatayda da kırpma bağlamı yaratıyor --
+ * ipucu rayın dışına taşamaz, kesilir. Bu yüzden ipucu kartın İÇİNDE,
+ * rozetin altında açılan bir blok. Düzen kayar ama hiçbir yerde kesilmez.
+ *
+ * Masaüstünde fareyle üzerine gelince, mobilde dokununca, klavyeyle
+ * odaklanınca açılır. Üçü de aynı bloğu gösterir. */
+/* UYARI METNI KUNYEDE SHA256 ILE SABITLIDIR (pipeline.ONAYLI_UYARI_SHA).
+   Burada metin DEGISTIRILMEZ; yalnizca sonundaki sayfa adi tiklanabilir
+   kilinir. innerHTML kullanilmaz -- metin DOM dugumu olarak yerlestirilir,
+   boylece kunyeden gelen dizge hicbir kosulda islenmis olmaz. */
+function uyariYaz(metin){
+  const el = document.getElementById("uyari");
+  el.textContent = metin;
+  const hedef = "metodoloji.html";
+  const i = metin.lastIndexOf(hedef);
+  if(i < 0) return;
+  const a = document.createElement("a");
+  a.href = hedef; a.textContent = hedef; a.className = "u-bag";
+  el.textContent = metin.slice(0, i);
+  el.appendChild(a);
+  el.appendChild(document.createTextNode(metin.slice(i + hedef.length)));
+}
+
+function ipuclariBagla(){
+  document.querySelectorAll(".ipuclu").forEach(b=>{
+    const k = document.getElementById(b.dataset.ipucu);
+    if(!k) return;
+    const ac = a=>{
+      k.classList.toggle("gizli", !a);
+      b.setAttribute("aria-expanded", a);};
+    b.addEventListener("mouseenter", ()=>ac(true));
+    b.addEventListener("mouseleave", ()=>{
+      if(document.activeElement !== b) ac(false);});
+    b.addEventListener("focus", ()=>ac(true));
+    b.addEventListener("blur", ()=>ac(false));
+    b.addEventListener("click", e=>{
+      e.preventDefault();
+      ac(b.getAttribute("aria-expanded") !== "true");});
+  });
+}
+
+(async()=>{try{
+  D = await veriYukle();
+  const [g1,g30] = await Promise.all([al(PENCERELER[0].dosya), al(PENCERELER[2].dosya)]);
+  veri = {1:g1, 7:D.gj, 30:g30};
+  const t = tazelik(D.kunye), kp = D.kunye.urun_kapisi, m = D.kunye.model_kunyesi;
+  document.getElementById("u-yayin").innerHTML =
+    `yayın <b>${tsiZaman(D.kunye.yayin_origin, {etiket:false})}</b> TSİ · ${t.yas}`;
+  document.getElementById("u-katalog").innerHTML =
+    `katalog <b>${tsiZaman(D.kunye.katalog.son_olay, {etiket:false})}</b> TSİ`;
+  document.getElementById("u-kapi").innerHTML = kp
+    ? `ürün kapısı <b>${kp.oran.toFixed(3)}</b> [${kp.band[0]}, ${kp.band[1]}]`
+    : "ürün kapısı <b>ölçüm yok</b>";
+  if(t.bayat){
+    document.getElementById("bayat").style.display = "flex";
+    document.getElementById("bayat-metin").innerHTML = t.bayatMetni;}
+  uyariYaz(D.kunye.uyari_metni);
+  document.getElementById("esik-notu").innerHTML = METIN.esikNotu;
+  document.getElementById("iki-katman").innerHTML = METIN.ikiKatman;
+  // Listeler METIN'den gelir; sayfaya elle yazılmaz (V42 kalıbı).
+  document.getElementById("gg").innerHTML =
+    '<div class="evet"><h5>neyi gösterir</h5><ul>'
+    + METIN.gosterir.map(x => "<li>" + x + "</li>").join("")
+    + '</ul></div><div class="hayir"><h5>neyi göstermez</h5><ul>'
+    + METIN.gostermez.map(x => "<li>" + x + "</li>").join("")
+    + "</ul></div>";
+  // İKİ YAN DA GÖSTERİLİR. Yalnız "söylemez" göstermek, beyanı tek yanlı
+  // bırakır: sayfa neyi YAPTIĞINI da söylemek zorundadır.
+  document.getElementById("soyler-kisa").innerHTML =
+    "<b style='color:var(--metin)'>Söyler:</b> " +
+    METIN.soyler.map(x=>x.replace(/<\/?b>/g,"")).join(" · ");
+  document.getElementById("soylemez-kisa").innerHTML =
+    "<b style='color:var(--metin)'>Söylemez:</b> " +
+    METIN.soylemez.map(x=>x.replace(/<\/?b>/g,"")).join(" · ");
+  document.getElementById("hazirlik").innerHTML = METIN.hazirlik +
+    ` <a href="${AFAD_URL}" target="_blank" rel="noopener">AFAD hazırlık
+      rehberi</a>.`;
+  document.getElementById("kunye-kisa").innerHTML =
+    `<span class="om" style="font-size:10.5px">yöntem ${m.method} · parametre
+     ${m.etas_params_sha256.slice(0,10)}… · katalog
+     ${m.catalog_sha256.slice(0,10)}… · commit ${m.commit.slice(0,10)} ·
+     ağaç ${m.worktree}</span>`;
+  const iller = [...new Set(Object.values(D.yerAdlari).map(y=>y.il).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"tr"));
+  document.getElementById("ilsec").innerHTML = '<option value="">tüm iller</option>' +
+    iller.map(i=>`<option>${i}</option>`).join("");
+  document.getElementById("ilsec").onchange = satirlariCiz;
+  let z; document.getElementById("q").addEventListener("input",()=>{
+    clearTimeout(z); z = setTimeout(satirlariCiz,150);});
+  document.querySelectorAll("thead th button").forEach(b=>b.onclick = ()=>{
+    const a = b.dataset.alan;
+    if(siraAlan === a) siraYon = siraYon === "artan" ? "azalan" : "artan";
+    else { siraAlan = a; siraYon = a === "ad" ? "artan" : "azalan"; }
+    document.querySelectorAll("thead th button").forEach(x=>
+      x.removeAttribute("data-yon"));
+    b.dataset.yon = siraYon; satirlariCiz();});
+  lejantCiz(); kartlariCiz(aktifGun);
+  harita = haritaOlustur("harita", D.gj, {zum:5.15,merkez:[35.4,39.0],
+    /* altlikOpaklik koyu zemin ÜZERİNE bindirir: .24'te altlık siyah bir
+       tül gibi görünüyordu. Hücre opaklığı .88'den .55'e indiği için
+       altlık artık daha çok görünüyor ve karartma fazla geliyordu. */
+    altlikOpaklik:.48,doygunluk:-.85,kontrast:.16,kenarRengi:"#0B0E11",
+    kenarKalinlik:.6,kenarOpaklik:.7,dolguOpaklik:.55,   /* kareler yarı saydam: altlıktaki yollar, kıyı
+                          çizgisi ve şehir adları okunabilir kalsın */
+    denetimKonumu:"bottom-right",
+    tiklama:(p,ll)=>{secili = +p.cell_id; satirlariCiz();
+      new maplibregl.Popup({maxWidth:"290px"}).setLngLat(ll)
+        .setHTML(popupHtml(p,aktifGun)).addTo(harita);}});
+  pencereleriCiz(); satirlariCiz();
+}catch(e){document.getElementById("uyari").textContent =
+  "Veri yüklenemedi: " + e.message;}})();
+</script>
+</body>
+</html>
