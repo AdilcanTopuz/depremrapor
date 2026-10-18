@@ -1,0 +1,118 @@
+{
+  "kosu_id": "39079957742",
+  "tetikleyici": "workflow_dispatch",
+  "sebep": "taban: son yayın 59.7 saat önce",
+  "commit": "943238267d5cd200548bcc6330c0e46803d75033",
+  "okundu": "2026-10-18T00:22:23.459226+00:00",
+  "hat_sonucu": "failure",
+  "hat_son_satirlar": [
+    "kalibre parametreler: mc=3.3 · b=1.0450",
+    "ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ",
+    "commit 943238267d5c · ağaç temiz",
+    "katalog yok",
+    "  AFAD: güncellendi",
+    "  KOERI: güncellendi",
+    "  EMSC: güncellendi",
+    "Traceback (most recent call last):",
+    "  File \"<frozen runpy>\", line 198, in _run_module_as_main",
+    "  File \"<frozen runpy>\", line 88, in _run_code",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 623, in <module>",
+    "    main()",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 619, in main",
+    "    calistir(guncelle=not a.no_update, izin_kirli=a.allow_dirty)",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py\", line 481, in calistir",
+    "    update_catalog(quiet=quiet)",
+    "  File \"/home/runner/work/depremrapor/depremrapor/src/operational/forecast_now.py\", line 179, in update_catalog",
+    "    raise KatalogKuculdu(",
+    "src.operational.forecast_now.KatalogKuculdu: ! KATALOG KÜÇÜLDÜ -- güncelleme veri İMHA ETMİŞ olabilir:",
+    "    afad_catalog.csv: 266,527 -> 197",
+    "  Ham önbellek (data/raw/afad/, data/raw/koeri/) dokunulmamışsa tam aralıkla yeniden çalıştırarak kurtarılabilir.",
+    "  Bilinçli bir temizlikse: izin_kucultme=True"
+  ],
+  "manifest": {
+    "origin": "2026-10-15T11:00:00Z",
+    "uretim_zamani": "2026-10-15T11:57:23.789433+00:00",
+    "commit": "943238267d5cd200548bcc6330c0e46803d75033",
+    "calisma_agaci": "clean",
+    "korumalar": [
+      "kirli ağaç",
+      "katalog tazeliği",
+      "katalog monotonluğu",
+      "kalibre parametreler",
+      "ürün kapısı",
+      "yayın kapsamı",
+      "şema",
+      "dil",
+      "hücre sayısı bandı",
+      "kart-tahmin tutarlılığı"
+    ],
+    "katalog": {
+      "son_olay": "2026-10-15 09:17:00+00:00",
+      "yas_saat": 3.43
+    },
+    "urun_kapisi": {
+      "model": "ETAS",
+      "gozlenen": 252,
+      "beklenen": 231.50356983581392,
+      "oran": 1.0885361300420657,
+      "gecti": true,
+      "band": [
+        0.8,
+        1.25
+      ],
+      "gerekce": "bandın içinde",
+      "olcum_kunyesi": {
+        "donem": "2021-01-01 .. 2024-12-20",
+        "pencere_gun": 7,
+        "hedef_mw": 4.5,
+        "tablo": "etas_analytic_weekly",
+        "olcum_tarihi": "2026-08-26"
+      }
+    },
+    "tazelik": {
+      "uretim_zamani": "2026-10-15T11:57:23.789433+00:00",
+      "sonraki_beklenen": "2026-10-15T14:57:23.789433+00:00",
+      "yayin_araligi_saat": 3,
+      "bayatlik_esigi_saat": 7,
+      "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+    },
+    "ham_satir_sayilari": {
+      "afad_catalog.csv": 266527,
+      "koeri_catalog.csv": 72562,
+      "emsc_catalog.csv": 60855
+    },
+    "min_times_normal": 2.0
+  },
+  "dosyalar": [
+    {
+      "dosya": "forecast_1d_m45.geojson",
+      "n_hucre": 98,
+      "sha256": "8525b935c2d7630e"
+    },
+    {
+      "dosya": "forecast_7d_m45.geojson",
+      "n_hucre": 116,
+      "sha256": "ef2808281bbfde86"
+    },
+    {
+      "dosya": "forecast_30d_m45.geojson",
+      "n_hucre": 128,
+      "sha256": "0b4636e9d51a965e"
+    },
+    {
+      "dosya": "bolge_kartlari.json",
+      "n_hucre": null,
+      "sha256": "6a61cf4a251d51bb"
+    },
+    {
+      "dosya": "son_depremler.json",
+      "n_hucre": null,
+      "sha256": "fdd7c104fa92f607"
+    },
+    {
+      "dosya": "tahmin_kaydi.json",
+      "n_hucre": null,
+      "sha256": "e64ce39861ccb84e"
+    }
+  ]
+}
