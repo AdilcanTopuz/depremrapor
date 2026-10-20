@@ -24,6 +24,7 @@ Kullanım:
 """
 import argparse
 import time
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -55,8 +56,16 @@ def fetch_year(year: int, minmag: float, retries: int = 3) -> str:
     """Bir yılın kataloğunu sekmeyle ayrılmış metin olarak döndürür (önbellekli)."""
     CACHE.mkdir(parents=True, exist_ok=True)
     cached = CACHE / f"koeri_{year}_m{minmag}.txt"
-    if cached.exists() and cached.stat().st_size > 0:
-        return cached.read_text(encoding="utf-8")
+    eldeki = (cached.read_text(encoding="utf-8")
+              if cached.exists() and cached.stat().st_size > 0 else "")
+    # İÇİNDE BULUNULAN YIL HER KOŞUDA TAZELENİR (Ocak'ta bir önceki yıl da).
+    # Önbellek kalıcı hâle gelince (V62) bu olmadan cari yılın dosyası ilk
+    # indirildiği gündeki hâlinde DONARDI. Tazeleme başarısız olursa eldeki
+    # dosya kullanılır.
+    bugun = datetime.now()
+    taze = year == bugun.year or (bugun.month == 1 and year == bugun.year - 1)
+    if eldeki and not taze:
+        return eldeki
 
     name = f"dt_{year}_{int(minmag * 10)}.txt"
     query = {
@@ -85,7 +94,7 @@ def fetch_year(year: int, minmag: float, retries: int = 3) -> str:
         except Exception as e:  # noqa: BLE001
             print(f"  ! {year} deneme {attempt+1}/{retries}: {e}")
             time.sleep(5 * (attempt + 1))
-    return ""
+    return eldeki
 
 
 def parse(text: str) -> pd.DataFrame:

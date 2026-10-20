@@ -109,3 +109,74 @@ def test_INDIRICILER_BETIK_OLARAK_CALISIYOR():
         assert r.returncode == 0, (
             f"scripts/{ad} betik olarak ayağa kalkmıyor:\n"
             f"{(r.stderr or r.stdout).strip()[-400:]}")
+
+
+def _afad_modulu():
+    import importlib.util
+
+    yol = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "01_download_afad.py"
+    spec = importlib.util.spec_from_file_location("afad_indirici", yol)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+class _Yanit:
+    def __init__(self, veri):
+        self.veri = veri
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return self.veri
+
+
+def test_AFAD_ALINAMAYAN_AY_BOS_AY_SAYILMAZ(monkeypatch):
+    """Başarısızlık `[]` değil None döner -- önbelleğe "olaysız ay" yazılmaz.
+
+    Ekim 2026: eski apiv2 ucu geçmiş ayları HTTP 200 + `[]` ile döndürmeye
+    başladı ve başarısız aylar da `[]` olarak önbelleğe giriyordu. İkisi
+    birlikte katalogu 266.527 -> 196 satıra indirdi.
+    """
+    m = _afad_modulu()
+    monkeypatch.setattr(m.time, "sleep", lambda s: None)
+
+    class Bozuk:
+        def post(self, *a, **k):
+            raise OSError("zaman aşımı")
+
+    assert m.fetch_month(2015, 3, 2.0, oturum=Bozuk()) is None
+
+    class Yarim:
+        """totalCount 3 der ama tek sayfadan sonra boş döner."""
+        def post(self, url, json, **k):
+            if json["Skip"] == 0:
+                return _Yanit({"totalCount": 3, "eventList": [
+                    {"id": 1, "eventDate": "2015-03-01T00:00:00"}]})
+            return _Yanit({"totalCount": 3, "eventList": None})
+
+    assert m.fetch_month(2015, 3, 2.0, oturum=Yarim()) is None
+
+
+def test_AFAD_SAYFALAMA_VE_ALAN_ESLEMESI(monkeypatch):
+    m = _afad_modulu()
+    olaylar = [{"id": i, "eventDate": f"2015-03-01T00:00:{i:02d}",
+                "latitude": 40.0, "longitude": 30.0, "depth": 7.0,
+                "magnitude": 2.5, "magnitudeType": "ML",
+                "location": "Ege Denizi - [18.08 km] Ayvacık (Çanakkale)"}
+               for i in range(45)]
+
+    class Sahte:
+        def post(self, url, json, **k):
+            assert json["Take"] <= 20, "AFAD Take>20'de boş döner"
+            s = json["Skip"]
+            return _Yanit({"totalCount": len(olaylar),
+                           "eventList": olaylar[s:s + json["Take"]]})
+
+    monkeypatch.setattr(m.time, "sleep", lambda s: None)
+    sonuc = m.fetch_month(2015, 3, 2.0, oturum=Sahte())
+    assert len(sonuc) == 45
+    e = sonuc[0]
+    assert (e["eventID"], e["date"], e["type"]) == ("0", "2015-03-01T00:00:00", "ML")
+    assert (e["province"], e["district"]) == ("Çanakkale", "Ayvacık")

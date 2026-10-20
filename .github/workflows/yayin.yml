@@ -95,7 +95,16 @@ jobs:
         #   1. hız      -- 284 aylık JSON + 57 yıllık TXT yeniden inmesin
         #   2. KURTARMA -- veri imhası olursa buradan dönülür (V38)
         # Tahliye edilirse İKİSİ BİRDEN kaybolur; koşu düşmez, yavaşlar.
-        uses: actions/cache@v4
+        #
+        # GERİ YÜKLEME VE KAYIT AYRI ADIMLARDIR (V62). `actions/cache` kaydı
+        # işin SONUNDAKİ "Post" adımında yapar; ama o ana kadar "Yayın dalına
+        # it" adımı çalışma ağacını (data/ dahil) SİLMİŞ oluyor. Sonuç: önbellek
+        # BİR KEZ BİLE kaydedilmedi, her koşu her şeyi sıfırdan indirdi
+        # (geri yükleme ve Post adımı 0 sn). AFAD geçmişi vermeyi bıraktığında
+        # (Ekim 2026) düşülecek önbellek de yoktu. Kayıt artık hat adımının
+        # hemen ardından, ağaç silinmeden yapılır.
+        id: onbellek
+        uses: actions/cache/restore@v4
         with:
           # TÜM data/raw. Önceden yalnızca alt dizinler (afad/, koeri/)
           # kapsanıyordu; TOPLU CSV'ler (afad_catalog.csv, koeri_catalog.csv,
@@ -113,8 +122,9 @@ jobs:
           # KOERI kırpılmasının kök nedeni budur.
           #
           # Günlük anahtarla günde en fazla bir kayıt yapılır (anahtar
-          # tuttuğunda actions/cache yeniden kaydetmez); ~10 günlük geçmiş
-          # sınırın içinde kalır.
+          # tuttuğunda yeniden kaydedilmez); ~10 günlük geçmiş sınırın
+          # içinde kalır. Gün içindeki sonraki koşular bu kaydı geri yükler
+          # ve yalnızca son ayları (AFAD) / cari yılı (KOERI) tazeler.
           key: ham-katalog-${{ steps.gun.outputs.gun }}
           restore-keys: |
             ham-katalog-
@@ -154,6 +164,19 @@ jobs:
           # $RUNNER_TEMP depo ağacının dışındadır.
           set -o pipefail
           python -u -m src.operational.pipeline 2>&1 | tee "$RUNNER_TEMP/hat_cikti.log"
+
+      - name: Ham katalog önbelleğini kaydet
+        # Hat DÜŞSE DE kaydedilir: soğuk bir AFAD indirmesi ~13 bin istektir
+        # ve hat sonradan alakasız bir korumada düşerse o emek kaybolmamalı.
+        # Kaydedilen durum geri yüklenenden kötü olamaz: aylık/yıllık parçalar
+        # yalnızca BAŞARILI indirmede yazılır, toplu CSV'ler `guvenli_yaz`
+        # ile küçülmeye karşı korunur.
+        if: always() && steps.hat.outcome != 'skipped' && steps.onbellek.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: data/raw
+          key: ham-katalog-${{ steps.gun.outputs.gun }}
 
       - name: Siteyi kur
         run: python -u -m src.operational.site_kur
