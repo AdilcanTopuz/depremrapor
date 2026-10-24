@@ -1,0 +1,99 @@
+{
+  "site_kurulum": "2026-10-24T19:17:05.667340+00:00",
+  "yayin_origin": "2026-10-24T19:00:00Z",
+  "yayin_uretim": "2026-10-24T19:11:39.082858+00:00",
+  "commit": "549154ea0aa55b078caa4b07371fe594a52e7a5b",
+  "calisma_agaci": "clean",
+  "katalog": {
+    "son_olay": "2026-10-24 17:34:49.900000+00:00",
+    "yas_saat": 1.68
+  },
+  "tazelik": {
+    "uretim_zamani": "2026-10-24T19:11:39.082858+00:00",
+    "sonraki_beklenen": "2026-10-24T22:11:39.082858+00:00",
+    "yayin_araligi_saat": 3,
+    "bayatlik_esigi_saat": 7,
+    "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+  },
+  "urun_kapisi": {
+    "model": "ETAS",
+    "gozlenen": 252,
+    "beklenen": 231.50356983581392,
+    "oran": 1.0885361300420657,
+    "gecti": true,
+    "band": [
+      0.8,
+      1.25
+    ],
+    "gerekce": "bandın içinde",
+    "olcum_kunyesi": {
+      "donem": "2021-01-01 .. 2024-12-20",
+      "pencere_gun": 7,
+      "hedef_mw": 4.5,
+      "tablo": "etas_analytic_weekly",
+      "olcum_tarihi": "2026-08-26"
+    }
+  },
+  "min_times_normal": 2.0,
+  "model_kunyesi": {
+    "method": "analytic-branching",
+    "etas_params_sha256": "35958f30919b5e6ab7340baf05be24aae941dda95de831d3a23decfc8d843027",
+    "catalog_sha256": "4dbcd42272c9209a99837fbe6916385913fd65480b47189fe1a3cf898b9bd65a",
+    "catalog_last_event": "2026-10-24 17:34:49.900000+00:00",
+    "branching_nominal": 0.8209,
+    "branching_effective": 0.8125,
+    "commit": "549154ea0aa55b078caa4b07371fe594a52e7a5b",
+    "worktree": "clean",
+    "randomness": "none in the branching computation; the ETAS state EM step is SEEDED from the origin date"
+  },
+  "uyari_metni": "Bu bir OLASILIK tahminidir, kesin deprem tahmini değildir. Belirli bir tarih, yer ve büyüklükte deprem olacağını öngörmez ve bilimsel olarak böyle bir öngörü mümkün değildir. Verilen değerler, belirtilen zaman penceresinde ilgili hücrede eşik büyüklüğün üzerinde deprem olma olasılığıdır. Yöntem ve sınırlılıklar: metodoloji.html",
+  "yayin_adresi": "https://depremrapor.com",
+  "vaka_sayisi": 59,
+  "korumalar": [
+    "kirli ağaç",
+    "katalog tazeliği",
+    "katalog monotonluğu",
+    "kalibre parametreler",
+    "ürün kapısı",
+    "yayın kapsamı",
+    "şema",
+    "dil",
+    "hücre sayısı bandı",
+    "kart-tahmin tutarlılığı"
+  ],
+  "dosyalar": {
+    "hucre_yer_adlari.json": {
+      "sha256": "acf43eb20393c642f7b02a51942a5c3f7395628b3847e97cf9998a11c0dc9e1f",
+      "bayt": 264362
+    },
+    "forecast_1d_m45.geojson": {
+      "sha256": "8b37ce08d6b02e9e7ee0d87c3121289ed5089b0909bb1a1aaa9a96d3a65cfd0b",
+      "bayt": 26646
+    },
+    "forecast_7d_m45.geojson": {
+      "sha256": "533b7c3c6d824cea77eec5aa6bc09b310be089014244eb286b30fe45afcf04e5",
+      "bayt": 31734
+    },
+    "forecast_30d_m45.geojson": {
+      "sha256": "175beb7584f59636ab3939bb05920f4500b60bf691c9074e56ed82930245cffb",
+      "bayt": 36979
+    },
+    "bolge_kartlari.json": {
+      "sha256": "ab963f3a8b78078b8cddd340ca85eb8276558a8fb2ee7c5c4072bc65d56304f7",
+      "bayt": 3800
+    },
+    "son_depremler.json": {
+      "sha256": "bb1b581cb61d88012e244d9c35aa1de8faac8297edebad66d0270375f9a2db58",
+      "bayt": 2945
+    },
+    "tahmin_kaydi.json": {
+      "sha256": "e513228e0e4fc2d0cc65a791a93ccb3e963d1fd98e14834a8e10d4d8d5decfd8",
+      "bayt": 2460
+    },
+    "manifest.json": {
+      "sha256": "69c34bd87c8767c650a7f49dba51eae2bee80155e20d32dd926def1fe08ef57d",
+      "bayt": 3892
+    }
+  },
+  "ilke": "Sitede görünen her sayının bu dosyalarda bir karşılığı vardır; dosyalar indirilebilir ve sha256'ları buradadır."
+}

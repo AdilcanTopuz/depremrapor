@@ -1,0 +1,122 @@
+{
+  "kosu_id": "40124110649",
+  "tetikleyici": "workflow_dispatch",
+  "sebep": "taban: son yayın 3.0 saat önce",
+  "commit": "549154ea0aa55b078caa4b07371fe594a52e7a5b",
+  "okundu": "2026-10-24T19:17:05.742730+00:00",
+  "hat_sonucu": "success",
+  "hat_son_satirlar": [
+    "kalibre parametreler: mc=3.3 · b=1.0450",
+    "ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ",
+    "commit 549154ea0aa5 · ağaç temiz",
+    "katalog yok",
+    "  AFAD: güncellendi",
+    "  KOERI: güncellendi",
+    "  EMSC: güncellendi",
+    "güncel katalog son olay: 2026-10-24 17:34",
+    "katalog son olay 2026-10-24 17:34:49.900000+00:00 (1.68 saat önce)",
+    "tahmin başlangıcı: 2026-10-24 19:00, pencere 1 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 6, mu oranı 0.396",
+    "   1 gün ·   88 hücre · forecast_1d_m45.geojson",
+    "tahmin başlangıcı: 2026-10-24 19:00, pencere 7 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 8, mu oranı 0.396",
+    "   7 gün ·  105 hücre · forecast_7d_m45.geojson",
+    "tahmin başlangıcı: 2026-10-24 19:00, pencere 30 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 9, mu oranı 0.396",
+    "  30 gün ·  123 hücre · forecast_30d_m45.geojson",
+    "kart-tahmin tutarlılığı: 533b7c3c6d824cea… -> GEÇTİ",
+    "  son_depremler.json       5 olay",
+    "  tahmin_kaydi.json        5 olay",
+    "  bölge kartları · 6 bölge · iki katman ayrı",
+    "-> /home/runner/work/depremrapor/depremrapor/data/publish/2026-10-24T1900  ve  /home/runner/work/depremrapor/depremrapor/data/publish/latest"
+  ],
+  "manifest": {
+    "origin": "2026-10-24T19:00:00Z",
+    "uretim_zamani": "2026-10-24T19:11:39.082858+00:00",
+    "commit": "549154ea0aa55b078caa4b07371fe594a52e7a5b",
+    "calisma_agaci": "clean",
+    "korumalar": [
+      "kirli ağaç",
+      "katalog tazeliği",
+      "katalog monotonluğu",
+      "kalibre parametreler",
+      "ürün kapısı",
+      "yayın kapsamı",
+      "şema",
+      "dil",
+      "hücre sayısı bandı",
+      "kart-tahmin tutarlılığı"
+    ],
+    "katalog": {
+      "son_olay": "2026-10-24 17:34:49.900000+00:00",
+      "yas_saat": 1.68
+    },
+    "urun_kapisi": {
+      "model": "ETAS",
+      "gozlenen": 252,
+      "beklenen": 231.50356983581392,
+      "oran": 1.0885361300420657,
+      "gecti": true,
+      "band": [
+        0.8,
+        1.25
+      ],
+      "gerekce": "bandın içinde",
+      "olcum_kunyesi": {
+        "donem": "2021-01-01 .. 2024-12-20",
+        "pencere_gun": 7,
+        "hedef_mw": 4.5,
+        "tablo": "etas_analytic_weekly",
+        "olcum_tarihi": "2026-08-26"
+      }
+    },
+    "tazelik": {
+      "uretim_zamani": "2026-10-24T19:11:39.082858+00:00",
+      "sonraki_beklenen": "2026-10-24T22:11:39.082858+00:00",
+      "yayin_araligi_saat": 3,
+      "bayatlik_esigi_saat": 7,
+      "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+    },
+    "ham_satir_sayilari": {
+      "afad_catalog.csv": 266618,
+      "koeri_catalog.csv": 72634,
+      "emsc_catalog.csv": 60864
+    },
+    "min_times_normal": 2.0
+  },
+  "dosyalar": [
+    {
+      "dosya": "forecast_1d_m45.geojson",
+      "n_hucre": 88,
+      "sha256": "8b37ce08d6b02e9e"
+    },
+    {
+      "dosya": "forecast_7d_m45.geojson",
+      "n_hucre": 105,
+      "sha256": "533b7c3c6d824cea"
+    },
+    {
+      "dosya": "forecast_30d_m45.geojson",
+      "n_hucre": 123,
+      "sha256": "175beb7584f59636"
+    },
+    {
+      "dosya": "bolge_kartlari.json",
+      "n_hucre": null,
+      "sha256": "ab963f3a8b78078b"
+    },
+    {
+      "dosya": "son_depremler.json",
+      "n_hucre": null,
+      "sha256": "bb1b581cb61d8801"
+    },
+    {
+      "dosya": "tahmin_kaydi.json",
+      "n_hucre": null,
+      "sha256": "e513228e0e4fc2d0"
+    }
+  ]
+}
