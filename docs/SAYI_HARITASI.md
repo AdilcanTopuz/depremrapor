@@ -20,10 +20,15 @@ bir koruyucu, koruduğu sanılıp korumuyorsa korumamaktan kötüdür.
 Aşağıdaki "son güncelleme" sütunu, her satırın hangi olayla son kez
 değerlendirildiğini taşır.
 
-**Son güncelleme:** 28 Ağustos 2026 — **hiçbir sayı etkilenmedi.**
-`forecast_now.py`'deki tek değişiklik, indirici başarısızlığında ekrana
-hangi satırın basılacağıdır (V61 yan bulgusu: hata mesajı hatayı
-göstermiyordu). Model, katalog, parametre ve eşiklerde değişiklik yok.
+**Son güncelleme:** 28 Ekim 2026 — **hiçbir sayı etkilenmedi.**
+`forecast_now.py`'deki tek değişiklik, BAŞARILI indiricinin `UYARI`
+satırlarının da ekrana basılmasıdır (V63: AFAD oturum zorunluluğu yüzünden
+tazelenemeyen Ekim ayı "güncellendi" satırının arkasında kaldı). Model,
+katalog, parametre ve eşiklerde değişiklik yok.
+
+Not: 26-28 Ekim 2026'da katalog tazelik korumasında düşen koşular yayın
+yapmadı (V63). Yayımlanmış hiçbir sayı geçersiz olmadı; yalnızca yenisi
+üretilemedi.
 
 Not: 28 Ağustos'ta koşu #43–#63 arası yayın yapılamadı (V60, V61).
 Yayımlanmış hiçbir sayı geçersiz olmadı; yalnızca yenisi üretilemedi ve

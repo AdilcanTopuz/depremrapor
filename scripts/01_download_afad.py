@@ -39,6 +39,18 @@ from src.ingest.ham_yaz import guvenli_yaz  # noqa: E402
 # 266.598 -- eski apiv2 dökümüyle (266.527) tutarlı. Kısıtı: sayfa başına
 # EN FAZLA 20 kayıt (Take>20 sessizce totalCount=0 döndürür).
 BASE = "https://deprem.afad.gov.tr/EventData/GetEventsByFilter"
+# OTURUM ZORUNLU (22 Ekim 2026'dan beri).
+#
+# Arama ucu artık `afad_sid` çerezi olmayan isteğe HTTP 401 ve
+# `{"code":"session_required"}` döner (arada 502 de). Çerez
+# `GET Session/Init` ile alınır, 12 saat geçerlidir; AFAD'ın kendi ön yüzü
+# de 401 görünce Init'i yeniden çağırır (main-es2015 paketindeki
+# interceptor). Fark edilmedi, çünkü alınamayan son aylarda eldeki önbellek
+# kullanılıyor ve betik başarıyla bitiyordu: katalog 26 Ekim'de dondu, hat
+# 28 Ekim'de tazelik korumasında düştü.
+OTURUM_UCU = "https://deprem.afad.gov.tr/Session/Init"
+OTURUM_CEREZI = "afad_sid"
+BASLIK = {"User-Agent": "deprem-tahmin-research/0.1"}
 SAYFA = 20
 # AFAD'ın filtre türü numaraları (event-service paketindeki enum)
 F_MIN_TARIH, F_MAX_TARIH, F_MIN_BUYUKLUK = 8, 9, 11
@@ -112,6 +124,31 @@ def _apiv2_bicimi(e: dict) -> dict:
     }
 
 
+def oturum_ac(oturum: requests.Session) -> None:
+    """`afad_sid` çerezini alır; alamazsa hata verir."""
+    oturum.cookies.clear()
+    oturum.get(OTURUM_UCU, timeout=60, headers=BASLIK).raise_for_status()
+    if OTURUM_CEREZI not in oturum.cookies:
+        raise ValueError(f"{OTURUM_UCU} {OTURUM_CEREZI} çerezi vermedi")
+
+
+def _sorgula(oturum: requests.Session, govde: dict) -> dict:
+    """Arama ucuna oturumla sorar; oturum düşmüşse (401) bir kez yeniler."""
+    if OTURUM_CEREZI not in oturum.cookies:
+        oturum_ac(oturum)
+    r = oturum.post(BASE, timeout=60, json=govde, headers=BASLIK)
+    if r.status_code == 401:
+        oturum_ac(oturum)
+        r = oturum.post(BASE, timeout=60, json=govde, headers=BASLIK)
+    r.raise_for_status()
+    d = r.json()
+    # Oturumsuz cevap 200 ile gelse bile boş ay sayılmasın: `eventList` yok,
+    # `totalCount` yok, aşağıdaki döngü bunu "0 olay" diye okurdu.
+    if "totalCount" not in d:
+        raise ValueError(f"beklenmeyen cevap: {str(d)[:120]}")
+    return d
+
+
 def fetch_month(year: int, month: int, minmag: float, retries: int = 3,
                 oturum=None):
     """Bir ayın olaylarını döndürür; ALINAMAZSA None (boş liste DEĞİL).
@@ -133,14 +170,12 @@ def fetch_month(year: int, month: int, minmag: float, retries: int = 3,
             toplam = None
             skip = 0
             while True:
-                r = oturum.post(BASE, timeout=60, json={
+                d = _sorgula(oturum, {
                     "EventSearchFilterList": filtre, "Skip": skip, "Take": SAYFA,
                     # artan sıra: sayfalama sürerken gelen yeni olay baştaki
                     # sayfaları kaydırmasın
                     "SortDescriptor": {"field": "eventDate", "dir": "asc"},
-                }, headers={"User-Agent": "deprem-tahmin-research/0.1"})
-                r.raise_for_status()
-                d = r.json()
+                })
                 liste = d.get("eventList") or []
                 if toplam is None:
                     toplam = d.get("totalCount") or 0
@@ -216,6 +251,7 @@ def main() -> None:
     simdi = datetime.now()
     all_rows: list[dict] = []
     alinamayan: list[str] = []
+    bayat: list[str] = []
     for year in range(args.start, args.end + 1):
         for month in range(1, 13):
             if datetime(year, month, 1) > simdi:
@@ -230,6 +266,8 @@ def main() -> None:
                     # Tazelenemeyen son ay: eldeki (biraz eski) önbellek
                     # kullanılır. O da yoksa ay ALINAMADI sayılır.
                     data = cached
+                    if cached is not None:
+                        bayat.append(f"{year}-{month:02d}")
                 else:
                     # encoding açıkça verilmeli: Path.write_text sistem varsayılanını kullanır ve
                     # Türkçe Windows'ta (cp1254) AFAD yer adlarındaki bazı karakterler
@@ -270,6 +308,11 @@ def main() -> None:
     out_csv = RAW_DIR.parent / "afad_catalog.csv"
     guvenli_yaz(df, out_csv, ad="afad_catalog.csv")
     print(f"Toplam {len(df)} olay -> {out_csv}")
+    # Betik başarıyla biter (bir anlık AFAD hatası yayını durdurmasın) ama
+    # tazelenemeyen ay SESSİZ GEÇMEZ: hat UYARI satırlarını günlüğe taşır.
+    if bayat:
+        print(f"UYARI: AFAD {', '.join(bayat)} tazelenemedi; önbellekteki "
+              "ESKİ hâli kullanıldı.", file=_sys.stderr)
 
 
 if __name__ == "__main__":

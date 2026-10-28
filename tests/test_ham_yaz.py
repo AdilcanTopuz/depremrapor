@@ -122,14 +122,30 @@ def _afad_modulu():
 
 
 class _Yanit:
-    def __init__(self, veri):
+    def __init__(self, veri, status_code=200):
         self.veri = veri
+        self.status_code = status_code
 
     def raise_for_status(self):
-        pass
+        if self.status_code >= 400:
+            raise OSError(f"HTTP {self.status_code}")
 
     def json(self):
         return self.veri
+
+
+class _Oturum:
+    """Açık AFAD oturumu (`afad_sid` çerezi var); Init yeni çerez verir."""
+
+    def __init__(self):
+        self.cookies = {"afad_sid": "gecerli"}
+        self.init_sayisi = 0
+
+    def get(self, url, **k):
+        assert url.endswith("Session/Init")
+        self.init_sayisi += 1
+        self.cookies["afad_sid"] = f"yeni{self.init_sayisi}"
+        return _Yanit(None, 204)
 
 
 def test_AFAD_ALINAMAYAN_AY_BOS_AY_SAYILMAZ(monkeypatch):
@@ -142,13 +158,13 @@ def test_AFAD_ALINAMAYAN_AY_BOS_AY_SAYILMAZ(monkeypatch):
     m = _afad_modulu()
     monkeypatch.setattr(m.time, "sleep", lambda s: None)
 
-    class Bozuk:
+    class Bozuk(_Oturum):
         def post(self, *a, **k):
             raise OSError("zaman aşımı")
 
     assert m.fetch_month(2015, 3, 2.0, oturum=Bozuk()) is None
 
-    class Yarim:
+    class Yarim(_Oturum):
         """totalCount 3 der ama tek sayfadan sonra boş döner."""
         def post(self, url, json, **k):
             if json["Skip"] == 0:
@@ -157,6 +173,38 @@ def test_AFAD_ALINAMAYAN_AY_BOS_AY_SAYILMAZ(monkeypatch):
             return _Yanit({"totalCount": 3, "eventList": None})
 
     assert m.fetch_month(2015, 3, 2.0, oturum=Yarim()) is None
+
+    class Oturumsuz(_Oturum):
+        """Oturum hiç açılmıyor; uç 200 ile session_required döner."""
+        def post(self, *a, **k):
+            return _Yanit({"code": "session_required", "reason": "missing"})
+
+    assert m.fetch_month(2015, 3, 2.0, oturum=Oturumsuz()) is None
+
+
+def test_AFAD_DUSEN_OTURUM_YENILENIR(monkeypatch):
+    """Ekim 2026: uç `afad_sid` çerezi olmadan 401 döner. Çerez yoksa önce
+    açılır; süresi dolmuşsa (401) Session/Init ile yenilenip yeniden sorulur.
+    """
+    m = _afad_modulu()
+    monkeypatch.setattr(m.time, "sleep", lambda s: None)
+
+    class Suresi_Dolan(_Oturum):
+        def post(self, url, json, **k):
+            if self.cookies.get("afad_sid") == "gecerli":
+                return _Yanit({"code": "session_required",
+                               "reason": "invalid"}, 401)
+            return _Yanit({"totalCount": 1, "eventList": [
+                {"id": 7, "eventDate": "2015-03-01T00:00:00"}]})
+
+    o = Suresi_Dolan()
+    assert len(m.fetch_month(2015, 3, 2.0, oturum=o)) == 1
+    assert o.init_sayisi == 1
+
+    o = Suresi_Dolan()
+    o.cookies.clear()
+    assert len(m.fetch_month(2015, 3, 2.0, oturum=o)) == 1
+    assert o.init_sayisi == 1, "çerez yokken ilk istekten ÖNCE açılmalı"
 
 
 def test_AFAD_SAYFALAMA_VE_ALAN_ESLEMESI(monkeypatch):
@@ -167,7 +215,7 @@ def test_AFAD_SAYFALAMA_VE_ALAN_ESLEMESI(monkeypatch):
                 "location": "Ege Denizi - [18.08 km] Ayvacık (Çanakkale)"}
                for i in range(45)]
 
-    class Sahte:
+    class Sahte(_Oturum):
         def post(self, url, json, **k):
             assert json["Take"] <= 20, "AFAD Take>20'de boş döner"
             s = json["Skip"]

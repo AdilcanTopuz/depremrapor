@@ -150,6 +150,12 @@ def update_catalog(quiet: bool = False,
             ok += 1
             if not quiet:
                 print(f"  {name}: güncellendi")
+                # Başarılı koşunun UYARI'sı da gösterilir: AFAD oturum
+                # zorunluluğu (Ekim 2026) iki gün boyunca "güncellendi"
+                # satırının arkasında kaldı.
+                for satir in (r.stdout + r.stderr).splitlines():
+                    if satir.startswith("UYARI"):
+                        print(f"      {satir[:110]}")
         elif not quiet:
             # GERÇEK HATA GÖSTERİLİR, İLK ÇIKTI SATIRI DEĞİL.
             #
