@@ -1,0 +1,21 @@
+kalibre parametreler: mc=3.3 · b=1.0450
+ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ
+commit 549154ea0aa5 · ağaç temiz
+katalog yok
+  AFAD: güncellendi
+  KOERI: güncellendi
+  EMSC: güncellendi
+güncel katalog son olay: 2026-10-26 11:35
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 623, in <module>
+    main()
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 619, in main
+    calistir(guncelle=not a.no_update, izin_kirli=a.allow_dirty)
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 482, in calistir
+    tazelik = kontrol_katalog_tazeligi()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/depremrapor/depremrapor/src/operational/pipeline.py", line 215, in kontrol_katalog_tazeligi
+    raise BayatKatalogHatasi(
+BayatKatalogHatasi: katalog 51.2 saat eski (azami 48). AFAD çekme başarısız olmuş olabilir; ESKİ VERİYLE tahmin yayımlanmaz.
