@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Modelin nasıl kurulduğu, neyi ölçtüğü ve nerede sınandığı; bilgi kazancı, MDE ve yayın kapsamı.">
+<link rel="canonical" href="https://depremrapor.com/metodoloji.html">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="depremrapor.com">
+<meta property="og:url" content="https://depremrapor.com/metodoloji.html">
+<meta property="og:title" content="Yöntem ve sınırlılıklar — depremrapor.com">
+<meta property="og:description" content="Modelin nasıl kurulduğu, neyi ölçtüğü ve nerede sınandığı; bilgi kazancı, MDE ve yayın kapsamı.">
+<meta property="og:image" content="https://depremrapor.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Türkiye haritası üzerinde depremrapor.com başlığı ve olasılık renk ölçeği">
+<meta name="twitter:card" content="summary_large_image">
+<title>Yöntem ve sınırlılıklar — Türkiye Deprem Olasılık Tahmini</title>
+<style>
+  :root{--bg:#0f1216;--kart:#171b21;--cizgi:#2a3038;--metin:#e6e9ee;--soluk:#9aa4b2}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--metin);
+       font:15.5px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .kap{max-width:820px;margin:0 auto;padding:24px 20px 60px}
+  h1{font-size:22px;margin:0 0 6px}
+  h2{font-size:17px;margin:32px 0 10px;padding-top:14px;border-top:1px solid var(--cizgi)}
+  h3{font-size:14.5px;margin:18px 0 6px;color:#cfd6e0}
+  p,li{color:#dbe0e8}
+  .soluk{color:var(--soluk);font-size:13.5px}
+  .kutu{background:var(--kart);border:1px solid var(--cizgi);border-radius:9px;
+        padding:13px 15px;margin:12px 0}
+  .vurgu{border-left:3px solid #b5843f}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--cizgi)}
+  th{color:var(--soluk);font-weight:500}
+  code{background:#11151a;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  a{color:#7fb3e8}
+  .geri{display:inline-block;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="kap">
+<a class="geri" href="index.html">← haritaya dön</a>
+<h1>Yöntem ve sınırlılıklar</h1>
+<p class="soluk">Bu sayfada yazan her sayı ölçülmüştür ve künyesi vardır.
+Ölçülmemiş hiçbir iddia yoktur; ölçülemeyen şeyler <em>ölçülemedi</em> diye
+yazılır.</p>
+
+<!-- UYARI METNİ KOPYALANMAZ, YÜKLENIR.
+     Metin onaylıdır ve sha256'sı hatta sabittir (V35): muafiyet DESENE değil
+     KİMLİĞE verilir. Sayfaya elle yazılan bir kopya, tek harf değişse
+     muafiyetini kaybeder ve dil denetimi onu ihlal sayar -- nitekim ilk
+     sürümde tam bu oldu. Tek kaynak: data/kunye.json -->
+<div class="kutu vurgu" id="uyari">yükleniyor…</div>
+
+<h2>Model</h2>
+<p><strong>ETAS</strong> (Epidemic-Type Aftershock Sequence): her deprem,
+kendisinden sonra gelen depremlerin olasılığını artırır. Model iki bileşenden
+oluşur:</p>
+<ul>
+  <li><strong>Arka plan</strong> — uzun vadeli, zamandan bağımsız oran</li>
+  <li><strong>Tetiklenme</strong> — geçmiş olayların Omori-Utsu azalımıyla
+    sönen katkısı</li>
+</ul>
+<p>Hesap <strong>analitiktir</strong>: simülasyon yoktur, dolayısıyla aynı
+girdi her zaman aynı çıktıyı verir. Simülasyonlu yol denenmiş ve haftalık
+hücre oranları için <em>çözünürlüğü yetersiz</em> bulunmuştur — oranların
+ortancası 4,1×10⁻⁴ ve 500 denemede hücrelerin çoğunda sıfır çıkıyordu.</p>
+
+<h2>Ne kadar iyi? — ölçülmüş sonuçlar</h2>
+<p class="soluk">Değerlendirme dönemi 2021-01-01 .. 2024-12-20 · 436.800
+hücre-pencere · 252 olay · 7 gün · M≥4,5. Kahramanmaraş (6 Şubat 2023) bu
+dönemin içindedir ve model onu <em>görmeden</em> değerlendirilmiştir.</p>
+<table>
+  <tr><th>ölçüt</th><th>uzun vadeli (Poisson)</th><th>ETAS</th></tr>
+  <tr><td>AUC (sıralama başarısı)</td><td>0,6503</td><td><strong>0,7910</strong></td></tr>
+  <tr><td>kalibrasyon (gözlenen/beklenen)</td><td>1,24</td><td><strong>1,09</strong></td></tr>
+</table>
+<p>Olay başına bilgi kazancı <strong>+1,068 nat</strong>: ETAS, uzun vadeli
+orana göre gerçekleşen olayları belirgin biçimde daha yüksek olasılıkla
+işaretliyor.</p>
+
+<h3>Kazanç zamanda çok yoğun — bu bir sınırdır</h3>
+<div class="kutu">
+  Bilgi kazancının <strong>%98,8'i</strong>, en yüksek 10 olaylı başlangıçtan
+  geliyor. Dizi dönemlerinde kazanç büyük (+3,81 → +2,47 nat), dizi dışında
+  küçük ama anlamlı (+0,55 → +0,29) ve <strong>365 günde belirsizliğe
+  geçiyor.</strong> ETAS, olaylı başlangıçların %50,8'inde uzun vadeli orana
+  <em>kaybediyor.</em>
+</div>
+
+<h2>İki eksenli çözünürlük kuralı</h2>
+<p>Sistemin ne söyleyebileceği, dönemin ve ölçeğin fonksiyonudur:</p>
+<table>
+  <tr><th>dönem</th><th>zaman ekseni</th><th>mekân ekseni</th></tr>
+  <tr><td><strong>sakin</strong></td><td>uzun vadeli orana yaslan; ETAS küçük düzeltme</td><td><strong>bölge</strong> düzeyinde konuş</td></tr>
+  <tr><td><strong>kriz</strong></td><td>ETAS ön planda</td><td><strong>hücre</strong> anlamlı</td></tr>
+</table>
+<p class="soluk">Gerekçe ölçülmüştür: sakin günde iki bağımsız yöntem aynı
+<em>bölgeyi</em> gösteriyor ama farklı <em>hücreyi</em> — ortanca ayrım ~22 km
+(bir hücre), rastgele beklenti 648 km. Artçı bölgesinde ise oranlar arka
+planın onlarca-yüzlerce katına çıkıyor ve bu titreme kayboluyor.</p>
+
+<h2>Haritada ne görüyorsunuz — ve ne görmüyorsunuz</h2>
+<h3>Yayımlama eşiği</h3>
+<p>Haritada yalnızca oranı <strong>uzun vadeli normalin 2 katı ve üzerinde</strong>
+olan hücreler gösterilir. Eşik ölçülerek seçilmiştir:</p>
+<table>
+  <tr><th>eşik</th><th>başlangıç başına hücre</th><th>olay kütlesi payı</th></tr>
+  <tr><td>1,0</td><td>616</td><td>79,4%</td></tr>
+  <tr><td><strong>2,0</strong></td><td><strong>299</strong></td><td><strong>73,0%</strong></td></tr>
+  <tr><td>3,0</td><td>179</td><td>69,3%</td></tr>
+  <tr><td>10,0</td><td>44</td><td>59,8%</td></tr>
+</table>
+<p>1,0'dan 2,0'a çıkmak hücre sayısını yarıya indirip kütlenin yalnızca 6,4
+puanını feda ediyor — en verimli kesim buradadır.</p>
+<div class="kutu vurgu">
+  <strong>Eşiğin altında olasılık vardır; yalnızca yayımlanmaz.</strong>
+  Haritada görünmeyen bir hücre "risk yok" demek değildir — o hücrenin
+  olasılığı uzun vadeli ortalamasına yakın demektir.
+</div>
+
+<h3>Neden iki ayrı kutu görüyorsunuz</h3>
+<p>Bölge kartlarında iki <strong>farklı türde</strong> bilgi yan yana durur ve
+birleştirilmez:</p>
+<table>
+  <tr><th></th><th>ne söyler</th><th>hangi döneme ait</th></tr>
+  <tr><td><strong>Bulgu</strong></td><td>modelin o bölgede <em>ayırt edici</em> olup olmadığı</td><td>2021-2024, tarihli</td></tr>
+  <tr><td><strong>Bu hafta</strong></td><td>bugünün <em>olasılığı</em></td><td>bugün</td></tr>
+</table>
+<p><strong>Marmara örneği.</strong> Bulgu: <em>"fark gösterilemedi"</em>
+(6 olay, saptanabilir en küçük fark 1,136 nat — ölçüm gücü yetersiz).
+Bu hafta: <em>%0,83, en yüksek hücre normalin 12,5 katı.</em> İkisi ayrı
+durduğu için ikisi de doğrudur; birleştirilse
+<em>"model çalışmıyor ama risk var"</em> gibi anlamsız bir cümle çıkardı.</p>
+
+<h3>"Fark gösterilemedi" ne demek</h3>
+<div class="kutu">
+  <strong>Zayıflık değil, belirsizliktir.</strong> O bölgede fark
+  <em>olmadığı</em> değil, bu veriyle <em>gösterilemediği</em> ölçülmüştür.
+  Yanında yazan <strong>saptanabilir en küçük fark</strong> (MDE), mevcut olay
+  sayısıyla görülebilecek en küçük farkın büyüklüğüdür. Olay sayısı az olan
+  bölgelerde bu değer büyüktür — yani ölçüm gücü düşüktür.
+</div>
+
+<h2>Makine öğrenmesi denendi ve sonucu söyleniyor</h2>
+<p>İki makine öğrenmesi yaklaşımı — gradyan artırmalı ağaçlar ve nöral nokta
+süreci — <strong>aynı veride ETAS'a karşı sınandı.</strong> Protokol koşudan
+önce ilan edildi: arama uzayı, seçim kuralı, eşdeğerlik bandı ve test setine
+kaç kez dokunulacağı önceden yazıldı.</p>
+<table>
+  <tr><th>model</th><th>ETAS'a karşı bilgi kazancı</th><th>kalibrasyon</th><th>ürün kapısı</th></tr>
+  <tr><td>Gradyan artırmalı ağaçlar</td><td>+0,018 [−0,164; +0,196]</td><td>1,82</td><td>geçmedi</td></tr>
+  <tr><td>Nöral nokta süreci</td><td>+0,174 [+0,032; +0,317]</td><td>1,52</td><td>geçmedi</td></tr>
+</table>
+<p>Nöral model, önceden ilan edilmiş araştırma ölçütünü <strong>geçti</strong>;
+ancak <strong>kalibrasyon şartını sağlamadı</strong> ve operasyonel sisteme
+alınmadı. Üstünlüğünün büyük kısmı, toplam olay sayısını eksik tahmin
+etmesinin ölçüte yansıyan ödülünden geliyor: gerçekleşen olaylarda hâlâ
+ETAS'ın altında.</p>
+<div class="kutu">
+  <strong>Ne öğrenildi:</strong> tetiklenme veriden <em>kısmen</em>
+  öğrenilebiliyor (dizi penceresi beklentisi 19,8'den 41,8'e çıktı; ETAS 84,3,
+  gözlenen 59), ama <em>seviye kalibrasyonu</em> öğrenilemedi.
+  <br><br>
+  <strong>Bu hedef tanımı için geçerlidir</strong> (7 gün, M≥4,5). "Makine
+  öğrenmesi deprem tahmininde işe yaramıyor" gibi bir genellemeye
+  <em>genişletilemez.</em>
+</div>
+
+<h2>Ürün kapısı — hangi model yayına girer</h2>
+<p>Bir modelin operasyonel katmana alınması için
+<strong>gözlenen/beklenen oranının [0,80; 1,25] bandında</strong> olması
+gerekir. Ölçüt sonuç görülmeden ilan edilmiştir ve her yayından önce
+otomatik kontrol edilir.</p>
+<table>
+  <tr><th>model</th><th>kalibrasyon</th><th>kapı</th></tr>
+  <tr><td>ETAS</td><td>1,089</td><td><strong>geçer</strong></td></tr>
+  <tr><td>uzun vadeli Poisson</td><td>1,240</td><td>geçer (sınırda)</td></tr>
+  <tr><td>gradyan artırmalı ağaçlar</td><td>1,816</td><td>geçmez</td></tr>
+  <tr><td>nöral nokta süreci</td><td>1,524</td><td>geçmez</td></tr>
+</table>
+<p class="soluk">Sıralama başarısı ile kalibrasyon farklı şeylerdir. Sıralaması
+mükemmel bir model bile, kalibrasyonu bozuksa yanlış <em>sayı</em> yayımlar —
+kullanıcı sıralama görmez, sayı görür.</p>
+
+<h2>Bilinen sınırlar</h2>
+<ul>
+  <li><strong>Kazanç dizi dönemlerinde yoğunlaşır.</strong> Sakin dönemde
+    ETAS'ın uzun vadeli orana katkısı küçüktür ve uzun pencerelerde
+    belirsizleşir.</li>
+  <li><strong>Üç bölgede üstünlük gösterilemedi</strong> — Marmara, Batı
+    Anadolu, Kuzey Anadolu doğusu. Sebep, <em>testin örneklemi</em>:
+    değerlendirme penceresine (4 yıl, M≥4,5) o bölgelerden az sayıda olay
+    düştü. <strong>Bu, o bölgelerde deprem tehlikesinin düşük olduğu anlamına
+    GELMEZ</strong> — aşağıya bakınız.</li>
+  <li><strong>Bölge olasılıkları</strong> hücrelerin bağımsız olduğu
+    varsayımıyla birleştirilir. Komşu hücreler bir arada tetiklenebileceği
+    için gerçek olasılık biraz <em>daha düşük</em> olabilir.</li>
+  <li><strong>Katalog tamlığı</strong> M3,3 üzerinde varsayılır; altındaki
+    olaylar modele girmez.</li>
+  <li><strong>Deprem tahmini değildir.</strong> Model, olasılıkların nasıl
+    değiştiğini söyler; bir depremin zamanını, yerini ve büyüklüğünü
+    söylemez.</li>
+</ul>
+
+<h3>"Az olay" ne demek — ve ne demek DEĞİL</h3>
+<p>Bir bölge için <em>"fark gösterilemedi"</em> yazıyorsa, yanında duran olay
+sayısı <strong>testin örneklemidir</strong>: değerlendirme penceresine
+(2021-2024, 7 gün, M≥4,5) o bölgeden kaç olay düştüğü. <strong>Bölgenin
+deprem tehlikesi değildir.</strong></p>
+<p>Marmara örneği bunu açıkça gösterir:</p>
+<table>
+  <tr><th>Marmara bölgesinde M≥4,5 olay</th><th>sayı</th></tr>
+  <tr><td>2021-2024 (değerlendirme penceresi)</td><td><strong>6</strong></td></tr>
+  <tr><td>2010-2024</td><td>30</td></tr>
+  <tr><td>1990-2024</td><td><strong>142</strong></td></tr>
+  <tr><td>kayıtlı tüm dönem</td><td>227</td></tr>
+</table>
+<p>Uzun vadeli yoğunluk (1990-2024, birim alan ve yıl başına M≥4,5 olay):</p>
+<table>
+  <tr><th>bölge</th><th>olay/derece²/yıl</th></tr>
+  <tr><td>Doğu Anadolu (Maraş-Malatya)</td><td>0,817</td></tr>
+  <tr><td>Ege denizi</td><td>0,731</td></tr>
+  <tr><td>Batı Anadolu (Ege grabenleri)</td><td>0,533</td></tr>
+  <tr><td><strong>Kuzey Anadolu batı (Marmara)</strong></td><td><strong>0,523</strong></td></tr>
+  <tr><td>Kuzey Anadolu doğu (Erzincan-Erzurum)</td><td>0,441</td></tr>
+</table>
+<div class="kutu vurgu">
+  <strong>Marmara, düşük sismisiteli bir bölge değildir.</strong> Uzun vadeli
+  olay yoğunluğu Batı Anadolu ile aynı düzeyde, Kuzey Anadolu doğusundan
+  yüksektir; Kuzey Anadolu Fayı'nın Marmara segmenti Türkiye'nin en yakından
+  izlenen fay sistemlerinden biridir (1999 İzmit ve Düzce depremleri bu
+  sistemdedir).
+  <br><br>
+  Yalnızca şu doğrudur: <strong>dört yıllık bir pencerede, M≥4,5 eşiğinin
+  üstünde 6 olayla, iki modeli birbirinden ayırt edecek istatistiksel güç
+  yoktur.</strong> Bu, modelin o bölgede kötü olduğunu da iyi olduğunu da
+  göstermez — <em>ölçemedik</em> demektir.
+</div>
+
+<h2>Şeffaflık</h2>
+<p>Her yayımlanan tahmin bir künye taşır: yöntem, parametre sha256, katalog
+sha256, katalogun son olayı, kod commit'i, çalışma ağacı durumu ve rastgelelik
+beyanı. <strong>Commit'lenmemiş bir çalışma ağacından yayım reddedilir</strong>
+— künyedeki commit, dosyanın içeriğini yansıtmıyorsa künye olmaktan çıkar.</p>
+<p>Yayımlanmış ve sonradan geri çekilmiş tahminler <em>silinmez</em>; geri
+çekme gerekçesiyle birlikte arşivde kalır.</p>
+<p><a href="data/kunye.json">Bu yayının künyesi ve dosya sha256'ları →</a></p>
+
+<h3>Hataların kaydı açıktır</h3>
+<p>Bu sistem geliştirilirken bulunan <strong>her hata</strong>, düzeltilmeden
+önce ve düzeltildikten sonra kayda geçirildi: ne olduğu, nasıl bulunduğu,
+hangi ölçümle doğrulandığı, ve aynı sınıftan başka hata olup olmadığı.
+Kayıt <strong>38 vaka</strong> içerir ve kamuya açıktır.</p>
+<div class="kutu">
+  <strong>Neden açık?</strong> Bu sitenin iddiası doğruluk değil,
+  <em>denetlenebilirlik</em>. "Sınadık ve sonucunu söylüyoruz" cümlesinin
+  dipnotu o defterdir. Hataları gizleyen bir sistem, doğruluğunu da
+  kanıtlayamaz.
+  <br><br>
+  Defterdeki vakaların çoğu, <strong>yayına çıkmadan</strong> yakalanmış
+  hatalardır — birkaçı ise yayımlanmış ve <strong>geri çekilmiştir.</strong>
+  Geri çekilen yayınlar silinmez; gerekçeleriyle arşivde durur.
+</div>
+<p class="soluk">Örnek vakalar: veri hattının kendi katalog dosyasını
+kısmen silmesi ve önbellekten kurtarılması; komşu ülkelerdeki hücrelerin
+eksik katalog yüzünden yanlış yüksek değerler üretmesi ve yayın kapsamının
+Türkiye ile sınırlanması; teknik olarak doğru bir cümlenin okuyucuyu yanlış
+sonuca götürdüğünün fark edilip yeniden yazılması.</p>
+<p><a href="yasal.html">Yasal bilgiler ve sorumluluk reddi →</a></p>
+<p><a href="vaka-defteri.html">Vaka defteri<span id="vakaSayisi"></span> →</a> ·
+   <a href="denetim-mirasi.html">Denetim ilkeleri →</a> ·
+   <a href="https://github.com/AdilcanTopuz/depremrapor" target="_blank" rel="noopener">Kaynak kodu (GitHub) →</a></p>
+
+<h2>Atıf</h2>
+<p>Buradaki sayılara atıfla serbestçe başvurulabilir. Atıf, sayının
+<strong>hangi künyeyle</strong> üretildiğini içermelidir: künyesiz
+alıntılanan bir sayı, hangi katalogla ve hangi kodla üretildiği
+bilinmediği için doğrulanamaz hâle gelir.</p>
+
+<div class="kutu"><code id="atif">yükleniyor…</code></div>
+
+<p class="soluk">Bu künye şu anda yayımlanan sürüme aittir ve her yayında
+değişir. Alıntı yaptığınız günün künyesini kullanınız; o günün dosyaları
+ve sha256'ları arşivde durur.</p>
+
+<h2>Kaynaklar</h2>
+<p class="soluk">AFAD · Kandilli Rasathanesi (KOERI) · USGS · EMSC · GEM ·
+MTA. Harita altlığı © OpenStreetMap katkıcıları.<br>Yayın adresi: depremrapor.com</p>
+</div>
+<script>
+fetch("data/kunye.json").then(r=>r.json()).then(k=>{
+  document.getElementById("uyari").innerHTML = "<strong>"+k.uyari_metni+"</strong>";
+  // Sayı künyeden gelir; sayfaya elle yazılmaz (V42 kalıbı).
+  if (k.vaka_sayisi) document.getElementById("vakaSayisi").textContent =
+    " — " + k.vaka_sayisi + " kayıt";
+  // Atıf dizgesi de künyeden üretilir: adres, tarih ve commit elle
+  // yazılsaydı üçü de kaynağından ayrışabilirdi.
+  const _a = document.getElementById("atif");
+  if (_a) _a.textContent =
+    "Türkiye Deprem Olasılık ve Tahmin Haritası. "
+    + (k.yayin_uretim ? k.yayin_uretim.slice(0, 10) + " yayını, " : "")
+    + "künye " + String(k.commit || "").slice(0, 12) + ". Kaynak: "
+    + (k.yayin_adresi || "https://depremrapor.com");
+}).catch(()=>{
+  document.getElementById("uyari").textContent =
+    "Uyarı metni yüklenemedi — site verisi kurulmamış olabilir.";
+});
+</script>
+</body>
+</html>
