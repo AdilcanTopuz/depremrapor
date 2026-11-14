@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Bulunan her hatanın kaydı">
+<link rel="canonical" href="https://depremrapor.com/vaka-defteri.html">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="depremrapor.com">
+<meta property="og:url" content="https://depremrapor.com/vaka-defteri.html">
+<meta property="og:title" content="Vaka defteri — depremrapor.com">
+<meta property="og:description" content="Bulunan her hatanın kaydı">
+<meta property="og:image" content="https://depremrapor.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Türkiye haritası üzerinde depremrapor.com başlığı ve olasılık renk ölçeği">
+<meta name="twitter:card" content="summary_large_image">
+<title>Vaka defteri — Türkiye Deprem Olasılık Haritası</title>
+<style>
+ :root{--bg:#0f1216;--kart:#171b21;--cizgi:#2a3038;--metin:#e6e9ee;--soluk:#9aa4b2}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--metin);
+   font:15px/1.62 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+ .kap{max-width:860px;margin:0 auto;padding:22px 20px 70px}
+ h1{font-size:22px;margin:0 0 4px} h2{font-size:17.5px;margin:30px 0 8px;
+   padding-top:13px;border-top:1px solid var(--cizgi)}
+ h3{font-size:14.5px;margin:16px 0 6px;color:#cfd6e0}
+ h4{font-size:13.5px;margin:12px 0 5px;color:var(--soluk)}
+ p,li{color:#dbe0e8} .soluk{color:var(--soluk);font-size:13.5px}
+ table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+ th,td{text-align:left;padding:6px 9px;border-bottom:1px solid var(--cizgi);
+   vertical-align:top}
+ th{color:var(--soluk);font-weight:500}
+ pre{background:#11151a;border:1px solid var(--cizgi);border-radius:7px;
+   padding:11px 13px;overflow-x:auto;font-size:12.5px;line-height:1.45}
+ code{background:#11151a;padding:1px 5px;border-radius:4px;font-size:12.5px}
+ blockquote{border-left:3px solid #b5843f;margin:12px 0;padding:8px 14px;
+   background:var(--kart);border-radius:0 7px 7px 0}
+ hr{border:0;border-top:1px solid var(--cizgi);margin:26px 0}
+ a{color:#7fb3e8} .geri{display:inline-block;margin-bottom:14px}
+ .ust{background:var(--kart);border:1px solid var(--cizgi);border-radius:9px;
+   padding:12px 15px;margin:12px 0 20px;font-size:13.5px}
+</style></head><body><div class="kap">
+<a class="geri" href="index.html">← haritaya dön</a>
+<h1>Vaka defteri</h1>
+<div class="soluk">Bulunan her hatanın kaydı</div>
+<div class="ust">Bu defter, sistem geliştirilirken bulunan hataların kaydıdır. Her kayıt şunu içerir: <strong>ne olduğu</strong>, <strong>nasıl bulunduğu</strong>, hangi ölçümle doğrulandığı ve aynı sınıftan başka hata olup olmadığı. Vakaların çoğu yayına çıkmadan yakalanmıştır; birkaçı yayımlanmış ve geri çekilmiştir. Teknik bir belgedir ve teknik dil kullanır.</div>
+<h1>Vaka defteri — kod tabanının hafızası</h1>
+<p>Bu projede en pahalı hatalar sessiz olanlardı: istisna fırlatmayan, çıktı üreten, makul görünen hatalar. Her biri bir örüntüye ait ve o örüntü bir daha tekrarlanabilir.</p>
+<p>Sözlü gelenekte kalan vakalar ilk unutulanlardır. Bu defter onları yazıya geçirir; <code>docs/DENETIM_MIRASI.md</code> buradan beslenir.</p>
+<p>Kayıt biçimi: <strong>ne oldu / nasıl bulundu / hangi örüntü / ne kaldı geriye.</strong></p>
+<hr>
+<h2>V1 — Zaman birimi 1000 kat yanlış (denetim ÖNCESİ)</h2>
+<p><strong>Ne oldu.</strong> Öznitelik pencerelerinde <code>astype(&quot;int64&quot;) / 1e9</code> kullanılıyordu; nanosaniye varsayımı. pandas bu kataloglarda çözünürlüğü MİKROSANİYE seçiyor, dolayısıyla bölme 1000 kat yanlış ölçek üretiyordu: 30 günlük pencereler 30.000 gün olarak uygulanıyordu.</p>
+<p><strong>Nasıl bulundu.</strong> Hedef etiketlerde <code>target_30d</code> ile <code>target_90d</code> TAM OLARAK aynı çıktı. İki farklı pencere aynı sonucu veriyorsa pencere uygulanmıyor demektir.</p>
+<p><strong>Örüntü.</strong> Kütüphanenin örtük varsayımına güvenmek. Hiçbir hata verilmedi; sayılar makul göründü.</p>
+<p><strong>Geriye kalan.</strong> <code>catalog_io.epoch_seconds</code> tek dönüşüm noktası oldu ve <code>test_epoch_seconds_is_real_seconds</code> bunu sabitliyor. Bu denetimde blok bootstrap düzeltilirken aynı kanal (<code>astype(&quot;int64&quot;)</code>) bir kez daha görüldü ve takvim tabanlı hesapla tamamen kapatıldı (bkz. V9).</p>
+<h2>V2 — Tekilleştirme zinciri kataloğu kesti (denetim ÖNCESİ)</h2>
+<p><strong>Ne oldu.</strong> Yakın olayları eleyen kural zincirleme çalışıyordu: A, B&#x27;yi eledi, B C&#x27;yi eledi... 6-7 Şubat 2023&#x27;te 580 olay 69&#x27;a düştü ve M7,5 Elbistan kayboldu.</p>
+<p><strong>Nasıl bulundu.</strong> Dizi günlerinde olay sayısının fizik dışı düşük olması.</p>
+<p><strong>Örüntü.</strong> Yerel olarak doğru bir kuralın küresel etkisinin ölçülmemesi.</p>
+<p><strong>Geriye kalan.</strong> Tekilleştirme yalnızca kaynaklar ARASI, bire bir ve <code>|dMw| &lt;= 1</code> koşuluyla yapılıyor.</p>
+<h2>V3 — <code>consumed</code> bayrağı bloklar arası taşındı (denetim ÖNCESİ)</h2>
+<p><strong>Ne oldu.</strong> Tekilleştirmede kullanılan bayrak zaman blokları arasında sıfırlanmıyordu; 39.495 kopya (kataloğun %11,5&#x27;i) elenmeden kaldı.</p>
+<p><strong>Nasıl bulundu.</strong> EDA defterindeki &quot;aynı saniyede birden çok olay&quot; kontrolü.</p>
+<p><strong>Örüntü.</strong> Döngü değişkeninin yaşam süresini yanlış varsaymak.</p>
+<h2>V4 — <code>mc=&quot;positive&quot;</code> yanlış fonksiyona yazıldı (denetim ÖNCESİ)</h2>
+<p><strong>Ne oldu.</strong> STAI-dayanıklı kip <code>invert()</code> içine eklendi, ama paralel işçiler <code>_build_calc()</code> kullanıyordu. İki saatlik kalibrasyon HATA VERMEDEN eski ayarla çalıştı ve <strong>birebir aynı</strong> sayıları üretti.</p>
+<p><strong>Nasıl bulundu.</strong> Sonuçların değişmemesi. Değişmesi beklenen bir şey değişmiyorsa değişiklik uygulanmamıştır.</p>
+<p><strong>Örüntü.</strong> Aynı yapılandırmanın iki yerde kurulması.</p>
+<p><strong>Geriye kalan.</strong> <code>etas_config()</code> tek kaynak oldu; <code>test_etas_config_is_single_source</code> kaynak kodunu tarayıp iki kurulum olmadığını doğruluyor.</p>
+<h2>V5 — Tohum saçılımı ölçütü Coulomb&#x27;u &quot;anlamlı&quot; gösterdi (denetim ÖNCESİ)</h2>
+<p><strong>Ne oldu.</strong> Jeofizik katman ablasyonunda ölçüt &quot;fark, tohumlar arası saçılımın iki katından büyük mü?&quot; idi. Coulomb bu ölçüte göre KATKI VAR çıktı; 15 tohumla Welch p = 1,4e-13.</p>
+<p><strong>Nasıl bulundu.</strong> p-değerinin neyi ölçtüğü sorgulandı: tohum p-değeri yalnızca TEKRARLANABİLİRLİĞİ ölçer. Asıl belirsizlik test setindeki 66 olaydan gelir. Olay bazlı bootstrap yapıldığında aralık sıfırı içeriyordu.</p>
+<p><strong>Örüntü.</strong> Yanlış belirsizlik kaynağını ölçmek.</p>
+<p><strong>Geriye kalan.</strong> Ablasyonun asıl sınaması olay bazlı bootstrap. Bu vaka, denetim mirası belgesinin gerekçesidir: araçların neden var olduğunun en somut kanıtı, yokluklarında neredeyse yapılacak olan hatadır.</p>
+<hr>
+<h2>V6 — CSEP sonuçları bayatladı (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> <code>csep_results.json</code> 23 Ağustos 02:41&#x27;de üretilmişti; STAI yeniden kalibrasyonu aynı gün 18:58&#x27;de yapıldı. README&#x27;de duran +2,287 eski parametrelere aitti.</p>
+<p><strong>Nasıl bulundu.</strong> Dosya zaman damgalarının karşılaştırılması.</p>
+<p><strong>Geriye kalan.</strong> <code>docs/SAYI_HARITASI.md</code> ve onu bayatlamaktan koruyan pre-commit hook.</p>
+<h2>V7 — Monte Carlo tabanı 3,42 kat şişikti (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> Taban, Zaliapin ayrıştırmasından gelen ana şok oranıydı; o oran olayların %61,3&#x27;ünü ana şok sayıyor, oysa ETAS&#x27;ın arka plan payı %17,9. Pozitif hücrelerin %53&#x27;ünde simülasyon oranı sıfır olduğu için raporlanan kazancın büyük kısmını bu şişik taban taşıyordu.</p>
+<p><strong>Nasıl bulundu.</strong> İki bağımsız kurulumun (arşiv ve günlük) farklı yönlerde kalibrasyon hatası göstermesi.</p>
+<p><strong>Örüntü.</strong> Bir düzeltmenin (taban) sonucu belirleyecek kadar büyük olması.</p>
+<h2>V8 — Kaynak konumu hücre merkezine oturtuluyordu (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> Hücre düzeyinde ortanca %20, uçta %121 sapma. Toplamda %0,3 — çünkü kütleyi koruyordu.</p>
+<p><strong>Nasıl bulundu.</strong> Toplam testlerinin HEPSİ geçti (Ö1, Ö2, kütle, yakınsama); yalnızca ölçüt bile olmayan hücre korelasyonu gösterdi.</p>
+<p><strong>Örüntü.</strong> Toplam-düzeyi testler hücre-düzeyi kusurlara kördür.</p>
+<h2>V9 — Blok bootstrap kuruluma bağlı olarak sessizce yanlış (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> Bloklar takvim zamanından değil, benzersiz gün dizisindeki İNDİSTEN kuruluyordu. Günlük başlangıçlarda doğru (37 blok); haftalık başlangıçlarda 202 başlangıç 7 BLOĞA düşüyordu.</p>
+<p><strong>Nasıl bulundu.</strong> &quot;Blok uzunluğu otomatik mi, sabit mi?&quot; sorusu koda bakmayı gerektirdi. Sayıya bakarak bulunamazdı.</p>
+<p><strong>Örüntü — BU PROJEDEKİ EN TEHLİKELİ SINIF: beklentiyle uyuşan hatalı sonuç.</strong> Yedi bloklu bootstrap geniş aralık verirdi; ben de o aralığı &quot;az bağımsız bilgi&quot; diye yorumlayacaktım. Doğru anlatıya sahte kanıt. Öngörüyle uyuştuğu için kimse ikinci kez bakmazdı.</p>
+<p><strong>Geriye kalan.</strong> Blok kimliği takvimden türetiliyor; 5 test. Doğrulandı: günlük kurulumda bölümleme BİREBİR AYNI (37 blok), yani eski günlük sonuçlar bu hatadan etkilenmemiştir.</p>
+<h2>V10 — Neredeyse doğru mutlaklık (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> &quot;Hiçbir hücrede oran sıfır değil&quot; yazıldı. 378.880 satırda sıfır oran YOKTU (doğru), ama değerlendirme ızgarasının 2 hücresi tahmin ızgarasının dışındaydı.</p>
+<p><strong>Örüntü.</strong> İddia %99,9 doğruydu ve tehlike tam olarak o %99,9&#x27;daydı: neredeyse-doğru bir mutlaklık, yanlış olandan daha uzun yaşar çünkü kimse sınamaz.</p>
+<h2>V11 / V12 — Koruyucunun kendi vakaları (denetim İÇİNDE)</h2>
+<p>Sayı haritası koruyucusu kurulumundan 3 dakika sonra kendi yazarını durdurdu; ertesinde <code>config.py</code> değişikliğinde bir kez daha. Künye üreteci de ilk çalıştırmada kendisini &quot;kirli ağaç&quot; diye damgaladı.</p>
+<p><strong>Ortak ders.</strong> Her üç vakada da cevap &quot;etki yok&quot; çıktı ve her üçünde de bunu ÖLÇEREK öğrendik. Bir kontrolün değeri yakaladığı hatalar değil, zorunlu kıldığı ölçümlerdir — ve kendi yazarını durdurması, gerçekten çalıştığının en ucuz kanıtıdır.</p>
+<h2>V13 — Ara duruma uydurulan tasarım gerekçesi (denetim İÇİNDE)</h2>
+<p><strong>Ne oldu.</strong> Haftalık üretim sürerken ara sayım 202 gösterdi. Bu sayı, &quot;208 başlangıcın 202&#x27;si; ilk 7&#x27;si beş yıllık geçmiş penceresi nedeniyle değerlendirmeye girmiyor&quot; diye açıklandı. <strong>Böyle bir dışlama yoktu.</strong> 202, üretimin o anki ara durumuydu; nihai sayı 208 ve eksik başlangıç yok.</p>
+<p><strong>Nasıl bulundu.</strong> &quot;Bu açıklama şu an beyan durumunda, doğrula&quot; denmesi üzerine sayının kaynağına bakıldı.</p>
+<p><strong>ÖRÜNTÜNÜN ADI: SAYIYA GEREKÇE UYDURMA.</strong> Bir tutarsızlık görüldüğünde zihin ölçmek yerine makul bir hikâye üretir; hikâye makul olduğu için kimse sınamaz. Bu bir ölçüm hatası bile DEĞİLDİR -- var olmayan bir tasarım kuralının, açıklanamayan bir sayıyı açıklamak için icat edilmesidir. V9&#x27;da hata koddaydı; burada doğrudan anlatıdaydı.</p>
+<p><strong>NASIL YAKALANDI -- kayda değer.</strong> Bir kontrol mekanizması yakalamadı. Yakalayan şey, &quot;teslimde ayrıca doğrulayacağım&quot; diye BEYAN EDİLEN bir doğrulamanın takip edilmesiydi. Beyan edilen her doğrulamanın takibi, uydurulan gerekçelerin doğal avcısıdır: gerekçe uyduran kişi, onu doğrulamayı da vaat eder ve o vaat tutulduğunda gerekçe çöker.</p>
+<p><strong>Ne kadar yakındı.</strong> Bu cümle teslim paketine girseydi, &quot;dışlama kuralı&quot; diye var olmayan bir tasarım kararı belgeye geçecekti ve sonraki her okuyucu onu gerçek sanacaktı.</p>
+<p><strong>Geriye kalan.</strong> Sayı üreten her ifade için tek kural: sayının nereden geldiği gösterilmeden gerekçesi yazılmaz. Ara durumlar özellikle tehlikeli -- çünkü nihai sonuç gibi görünürler ve makul bir açıklamayı davet ederler.</p>
+<h2>V14 — Gürültünün gerçek etkiyi MASKELEMESİ (V9&#x27;un ayna görüntüsü)</h2>
+<p><strong>Ne oldu.</strong> Günlük kurulumda ETAS ile Poisson arasındaki AUC farkı +0,0545 [−0,038; +0,127] ile anlamsızdı ve &quot;modeller ayrıştırılamıyor&quot; diye yorumlanmaya hazırdı. Analitik kurulumda aynı fark <strong>+0,1407 [+0,076; +0,214]</strong> çıktı: anlamlı ve iki buçuk kat büyük.</p>
+<p><strong>Neden.</strong> Günlük kurulumda pozitif hücrelerin 799/1496&#x27;sında simülasyon oranı sıfırdı; analitik kurulumda 0/252. Sıralama, Monte Carlo gürültüsü tarafından bozuluyordu.</p>
+<p><strong>Örüntü — V9&#x27;UN AYNASI.</strong> V9&#x27;da beklentiyle uyuşan SAHTE bir sonuç vardı; burada beklentiyi ÇÜRÜTEN gerçek bir sonuç var ve gürültü temizlenince göründü.</p>
+<p>İkisi birlikte tek dersi veriyor: **gürültü yalnızca belirsizlik eklemez, işaret de üretir ve işareti yok da eder.** Bir &quot;fark gösterilemedi&quot; sonucu, ölçüm aracının çözünürlüğü sorgulanmadan kabul edilemez -- nitekim bu projede &quot;ayrıştırılamıyor&quot; anlatısı iki kez kurulmaya çalışıldı ve ikisinde de sebep modelin kendisi değil, ölçüm aracıydı.</p>
+<p><strong>Geriye kalan.</strong> MDE kuralı bu dersin kurumsallaşmış hâlidir: &quot;fark gösterilemedi&quot; asla tek başına raporlanmaz.</p>
+<h2>V15 — Koruyucunun en kritik izlemesi BOŞTU (dondurma sonrası 1b)</h2>
+<p><strong>Ne oldu.</strong> Sayı haritası koruyucusu <code>etas_params.json</code>&#x27;ı izleme listesinde tutuyordu -- künyedeki sha&#x27;nın kaynağı, bayat sayı vakasının (V6) çıkış noktası, listedeki en kritik dosya. Ama o dosya <strong>gitignore edilmişti ve izlenmiyordu.</strong></p>
+<p>Koruyucu <code>git diff --name-only</code> çıktısına bakar. Git, izlenmeyen bir dosyayı o çıktıda <strong>hiçbir zaman</strong> listelemez. Yani parametre dosyası değiştiğinde koruyucu tetiklenmiyordu.</p>
+<p><strong>Nasıl bulundu.</strong> Dondurma sonrası 1b işi (çıktı json&#x27;larının künye zinciri) için <code>git ls-files</code> ile hangi json&#x27;ların izlendiğine bakıldı. <code>etas_params.json</code> listede yoktu.</p>
+<p>Sonra DENEY yapıldı: dosya değiştirildi, koruyucu çalıştırıldı, <strong>0 (geç)</strong> döndü. Düzeltmeden sonra aynı deney <strong>1 (reddet)</strong> döndü.</p>
+<p><strong>Örüntü — ÜÇ DOĞRU İFADE VE BİR BOŞ KORUMA.</strong> Şunların üçü de doğruydu:</p>
+<ul><li><code>etas_params.json</code> izleme listesindeydi (<code>WATCHED</code>)</li><li><code>test_params_file_is_watched</code> geçiyordu</li><li>pre-commit hook kuruluydu</li></ul>
+<p>Ve koruma yine de boştu. Çünkü hiçbiri LİSTE ile MEKANİZMANIN fiilen örtüştüğünü sınamıyordu. Bu, V10&#x27;un (&quot;neredeyse doğru mutlaklık&quot;) kontrol mekanizmalarındaki karşılığıdır: <strong>bir korumanın kurulu olması, çalıştığı anlamına gelmez.</strong></p>
+<p><strong>Ne kadar yakındı.</strong> Koruyucu 24 Ağustos&#x27;ta kuruldu ve iki kez tetiklendi (V11/V12) -- ikisi de KOD dosyalarındaydı. Parametre dosyası o gün değişmediği için boşluk görünmedi. Faz 3&#x27;te yeniden kalibrasyon yapılacak ve tam o an koruma olmayacaktı; yani boşluk, en çok ihtiyaç duyulacağı anda ortaya çıkacaktı.</p>
+<p><strong>Geriye kalan.</strong> Yedi sonuç/parametre json&#x27;ı artık izleniyor. İki yeni test: <code>test_every_watched_path_is_git_tracked</code> (liste ile mekanizmanın örtüşmesi) ve <code>test_result_jsons_are_tracked</code> (künye zinciri). Toplam koruyucu testi: 9.</p>
+<p><strong>Genel ders:</strong> bir kontrolün testleri, kontrolün KENDİSİNİ değil VARLIĞINI sınıyorsa boştur. &quot;Listede mi?&quot; sorusu &quot;görebiliyor mu?&quot; sorusunun yerine geçemez.</p>
+<p><strong>ZAMANLAMA DERSİ.</strong> Boşluğun ne zaman patlayacağı ÖNGÖRÜLEBİLİRDİ: <code>etas_params.json</code> denetim boyunca sabitti, bu yüzden koruma hiç sınanmadı. Faz 3&#x27;te yeniden kalibrasyon yapılacak ve dosya değişecekti; boşluk tam o an ortaya çıkacaktı.</p>
+<p><strong>İzlenmeyen bir dosya, en çok değişeceği dönemde en tehlikelidir</strong> -- çünkü sessiz kaldığı dönemde koruma da sınanmaz. Bu, &quot;1b&#x27;yi 3&#x27;ten önce yap&quot; kararının beklenmedik gerekçesi oldu: açık uçlu araştırmaya girmeden mekanizma boşluklarını kapatmak, boşluğun en kötü anda patlamasını engelledi.</p>
+<p>Bu dersten doğan kural: **zorunlu kural 9 -- kurulum kanıtı değil, ÇALIŞMA kanıtı.** Bir koruyucu, bir şeyi REDDETTİĞİNİ gösteren bir deney olmadan &quot;kurulu&quot; sayılmaz.</p>
+<h2>V16 — &quot;Rastgelelik YOK&quot; beyanı EKSİKTİ (operasyonel geçiş)</h2>
+<p><strong>Ne oldu.</strong> Künye &quot;rastgelelik: YOK — analitik hesap deterministik&quot; diyordu ve <code>test_result_is_bit_identical_across_runs</code> geçiyordu. Operasyonel geçişte aynı gün iki kez çalıştırıldı: <strong>çıktılar farklı çıktı.</strong></p>
+<p><strong>Nasıl bulundu.</strong> Beklenen etki belgesinde (kural 8) &quot;iki kez çalıştırma: analitik çıktı birebir aynı mı&quot; ölçülecekler listesindeydi. Ölçüldü ve tutmadı.</p>
+<p><strong>Kaynak.</strong> İkiye ayırınca görüldü:</p>
+<pre>expected_counts, AYNI parametrelerle    : birebir aynı ✓
+local_params, iki çağrı                  : log10_mu FARKLI
+    -6.54154000821231  vs  -6.5415908942714065
+sonuç: oranlarda bağıl 1,2e-04 fark</pre>
+<p>Rastgelelik dallanma hesabında DEĞİL, ETAS <strong>durumunu kuran</strong> adımdaydı (<code>_calculation_at</code> -&gt; paketin EM adımı).</p>
+<p><strong>Örüntü.</strong> Testin sınadığı şey ile beyanın kapsadığı şey ayrışmıştı: test <code>expected_counts</code>&#x27;u sınıyordu (deterministik), beyan ise UÇTAN UCA hesabı kapsıyordu (değil). V15&#x27;in (&quot;kontrol kurulu ama kör&quot;) kardeşi: **test doğruydu, beyan testin kapsamından genişti.**</p>
+<p><strong>Ne kadar yakındı.</strong> Değerlendirme yolunda <code>local_params</code> yalnızca bir kez çağrılıyor ve sonucu tüm hesapta kullanılıyor; o yüzden Ö1/Ö2&#x27;de görünmedi. Operasyonel üretim her gün yeniden çalışacaktı ve yayımlanan tahminler yeniden üretilemez olacaktı -- künye &quot;deterministik&quot; derken.</p>
+<p><strong>Geriye kalan.</strong> <code>local_params</code> artık <code>deterministic_simulation</code> bağlamında çalışıyor; tohum aynı kuraldan (başlangıç tarihinden) geliyor. Uçtan uca doğrulandı: <code>log10_mu</code> birebir aynı, çıktı birebir aynı.</p>
+<h2>V17 — Kanaryanın kendisi kanaryalandı (Faz 3, kurulmadan ÖNCE)</h2>
+<p><strong>Ne oldu.</strong> Sızıntı tespiti için performans tabanlı bir alarm kuruldu (skor şüpheli derecede iyiyse dur). Alarma bilinen sızıntılar verildi:</p>
+<pre>temiz                              0,7665
+ref+1 gün, M&gt;=Mc (zayıf)           0,7697  (+0,0032)  alarm YOK
+ref+15 gün, M&gt;=5,0 (YARIM pencere) 0,7665  (+0,0000)  alarm YOK
+ref+30 gün, M&gt;=5,0 (TAM pencere)   1,0000  (+0,2335)  alarm VAR</pre>
+<p>Yarım pencere sızıntısı hedefin YARISINI doğrudan veriyor ve hiçbir iz bırakmıyor.</p>
+<p><strong>Kök neden.</strong> <code>min_child_samples=200</code>, eğitimde 212 pozitif. 200 satırdan az etkileyen sızıntı yaprak oluşturamıyor, skoru değiştirmiyor, alarm çalmıyor. Tam pencere 212 satırla eşiği KIL PAYI geçtiği için görünüyor; bagging 0,8 eklendiğinde 212 bile ~170&#x27;e düşüyor ve o da görünmez oluyor.</p>
+<p><strong>Örüntü — V15 ailesinin üçüncüsü, ama bir FARKLA.</strong> V11/V12&#x27;de koruyucu kurulmuş ve kendi yazarını durdurmuştu; V15&#x27;te koruma listedeydi ama mekanizma kördü; burada dedektörün KENDİSİ kör çıktı. Fark şu: **bu kez körlük, mekanizma kurulmadan ÖNCE bulundu.** Kanarya dağıtılsaydı &quot;alarmımız var&quot; sanılacaktı.</p>
+<p>Sıralamayı değiştirip sızıntı işini 1. sıraya almak (Faz 3 planı) kendini burada amorti etti.</p>
+<p><strong>Genel ders.</strong> Düzenlileştirme sızıntıyı gizler: aşırı öğrenmeye karşı her önlem, az satırı etkileyen sinyali bastırır ve kısmi sızıntı tam olarak odur. Model ne kadar iyi korunursa performans tabanlı tespit o kadar kör olur.</p>
+<p><strong>Geriye kalan.</strong> Yapısal engel: <code>src/features/history_view.py</code>. <code>HistoryView</code> kurulurken katalogu <code>t &lt; ref</code> ile keser ve YALNIZCA kesilmiş kısmı taşır -- erişim denetimi değil, verinin yokluğu. <code>__slots__</code> ile sonradan ham veri iliştirmek de engellenir. Kural 9 gereği reddettiği deneylerle mühürlendi (6 test). Performans kanaryası kaldırılmadı ama etiketi değişti: &quot;kaba sızıntı + boru hattı sağlık kontrolü&quot;.</p>
+<h2>V18 — Hizasız zaman ızgarası: karşılaştırmayı sessizce boşa çıkaran tuzak</h2>
+<p><strong>Ne oldu (yakalandı, yaşanmadı).</strong> LightGBM&#x27;in ETAS&#x27;la aynı başlangıçlarda yarışması için öznitelikler haftalık referanslarla üretilecekti. Doğal seçim <code>pd.date_range(&#x27;1995-01-01&#x27;, ..., freq=&#x27;7D&#x27;)</code> idi.</p>
+<p>Ölçüldü: o ızgaranın ETAS&#x27;ın 208 başlangıcıyla <strong>ORTAK NOKTASI SIFIR</strong>. 1995-01-01 ile 2021-01-01 arası 9497 gün ve 7&#x27;nin katı değil; iki haftalık ızgara birbirinden 3-4 gün kayık ilerliyor ve hiç kesişmiyor.</p>
+<pre>naif ızgara  (1995-01-01 başlangıçlı): 1565 referans, ETAS ile ortak   0/208
+hizalı ızgara (1995-01-06 başlangıçlı): 1564 referans, ETAS ile ortak 208/208</pre>
+<p><strong>Ne olurdu.</strong> LightGBM eğitilir, test edilir, makul bir AUC verirdi. ETAS ile karşılaştırılırdı. Ve iki model <strong>hiçbir ortak başlangıçta ölçülmemiş</strong> olurdu -- karşılaştırma hatasız görünüp anlamsız olurdu.</p>
+<p><strong>Nasıl yakalandı.</strong> &quot;Eşit bilgi&quot; maddesi plana yazılırken &quot;aynı başlangıç kümesi&quot; satırı vardı; üretime geçerken o satırı ÖLÇTÜM (kesişim sayısı) -- varsaymadım.</p>
+<p><strong>Örüntü.</strong> İki ızgaranın &quot;aynı sıklıkta&quot; olması, &quot;aynı noktalarda&quot; olması demek değildir. Sıklık eşitliği hizalama eşitliği sanılır; kayma sessizdir çünkü her iki ızgara da kendi içinde kusursuzdur.</p>
+<p><strong>Geriye kalan.</strong> Referans ızgarası ETAS başlangıcına DEMİRLENEREK üretilir (<code>end=anchor, periods=N, freq=&#x27;7D&#x27;</code> ile geriye doğru). Üretim sonrası zorunlu doğrulama: LightGBM tablosundaki pozitif hücre-pencere KÜMESİ, ETAS değerlendirmesindekiyle birebir aynı olmalı -- sayı eşitliği değil, KÜME eşitliği.</p>
+<h2>V19 — Değerlendirme asimetrisi: &quot;geçmişi yok&quot; bilginin yokluğu sanıldı</h2>
+<p><strong>Ne oldu (yakalandı, yaşanmadı).</strong> Haftalık öznitelik tablosu üretildi ve zorunlu doğrulama koşuldu: LightGBM tablosundaki pozitif hücre-pencere kümesi, ETAS değerlendirmesindekiyle <strong>birebir aynı olmalı</strong>.</p>
+<pre>ETAS pozitif    : 252
+LightGBM pozitif: 248
+fark            : 4 pozitif, hepsi ETAS&#x27;ta var LightGBM&#x27;de YOK</pre>
+<p><strong>Kök neden.</strong> <code>grid_features</code>, bir hücrede İLK olaydan önceki referansları atlıyordu (&quot;bilgisizdir&quot;). O dört pozitifin hücrelerinde Mc üstü ilk olay TAM DA HEDEF PENCERESİNDEYDİ; dolayısıyla o (hücre, referans) çiftlerinin öznitelik satırı yoktu ve ML orada hiç puanlanmayacaktı.</p>
+<p>ETAS ise onları puanlıyor -- arka plan oranı her hücrede vardır.</p>
+<p><strong>Ne olurdu.</strong> ML, dört ZOR pozitifin çıkarıldığı daha kolay bir alt kümede ölçülürdü. AUC farkı ML lehine kayardı ve karşılaştırma sessizce yanlı olurdu.</p>
+<p><strong>Örüntü.</strong> &quot;Geçmişi yok&quot; BİR BİLGİDİR, bilginin yokluğu değildir. Eğitimde boş satırları atlamak makul bir tasarruftur; DEĞERLENDİRMEDE aynı tasarruf, iki modeli farklı kümelerde ölçmek demektir.</p>
+<p><strong>Nasıl yakalandı.</strong> Küme eşitliği doğrulaması koşu ÖNCESİ zorunlu kılınmıştı (sayı eşitliği değil, KÜME eşitliği -- sayı eşit olsaydı da fark görülebilirdi).</p>
+<p><strong>Geriye kalan.</strong> <code>grid_features</code> artık <code>--all-refs</code> ve <code>--cells-from-baseline</code> kiplerini destekliyor; değerlendirme tablosu ETAS&#x27;ın ızgarasının aynısını kapsıyor. Doğrulandı: 252 = 252, kümeler birebir.</p>
+<p><strong>Kalan küçük fark:</strong> LightGBM tablosunda bir fazla hücre var (4037, 36,12K 34,38D) -- katalogda olayı var ama <code>baseline_poisson</code>&#x27;da yok, ve SIFIR pozitif taşıyor. Karşılaştırma ETAS&#x27;ın ızgarasıyla (2100 hücre) sınırlanır; gerekçe budur ve kayda geçmiştir.</p>
+<hr>
+<h2>V20 — V17 tamamlandı: vaka → örüntü → <strong>hesaplanabilir koşul</strong></h2>
+<p><strong>Ne oldu.</strong> V17&#x27;de kaba kanarya kördü: hedefin yarısını doğrudan veren bir öznitelik AUC&#x27;yi +0,0000 değiştirmişti. Teşhis, <code>min_child_samples=200</code> ile 212 pozitifin oranıydı — ama teşhis <strong>çıkarsamaydı</strong>, ölçüm değil.</p>
+<p><strong>Nasıl teyit edildi.</strong> Kanarya haftalık tabloda yeniden koşuldu. Aynı kanarya, aynı kod, farklı tablo:</p>
+<pre>aylık    212 pozitif  min_child 200  -&gt;  alarm YOK  (kör)
+haftalık 753 pozitif  min_child 200  -&gt;  alarm VAR</pre>
+<p>Teşhis deneyle doğrulandı. Kanarya, iki tabloda farklı davranarak kendi körlük mekanizmasını gösterdi.</p>
+<p><strong>Kazanılan şey — asıl olan bu.</strong> Körlük artık bir vaka değil, **koşulmadan önce kontrol edilebilir bir eşitsizlik**:</p>
+<pre>eğitim pozitifi &lt; min_child_samples  =&gt;  KABA KANARYA KÖRDÜR</pre>
+<p>Vaka → örüntü → <strong>öngörülebilir koşul</strong>. Gelecekteki her kurulumda kanarya koşulmadan önce bu oran bakılır; kör çıkıyorsa kanarya &quot;temiz&quot; raporu VEREMEZ.</p>
+<p><strong>Genellenen ilke.</strong> Bir korumanın kör noktası, o körlüğü ÜRETEN büyüklük cinsinden yazılabiliyorsa, koruma artık kendi geçerlilik alanını beyan edebilir. &quot;Bu kanarya çalışıyor&quot; yerine &quot;bu kanarya şu koşulda çalışır.&quot;</p>
+<hr>
+<h2>V21 — Programlı metin değişimi SESSİZCE uygulanmadı</h2>
+<p><strong>Ne oldu.</strong> <code>scripts/19_kanarya_duyarlilik.py</code>&#x27;de üç satırlık bir değişiklik <code>str.replace</code> ile yapıldı; desen tutmadı ve <strong>hiçbir şey olmadı.</strong> <code>replace</code> eşleşme bulamayınca metni aynen döndürür — hata vermez. Betik eski hâliyle koştu, koşu çöktü, ~2 dakika kayboldu.</p>
+<p><strong>Neden tehlikeli.</strong> Kayıp süre değil. Değişiklik &quot;yapıldı&quot; sanılıp doğrulanmasaydı, sonuçlar <strong>eski kod yoluyla</strong> üretilmiş olurdu ve künye yanlış olurdu — V15 ile aynı sınıf: iddia var, uygulama yok.</p>
+<p><strong>Düzeltme.</strong> Her programlı değişimden önce <code>assert old in s</code>. Uygulanmayan değişiklik artık gürültüsüzce geçemez; hemen patlar.</p>
+<p><strong>Genellenen ilke.</strong> Sessizce başarısız olabilen her işlem, başarısızlığı GÜRÜLTÜLÜ hâle getirilmeden kullanılmaz. <code>str.replace</code>, <code>dict.get</code>, boş <code>groupby</code>, boş maske — hepsi aynı sınıf.</p>
+<hr>
+<p><strong>V21 İKİNCİ TETİKLENME — 25 Ağu 2026, maliyet SIFIR.</strong> Aynı hata sınıfı (heredoc ` ` kaçışını yutuyor) NPP arama betiğinde tekrar geldi: kabuk tırnaklaması yüzünden beş satırdan üçü uygulanmadı ve geriye <code>c[&#x27;lr&#x27;]</code> referansı kaldı — koşuda <code>KeyError</code> verecekti.</p>
+<p>Fark, korumanın <strong>nerede</strong> durduğuydu:</p>
+<pre>ilk vaka  : bozuk dosya DİSKE İNDİ, hata bir sonraki koşuda çıktı
+ikinci    : ast.parse YAZIMDAN ÖNCE yakaladı, bozuk içerik diske değmedi</pre>
+<p>Koruma evrimi burada da görünüyor: aynı sınıf iki kez geldi, ikincisinde maliyet sıfıra indi. Kaçış bu kez elle kuruldu (<code>chr(92) + &quot;n&quot;</code>).</p>
+<h2>V22 — Veri-yokluğu deseni, aşağı akıştaki bir varsayımla tıkandı</h2>
+<p><strong>Ne oldu.</strong> Kanarya test bölümünü yükler yüklemez silecek şekilde düzeltildi (doğru desen). Ama <code>lgbm.train</code>, tahmin üretirken <code>(&quot;val&quot;, &quot;test&quot;)</code> bölümlerini <strong>koşulsuz</strong> dolaşıyordu; test yoksa <code>KeyError</code>.</p>
+<p><strong>Neden kayda değer.</strong> Hata <code>train</code>&#x27;de değil, İLKENİN UYGULANABİLİRLİĞİNDE. &quot;Veriyi sil&quot; koruması, veriyi zorunlu sayan tek bir aşağı-akış varsayımıyla kullanılamaz hâle geliyordu. Koruma reddedilmiş olsaydı, gerekçe &quot;işe yaramadı&quot; olurdu — oysa gerçek gerekçe &quot;başka bir yer onu varsayıyordu&quot;.</p>
+<p><strong>Düzeltme.</strong> <code>train</code> yalnızca VAR OLAN bölümler için tahmin üretir.</p>
+<p><strong>Genellenen ilke.</strong> Bir koruma deseni (veri yokluğu) benimsenecekse, o desenin geçtiği BÜTÜN yol boyunca &quot;veri var&quot; varsayımları aranmalıdır. Aksi hâlde koruma, kendi altyapısı tarafından reddedilir.</p>
+<p><strong>V21 EKİ — vakanın maddi izi.</strong> İlk düzenlemede assert yoktu; iki değişimden biri tuttu, biri tutmadı ve dosya <strong>yarım uygulanmış hâlde yazıldı.</strong> Artık kalan satır sonraki koşuda sözdizimi hatası verdi. Yani sessiz başarısızlık, yalnızca &quot;değişiklik olmadı&quot; değil <strong>tutarsız bir dosya</strong> üretebiliyor.</p>
+<p>İki kural eklendi:</p>
+<pre>1. Her programlı değişimde  assert old in s
+2. Yazmadan ÖNCE  ast.parse(src)  -- bozuk dosya diske hiç inmesin</pre>
+<p>Kök neden ayrıca öğreticidir: heredoc, <code>\n</code> kaçışlarını tüketiyordu; desendeki <code>\n</code> gerçek satır sonuna dönüşüyor ve eşleşme sessizce kayboluyordu. Ortamın metin işleme davranışı, kodun doğruluğu kadar sonucu etkileyebiliyor.</p>
+<hr>
+<h2>V23 — Yuvarlama, ilanda olmayan bir &quot;beraberlik&quot; uydurdu ve SEÇİMİ DEĞİŞTİRDİ</h2>
+<p><strong>Ne oldu.</strong> İlan edilen seçim kuralı: *&quot;doğrulama logloss&#x27;unun 3 tohum ortalaması en küçük olan; BERABERLİKTE daha az yapraklı.&quot;* Kod ise sıralamayı <code>round(ortalama, 6)</code> üzerinden yapıyordu.</p>
+<p>Sonuç: ilk üç bileşim 6 hanede yapay olarak eşitlendi.</p>
+<pre>ham sıralama (yuvarlamasız)
+  1. 0,002414729 +- 0,000001046   yap=7 mcs=200
+  2. 0,002414928 +- 0,000001557   yap=7 mcs=50
+  3. 0,002415465 +- 0,000000831   yap=7 mcs=20   &lt;- KOD BUNU SEÇMİŞTİ</pre>
+<p>Üçünün de yaprak sayısı 7 olduğu için beraberlik kuralı ayırt edemedi ve seçim <strong>eklenme sırasına</strong> düştü. Kod, ham üçüncü sıradaki bileşimi seçti.</p>
+<p><strong>Nasıl yakalandı.</strong> Raporda &quot;en yakın rakip farkı <strong>−0,000001</strong>&quot; yazıyordu. Fark tanımı gereği negatif olamaz; seçilenin rakibinden kötü olduğunu söylüyordu. Tutarsızlık, sayıya bakınca görüldü.</p>
+<p><strong>Düzeltme sonuca göre ayar DEĞİLDİR.</strong> Kod, önceden ilan edilmiş kuralı uygulamıyordu; yuvarlama ilanda yoktu, kodda uydurulmuştu. Düzeltme kodu ilana uydurur. Seçim <code>mcs=200</code>&#x27;e taşındı ve **bu değişiklik açıkça raporlanır** — sessizce düzeltilip &quot;zaten bu seçilmişti&quot; denmez.</p>
+<p><strong>Ama asıl bulgu şu: fark ayırt edilemez.</strong></p>
+<pre>1. ile 2. arası fark   0,000000199
+1.nin tohum saçılımı   0,000001046
+fark saçılımı aşıyor mu   HAYIR</pre>
+<p>İlk üç bileşim <strong>tohum gürültüsünün altında</strong> ayrışıyor. Önceden yazılmış hüküm burada geçerlidir: <strong>&quot;seçildi ama ayırt edilemedi.&quot;</strong> Test sonucu, tek bir özel bileşimin değil, bu düz bölgenin temsilcisi olarak okunmalıdır.</p>
+<p><strong>Genellenen ilke.</strong> Sıralama, karşılaştırma ya da eşitlik içeren her kodda <strong>yuvarlama bir ölçüt tanımıdır.</strong> İlan edilmemiş bir yuvarlama, ilan edilmemiş bir ölçüttür. &quot;Görsel düzen için&quot; yapılan yuvarlama, sıralama anahtarına girdiğinde artık biçim değil hükümdür.</p>
+<hr>
+<h2>V24 — Kapsam ölçümünün KENDİ seçim kuralı, cevabı girdiye sızdırıyordu</h2>
+<p><strong>Ne oldu.</strong> NPP ilan paketinde girdi tasarımı ölçümle gerekçelendirilmişti: &quot;ETAS kütlesinin %5 diliminde bile ≥ 0,95&#x27;ini taşıyan en küçük K&quot;. Ölçüm doğruydu, ölçüt doğruydu — ama ölçümün <strong>sıralama kuralı</strong> uydurulmuş ETAS çekirdeğiydi.</p>
+<p>O kural girdi seçimine uygulansaydı, nöral modele &quot;hangi olaylar önemli&quot; bilgisi <strong>ETAS&#x27;ın kendi cevabından</strong> verilmiş olurdu.</p>
+<p><strong>Neden kanaryalar yakalayamazdı.</strong> Hedef sızıntısı yok, ileri bakış yok, ölçekleme sızıntısı yok. Üç kanarya da temiz raporlardı. Bu, **tasarım düzeyinde bir haksız avantaj**tır ve yalnızca tasarımı okuyarak görülür.</p>
+<p><strong>Nasıl bulundu.</strong> Veri kurucusunu yazmadan önce &quot;bu diziyi neye göre sıralayacağım?&quot; sorusu soruldu ve cevap &quot;ETAS&#x27;ın çekirdeğine göre&quot; çıktı. Soru, kodu yazma anında kendiliğinden geldi — ölçüm aşamasında gelmemişti, çünkü ölçüm bağlamında sıralama yalnızca bir <em>analiz aracıydı</em>.</p>
+<p><strong>Genellenen ilke — iki katmanlı.</strong></p>
+<p>1. <strong>Bir analiz aracı, tasarım kuralına dönüştüğü anda denetlenmelidir.</strong> Aynı formül, ölçüm bağlamında masum, girdi bağlamında sızıntıdır. Aracın kendisi değil, <strong>nereye bağlandığı</strong> belirler.</p>
+<p>2. <strong>Kanaryalar tasarımı denetlemez.</strong> Sızıntı kanaryaları çalışma zamanı sızıntısını arar (hedef, ileri bakış, ölçekleme). &quot;Karşılaştırılan iki modelden birinin cevabı diğerinin girdisine giriyor mu?&quot; sorusu, ancak tasarım okunarak cevaplanır. Bu soru kontrol listesine eklendi.</p>
+<p><strong>Sonuç.</strong> Sıralama, literatürden alınmış ve bu veriye uydurulmamış bir öncül çekirdeğe taşındı (p=1,10 · c=0,01g · d=5km · rho=0,75 · alpha10=1,00). Kapsam ölçütü değişmedi; ölçütü karşılamak için K 64&#x27;ten 256&#x27;ya çıktı. Zeyilname 1, <code>docs/NPP_ILAN.md</code>.</p>
+<hr>
+<h2>V25 — Test, modelin değil KENDİ SAHTESİNİN rastgeleliğini ölçüyordu</h2>
+<p><strong>Ne oldu.</strong> NPP determinizm testi ilk koşuda düştü: aynı tohumla iki eğitim farklı NLL verdi (6,497186 vs 6,505884). İlk okuma &quot;model deterministik değil&quot; olurdu ve protokol yeniden yazılırdı.</p>
+<p><strong>Gerçek sebep testteydi.</strong> Sahte <code>Yigin</code> sınıfı, olay verisini **paylaşılan bir RNG&#x27;den** üretiyordu. İkinci eğitim çağrıldığında RNG ilerlemiş olduğundan, model <strong>farklı veri</strong> görüyordu. Model deterministikti; test değildi.</p>
+<p><strong>Neden V15 ailesinden.</strong> Kontrol kuruluydu ve çalışıyordu — ama ölçtüğü şey iddia ettiği şey değildi. V15&#x27;te koruyucunun izlemesi boştu; burada testin girdisi kararsızdı. İkisi de &quot;kurulu ama iddia ettiğini ölçmüyor&quot; sınıfı.</p>
+<p><strong>Nasıl ayırt edildi.</strong> Model tarafında değişebilecek tek şey tohumdu ve tohum sabitti; geriye girdinin kendisi kalıyordu. Sahtenin RNG&#x27;si tek şüpheliydi.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>**Sahte veri üreticilerinin determinizmi, determinizm testlerinin ÖN KOŞULUDUR.** Bir testin girdisi kararsızsa, test çıktının kararlılığını ölçemez.</blockquote>
+<p>Uygulama: sahte üreticiler <strong>çağrı sırasına değil, istenen satıra göre</strong> tohumlanır (<code>default_rng(sabit + satir_no)</code>), böylece kaçıncı kez çağrıldığı sonucu değiştirmez.</p>
+<p><strong>Ayrıca:</strong> düşüşün ilk yorumu yanlış olurdu ve protokolü gereksiz yere değiştirirdi. Bir test düştüğünde ilk soru &quot;kod mu yanlış?&quot; değil, **&quot;test ne ölçüyor?&quot;** olmalı.</p>
+<hr>
+<h2>V26 — Kanarya, KOŞULMADAN önce hedefini buldu</h2>
+<p><strong>Ne oldu.</strong> Kanarya 3 (ölçekleme sızıntısı) NPP için etkinleştirilecekti. Koşucuyu yazmak için <code>npp.Yigin</code>&#x27;in nasıl ölçeklediğine bakıldı ve görüldü:</p>
+<pre>self.mu_s = x.mean(0, keepdims=True)      # TÜM tablo: eğitim+doğrulama+TEST</pre>
+<p>Sızıntı <strong>kanaryanın sınayacağı şeyin ta kendisiydi</strong> ve üretim kodunda, varsayılan davranış olarak duruyordu.</p>
+<p><strong>Neden fark edilmemişti.</strong> Bu satır Faz 3&#x27;ün ağaç yolundan taşınmıştı ve orada <strong>zararsızdı</strong>: ağaç bölmeleri monoton dönüşümlere duyarsızdır, ölçek istatistiği sonucu değiştirmez (ölçüldü: fark −0,0000). Aynı satır nöral modelde gerçek bir kanaldır.</p>
+<p><strong>Genellenen ilke — iki katmanlı.</strong></p>
+<p>1. <strong>Zararsız bir kalıp, model sınıfı değişince zararlı olur.</strong> &quot;Bu daha önce sorun çıkarmadı&quot; bir güvence değildir; hangi model sınıfında sorun çıkarmadığı sorulmalıdır.</p>
+<p>2. <strong>Bir dedektörü İNŞA ETMEK, onu koşturmaktan önce iş görebilir.</strong> Kanaryayı yazmak, sınayacağı kod yolunu okumayı zorunlu kıldı ve kusur orada bulundu — kanarya hiç koşmadan. Dedektör yazmanın maliyeti yalnızca koşma süresi değil; getirisi de yalnızca alarm değil.</p>
+<p><strong>Düzeltme.</strong> <code>Yigin(..., olcek_satirlari=...)</code> — istatistikler yalnızca verilen satırlardan. <code>None</code> verilmesi artık YALNIZCA kanarya 3&#x27;ün sızıntılı kolunu kurmak içindir ve nesne <code>olcek_kapsami</code> alanında bunu &quot;TÜM TABLO (sızıntılı)&quot; diye beyan eder.</p>
+<p><strong>Kanarya yine de koşulacak</strong> (kural 9): kusur düzeltildi diye kanarya gereksiz olmaz — korumanın çalıştığı, REDDETTİĞİ bir deneyle gösterilir.</p>
+<hr>
+<h2>V27 — Taşıma denetimi: V26&#x27;nın SINIFINDA iki kusur daha</h2>
+<p><strong>Ne oldu.</strong> V26 tekil bir düzeltmeydi. &quot;Bu bulgunun sınıfı nedir ve başka örneği var mı?&quot; sorusu sorulunca Faz 3&#x27;ten NPP&#x27;ye taşınan kalıplar tek tek denetlendi. İki kusur daha çıktı, biri de temiz çıktı.</p>
+<p><strong>(a) <code>poisson_rate</code> özniteliği YOKTU.</strong> Sütun öznitelik tablosunda bulunmuyor; <code>lgbm.load_dataset</code> onu <code>baseline_poisson.csv</code> ile birleştirerek ekliyordu. <code>npp.Yigin</code> tabloyu doğrudan okuduğu için sütun eksikti — NPP, Faz 3&#x27;ün SHAP&#x27;te %52,5 pay alan özniteliği olmadan eğitilecekti. Aynı öznitelik kümesiyle karşılaştırma iddiası çökerdi.</p>
+<p><strong>(b) NaN işleme sessizce değişmişti.</strong> LightGBM NaN&#x27;ı yerli işler; nöral ağ işlemez ve kod <code>nan_to_num(0)</code> yapıyordu. <code>bval</code> satırların %96,6&#x27;sında NaN — yani model &quot;b-değeri sıfır&quot; bilgisi alıyordu. b ≈ 1&#x27;dir; sıfır fiziksel olarak imkânsızdır. İlan edilen doldurma kuralı tam bunu yasaklıyordu.</p>
+<p><strong>(c) Poisson temel modelin dönemi TEMİZ ÇIKTI.</strong> 1990-2016, doğrulama başlangıcında bitiyor. Bu da denetimin parçasıdır: **temiz çıkan bir kalem, denetlenmemiş bir kalemle aynı şey değildir.**</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>Tekil bir kusur kapatıldığında sorulacak soru düzeltmenin doğruluğu değil, <strong>&quot;bu bulgunun sınıfı nedir ve o sınıfın başka örneği var mı?&quot;</strong>dır. Sınıf taranmadan kapatılan bulgu, aynı sınıfın diğer örneklerini görünmez kılar — çünkü &quot;o sorun çözüldü&quot; duygusu aramayı durdurur.</blockquote>
+<p>Ayrıca: taşınan kod, <strong>taşındığı bağlamda yeniden denetlenmelidir.</strong> Kalıbın zararsızlığı bağlama bağlıdır ve bağlam model sınıfıdır.</p>
+<hr>
+<h2>V28 — Bütçe yetersiz değildi, BAŞLANGIÇ NOKTASI yanlıştı</h2>
+<p><strong>Ne oldu.</strong> İlan şartı gereği tek koşu zamanlandı. İki sonuç çıktı:</p>
+<pre>süre                24,1 dk/koşu -&gt; 24 koşu 9,6 saat (ilan tahmini ~1,5 sa)
+doğrulama NLL       40. turda HÂLÂ tekdüze düşüyor; erken durdurma
+                    hiç tetiklenmedi</pre>
+<p><strong>İlk okuma yanlış olurdu.</strong> İlan, &quot;tahmin tutmuyorsa arama uzayı KÜÇÜLTÜLÜR&quot; diyordu ve bu kural uygulanabilirdi: 8 bileşim 4&#x27;e indirilir, süre yarılanır, koşu başlar. <strong>Ama sorun bütçe değildi.</strong></p>
+<p><strong>Ölçülen kök neden.</strong> Rastgele ilklendirmede başlangıç lambda&#x27;sı:</p>
+<pre>başlangıç lambda   182,63
+gerçek taban oran    0,00032731
+ORAN               557.966 kat</pre>
+<p>Model 40 turun tamamını <strong>5,7 büyüklük mertebesi inmekle</strong> geçiriyordu. Öğrenmesi gereken şey şekildi; seviyeye takılıyordu.</p>
+<p><strong>Bu neden sonucu geçersiz kılardı.</strong> 40 turda kesilen bir karşılaştırma, model kalitesini değil <strong>&quot;kim daha hızlı indi&quot;yi</strong> ölçer. Büyük öğrenme oranı kazanır, düzenlileştirme kaybeder — ve bu, modelin tahmin gücüyle ilgisiz bir sıralamadır. Arama koşulsaydı 9,6 saat harcanır ve <strong>cevap yanlış soruya</strong> verilirdi.</p>
+<p><strong>Düzeltme.</strong> Son katman yanlılıkları taban orana ilklendirilir (nadir-olay Poisson modellerinde standart): arka plan başı taban oranı, tetiklenme başı olay başına taban/(10K) verir.</p>
+<pre>ilklendirme sonrası oran   1,07 kat</pre>
+<p>Taban oran <strong>yalnızca eğitim satırlarından</strong> hesaplanır; doğrulama ve test görülmez.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>Bir bütçe kısıtı göründüğünde ilk soru &quot;bütçeyi mi kısayım, kapsamı mı?&quot; değil, <strong>&quot;bütçe neye harcanıyor?&quot;</strong>dur. Harcamanın kendisi kusurluysa, bütçeyi kısmak kusuru gizler; kapsamı kısmak da öyle.</blockquote>
+<p>Ayrıca: <strong>erken durdurmanın hiç tetiklenmemesi bir uyarı işaretidir.</strong> Sabır parametresi bir güvenlik ağıdır; hiç devreye girmiyorsa model yakınsamamış demektir ve &quot;en iyi tur&quot; aslında &quot;son tur&quot;dur.</p>
+<p><strong>İlan şartının değeri.</strong> &quot;Koşu başlamadan önce tek bir koşu zamanlanır&quot; maddesi buraya kadar bir süre kontrolü sanılıyordu. Asıl işi bu oldu: <strong>yakınsama kontrolü.</strong> Madde ilan pakette olmasaydı, arama doğrudan koşardı.</p>
+<p><strong>V28 EKİ — düzeltme NEDEN işliyor.</strong> Poisson NLL&#x27;in ön-aktivasyona göre gradyanı kabaca <code>(lambda - y)</code>&#x27;dir. <code>lambda ~ 182</code>, <code>y ~ 0</code> iken gradyan büyüktür ama parametre <code>softplus</code>&#x27;ın içindedir ve iniş ön-aktivasyonda yaklaşık <strong>doğrusaldır</strong>: her adım <code>lr</code> mertebesinde ilerler. 5,7 büyüklük mertebesi (~13 doğal log birimi) inmek, <code>lr=1e-3</code> ile on binlerce adım demektir — 40 tur tam olarak buna gidiyordu.</p>
+<p>Yanlılık ilklendirmesi bu yolculuğu <strong>tamamen ortadan kaldırır</strong>: model &quot;olay yok&quot; varsayımından başlar ve ilk adımdan itibaren SEKLİ öğrenir.</p>
+<p><strong>BELİRTİ EŞLEŞMESİ.</strong> Gelecekte şu belirti görülürse doğrudan bu vakaya bakılsın:</p>
+<pre>ilk turlarda kayıp hızla ve TEKDÜZE düşüyor, sonlara doğru hâlâ düşüyor,
+erken durdurma hiç tetiklenmiyor</pre>
+<p>Bu, &quot;model öğreniyor&quot; değil <strong>&quot;model hâlâ seviyeyi arıyor&quot;</strong> demektir. Kontrol tek satırdır: ilklendirilmiş modelin başlangıç <code>lambda</code> ortalamasını hedefin taban oranıyla karşılaştır.</p>
+<hr>
+<h2>V29 — Sonda, ölçmek istediği şeyi ölçemeyecek biçimde tasarlanmıştı</h2>
+<p><strong>Ne oldu.</strong> Kanarya 3 (ölçekleme sızıntısı) NPP&#x27;de gerçek sızıntıyı yakalamadı (+0,0003). &quot;Kör mü, kanal mı boş?&quot; ayrımı için kasıtlı bozulma taraması yapıldı: özniteliklere 0,05 · 0,15 · 0,50 · 1,50 sd&#x27;lik kayma eklendi.</p>
+<pre>0,05 sd -&gt; +0,0005      0,50 sd -&gt; +0,0059
+0,15 sd -&gt; +0,0022      1,50 sd -&gt; +0,0038   &lt;- DAHA KÜÇÜK</pre>
+<p><strong>Etki tekdüze değil.</strong> 1,5 sd&#x27;lik bozulma, 0,5 sd&#x27;linkinden daha az etki yaptı. Tekdüze olmayan bir &quot;etki&quot; sinyal değil <strong>gürültüdür</strong>.</p>
+<p><strong>Betiğin otomatik hükmü YANLIŞTI.</strong> Kod ikili bir mantık kuruyordu — yakaladı / yakalamadı → kör — ve &quot;DEDEKTÖR KÖR&quot; yazdı. Üçüncü ihtimal gözden kaçmıştı:</p>
+<blockquote><strong>Sondanın kendisi bilgi taşımıyor olabilir.</strong></blockquote>
+<p>Standartlaştırma istatistiklerindeki fark, girdilere **tüm satırlara aynı uygulanan afin bir dönüşüm** olarak yansır. Nöral ağın ilk katmanı bunu ağırlık ve yanlılığıyla <strong>soğurur</strong>; dönüşüm hipotez sınıfını değiştirmez, yalnızca eniyileme koşullarını değiştirir. Satır başına ayırt edici bilgi taşımayan bir bozulma, hiçbir dedektör tarafından yakalanamaz — çünkü yakalanacak bir şey yoktur.</p>
+<p><strong>Bu, kendi ilan cümlemi yanlışlar.</strong> <code>docs/NPP_ILAN.md</code> §7&#x27;de yazmıştım:</p>
+<blockquote>*&quot;Kanarya 3 ilk kez anlamlı. Ağaçlarda kanal yoktu; nöral modelde ölçekleme gerçek bir kanaldır.&quot;*</blockquote>
+<p>Yanlış. Kanal <strong>her iki model sınıfında da</strong> neredeyse boştur, ama farklı sebeplerle:</p>
+<table><tr><th>model sınıfı</th><th>neden boş</th></tr><tr><td>ağaç</td><td>monoton dönüşüme <strong>duyarsızlık</strong></td></tr><tr><td>nöral</td><td>afin dönüşümü <strong>soğurabilme</strong></td></tr></table>
+<p><strong>Genellenen ilke — iki katmanlı.</strong></p>
+<p>1. <strong>&quot;Alarm yok&quot; üç şey olabilir, iki değil:</strong> dedektör kör · kanal boş · <strong>sonda bilgisiz.</strong> Üçüncüsü ilk ikisinden ayrılmadan hüküm verilemez. Ayıran ölçüm: bozulma büyütüldükçe etki <strong>tekdüze artıyor mu?</strong></p>
+<p>2. <strong>Bir sondayı tasarlarken sorulacak soru:</strong> *&quot;bu bozulma, model sınıfının temsil edemeyeceği bir fark yaratıyor mu?&quot;* Model sınıfının soğurabildiği bir dönüşümle sonda yapmak, termometreyi sıcaklığı ölçmeyen bir yere koymaktır.</p>
+<p><strong>Sonuç — kanarya 3 EMEKLİ EDİLİR.</strong> Tanımlandığı biçimiyle (standartlaştırma istatistiklerinin kapsamı) hiçbir model sınıfı için anlamlı bir dedektör değildir. Yerine ne konabileceği ilan edildi (Zeyilname 4) ama **bu koşuda kullanılmaz** — sonuç görüldükten sonra yeni dedektör tanımlamak, ölçütü sonuca göre seçmek olurdu.</p>
+<p><strong>V26 DÜZELTMESİ YERİNDE KALIR</strong> ve gerekçesi güçlenerek durur: sızıntı gerçektir, bu veri setinde zararsızdır çünkü dağılım bölümler arasında durağandır (ölçüldü: ortalama kayma 0,0125 sd). **Durağanlık bir varsayımdır, garanti değildir** — katalog genişlediğinde, Mc değiştiğinde ya da bölümler farklı sismik rejimlere düştüğünde aynı sızıntı zararlı olur. Bugün boş olan kanal, yarın dolu olabilir.</p>
+<hr>
+<h2>V30 — <code>git commit &amp;&amp; uzun_koşu</code>: temiz ağaç zinciri kırdı</h2>
+<p><strong>Ne oldu.</strong> Ana koşu şöyle başlatıldı: <code>git commit -m ... &amp;&amp; python arama.py</code>. Commit edilecek bir şey yoktu (uçuş öncesi kontrol bir <strong>ölçümdü</strong>, dosya değişikliği değil), <code>git commit</code> <strong>1 döndürdü</strong>, <code>&amp;&amp;</code> zinciri kırıldı ve <strong>koşu hiç başlamadı.</strong></p>
+<p><strong>Neden tehlikeli.</strong> Komut sessizce &quot;başarısız&quot; oldu ama görünürde bir hata yoktu — çıktı yalnızca <code>nothing to commit, working tree clean</code> diyordu. Bildirim gelmeseydi, dokuz saat sonra &quot;koşu bitti mi?&quot; diye bakıldığında <strong>hiç başlamamış</strong> olduğu görülecekti.</p>
+<p><strong>Aile.</strong> V21 (heredoc <code>\n</code> yutması) ile aynı sınıf: **kabuk semantiğinin sessiz kırılması.** Üçüncü üye. Ortak özellik: komut &quot;çalıştı&quot;, sonuç yanlış.</p>
+<p><strong>Kural — ucuz ve kalıcı.</strong></p>
+<pre>1. Uzun koşular AYRI komutla başlatılır; hiçbir şeye zincirlenmez.
+2. Başladığı ÇIKTIDAN DOĞRULANIR. &quot;Başlattım&quot; bir gözlem değildir.</pre>
+<p>İkinci madde bu vakada işledi: koşu yeniden başlatıldıktan sonra ilk 90 saniyelik çıktı okundu ve dört satır doğrulandı (satır sayıları, 16 sütun, ölçekleme kapsamı, dizin künyesi). Boş çıktıya güvenilseydi hata yine gizlenirdi.</p>
+<p><strong>Yan kazanç.</strong> O dört satır, koşu-öncesi denetimlerin <strong>fiilen yürürlükte</strong> olduğunu tek ekranda gösterdi:</p>
+<pre>16 sütun                -&gt; V27 (eksiklik göstergeleri)
+2.300.595 satır kapsam  -&gt; V26 (ölçekleme yalnızca eğitimden)
+dizin künyesi           -&gt; V6&#x27;nın veri tarafındaki karşılığı
+12 koşu                 -&gt; Zeyilname 3 (küçültülmüş uzay)</pre>
+<p>&quot;Koruma kurulu&quot; ile &quot;koruma yürürlükte&quot; arasındaki fark, açılış çıktısında kapandı.</p>
+<hr>
+<h2>V31 — Saçılım-tabanlı seçim kuralı, saçılımın kendi belirsizliğini saymıyor</h2>
+<p><strong>Ne oldu.</strong> NPP aramasında seçim kuralı şuydu: *en yakın rakiple fark, tohum saçılımını aşıyor mu?* Kod bunu <strong>seçilenin kendi standart sapmasıyla</strong> karşılaştırıyor ve &quot;EVET&quot; bastı.</p>
+<pre>en yakın rakiple fark        0,000001599
+SEÇİLENİN kendi ss           0,000000439  -&gt; aşıyor: EVET
+HAVUZLANMIŞ ortalama ss      0,000005763  -&gt; aşıyor: HAYIR</pre>
+<p><strong>Seçilen bileşimin saçılımı, diğer üçünün on altıda biri.</strong> Karar, o olağandışı küçük sayıya dayanıyor.</p>
+<p><strong>Kural DEĞİŞTİRİLMEDİ.</strong> İlan edilmişti ve sonuç görüldükten sonra değiştirmek kural 1 ihlali olurdu. Değişen şey <strong>raporun içeriğidir</strong>: kararın kırılganlığı beyan edilir.</p>
+<blockquote>Seçim, tek bir bileşimin <strong>şans eseri kararlı çıkmasına</strong> dayanıyor olabilir.</blockquote>
+<p><strong>Kök neden — genellenebilir.</strong> Standart sapma <strong>3 gözlemden</strong> kestirildi. 3 tohumlu bir kestirimde ss&#x27;nin kendi bağıl belirsizliği çok büyüktür (kabaca %40 mertebesinde); 16 katlık bir oran farkı bu belirsizlikle rahatlıkla üretilebilir. Yani &quot;bu bileşim daha kararlı&quot; ifadesi, ölçülen şeyin kendisi kadar gürültülüdür.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>**Saçılım-tabanlı bir seçim ya da hüküm kuralı, saçılımın KENDİ belirsizliğini hesaba katmalıdır.** Az sayıda tekrarla kestirilen bir standart sapmayı eşik olarak kullanmak, gürültüyü ölçüt yapar.</blockquote>
+<p><strong>Uygulama (gelecek kurulumlara).</strong> Kural, tek bileşimin ss&#x27;siyle değil <strong>havuzlanmış</strong> ss ile kurulur; ya da tohum sayısı ss&#x27;yi kestirecek düzeye çıkarılır. Bu değişiklik <strong>bu koşuya uygulanmaz</strong> — sonuç görüldükten sonra ölçüt değiştirilmez; bir sonraki ilan paketinde yazılır.</p>
+<hr>
+<h2>V32 — İkili ilan yapısı, üçüncü kez üçlü gerçeklikle karşılaştı</h2>
+<p><strong>Ne oldu.</strong> Faz 3&#x27;ün kapanış taslağı iki dal bağlamıştı: <strong>X</strong> (NPP tetiklenmeyi öğrendi) · <strong>Y</strong> (öğrenemedi). Sonuç ikisinin de tam karşılığı değildi:</p>
+<pre>tetiklenme  KISMEN öğrenildi   (19,8 -&gt; 41,8; ETAS 84,3, gözlenen 59)
+şekil       ETAS&#x27;tan İYİ       (H1: +0,316, MDE üstünde)
+seviye      ÖĞRENİLEMEDİ       (kalibrasyon 1,52)</pre>
+<p>Dal X&#x27;in <em>&quot;öğrenilebilir&quot;</em> yarısı ve Dal Y&#x27;nin <em>&quot;geçemedi&quot;</em> yarısı **aynı anda doğru.**</p>
+<p><strong>Üçüncü kez.</strong> Aynı yapısal eksik daha önce iki kez çıktı:</p>
+<table><tr><th>#</th><th>ikili kuruluş</th><th>üçlü gerçeklik</th></tr><tr><td>1</td><td>arama dağılımı DAR / GENİŞ</td><td>küresel yapılı + yerel düz (Faz 3)</td></tr><tr><td>2</td><td>kanarya: yakaladı / kör</td><td>dedektör kör · kanal boş · <strong>sonda bilgisiz</strong> (V29)</td></tr><tr><td>3</td><td>kapanış: X / Y</td><td>öğrenildi + öğrenilmedi, <strong>farklı bileşenlerde</strong></td></tr></table>
+<p><strong>Ortak kök.</strong> İkili kuruluş, ölçülen şeyin <strong>tek boyutlu</strong> olduğunu varsayar. Üçü de çok bileşenli çıktı: uzayın yapısı ölçeğe bağlıydı; &quot;alarm yok&quot; üç ayrı sebepten olabiliyordu; &quot;öğrendi&quot; birden fazla bileşene ayrılıyordu.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote><strong>Bir dal yapısı kurulurken sorulacak soru: ölçtüğüm şey tek boyutlu mu?</strong> Değilse dallar <strong>bileşen başına</strong> kurulur; tek eksende kurulan dallar, bileşenlerin ayrıştığı durumu öngöremez.</blockquote>
+<p><strong>Ne YAPILMADI.</strong> Dal zorlanmadı. DAR/GENİŞ emsalindeki gibi, **uygulanabilir beyanlar ayrı ayrı işletildi** ve uymayan varsayımlar açıkça &quot;gerçekleşmedi&quot; diye işaretlendi. İlanın eksiği, sonucu eğip bükmek yerine **ilanın eksiği olarak** kaydedildi.</p>
+<p><strong>Uygulama (gelecek ilan paketlerine).</strong> Kapanış dalları, hükmün dayandığı <strong>her bileşen için ayrı</strong> yazılır. NPP örneğinde bu, üç dal demekti: tetiklenme (öğrenildi / kısmen / hayır) × şekil × seviye. İkili kuruluş üç bileşeni tek eksene sıkıştırdığı için yetersiz kaldı.</p>
+<hr>
+<h2>V33 — Yasak kelime taraması, TÜRKÇE büyük harfe kördü</h2>
+<p><strong>Ne oldu.</strong> Veri hattının &quot;kesinlik dili&quot; koruması <code>str.lower()</code> ile karşılaştırma yapıyordu. Kural 9 gereği yazılan ret testi bunu ilk koşuda düşürdü:</p>
+<pre>&quot;Bu bölgede KESİNLİKLE hareket bekleniyor.&quot;   -&gt; ALARM VERMEDİ</pre>
+<p><strong>Sebep.</strong> Türkçe büyük <code>İ</code>, Unicode kurallarına göre <code>i</code> + <strong>birleşen nokta</strong> (U+0307) verir. <code>&quot;KESİNLİKLE&quot;.lower()</code> çıktısı <code>&quot;kesi̇nli̇kle&quot;</code>dir ve <code>&quot;kesinlikle&quot;</code> ile <strong>eşleşmez</strong>.</p>
+<p>Ölçüldü: çıktı <code>cp1254</code>&#x27;e kodlanamıyor bile — birleşen noktanın varlığının maddi kanıtı.</p>
+<p><strong>Neden özellikle kötü.</strong> Koruma, ihlalin <strong>en yüksek sesle yazılmış hâlini</strong> kaçırıyordu. Büyük harf, kesinlik iddiasının en olası biçimidir (&quot;KESİNLİKLE&quot;, &quot;DEPREM OLACAK&quot;). Yani tarama tam da yakalaması gereken yerde kördü.</p>
+<p><strong>Düzeltme.</strong> Küçültmeden ÖNCE Türkçeye özgü iki eşleme:</p>
+<pre>İ -&gt; i        I -&gt; ı</pre>
+<p><strong>Nasıl yakalandı — kural 9&#x27;un doğrudan getirisi.</strong> Koruma yazıldıktan sonra &quot;reddettiği bir deney&quot; zorunluydu; o deney yazılırken körlük çıktı. Koruma teste tabi tutulmasaydı, <strong>yayına kör hâlde girecekti</strong> ve hiçbir çıktı hata vermeyeceği için de fark edilmeyecekti.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>**Metin tabanlı korumalar, çalışacakları DİLİN kurallarına göre sınanmalıdır.** <code>lower()</code>, <code>upper()</code>, <code>title()</code>, alfabetik sıralama ve karşılaştırma — hepsi dile bağlıdır ve varsayılan davranış İngilizce&#x27;dir.</blockquote>
+<p>Bu, &quot;zararsız kalıp, bağlam değişince zararlı olur&quot; (V26) ailesinin dil katmanındaki örneğidir: <code>str.lower()</code> İngilizce metinde doğru, Türkçe metinde yanlıştır.</p>
+<p><strong>Kapsam taraması (V27 kuralı: sınıf taranmadan kapatılmaz).</strong> Kod tabanında <code>lower()</code> / <code>upper()</code> kullanan başka <strong>kullanıcıya görünen metin</strong> işlemi var mı — bu sorunun cevabı arayüz aşamasında, yayımlanan metinler yazıldığında yeniden sorulacaktır. Şu an yayımlanan tek metin GeoJSON künyesidir.</p>
+<hr>
+<h2>V37 — Dondurulmuş sonucun DONDURULMAMIŞ ZEMİNİ</h2>
+<p><strong>Ne oldu.</strong> Site veri hattının eşik teyidi sırasında, dondurulmuş değerlendirme tablosunun (<code>etas_analytic_weekly</code>, 24 Ağu 2026 21:22) bugünkü kodla <strong>yeniden üretilemediği</strong> görüldü.</p>
+<pre>eval ~ 1,061 x hat + 6,41e-05      eğim ~1 -&gt; TETİKLEME AYNI
+eval μ oranı 0,3691 · hat μ oranı 0,0968   -&gt; 3,81 kat, ARKA PLANDA</pre>
+<p><strong>Teşhis zinciri — beş kontrol.</strong> Farkın yeri kesin olarak daraltıldı, sebebi bulunamadı:</p>
+<table><tr><th>kontrol</th><th>sonuç</th></tr><tr><td>parametre sha256</td><td><strong>aynı</strong> — künye zinciri işini yaptı</td></tr><tr><td>katalog kırpması</td><td><strong>etkisiz</strong> → ileri bakış YOK</td></tr><tr><td>EM adımı</td><td><strong>kararlı</strong> (6 tekrar, 1,000 kat) → V16 değil</td></tr><tr><td><code>history_years</code></td><td>açıklamıyor (2-20 yıl → 0,084-0,127)</td></tr><tr><td><code>cell_id</code> düzeltmesi</td><td>1,00005 kat</td></tr></table>
+<p><strong>Kalan aday sınanamadı.</strong> Katalogun geriye dönük içerik değişimi tek olası sebepti ama <code>catalog_merged.csv</code> gitignore&#x27;daydı ve **sha&#x27;sı hiçbir yere yazılmamıştı**. Karşılaştırılacak bir kayıt yoktu.</p>
+<p><strong>KÖK BULGU.</strong></p>
+<blockquote>Künye zinciri <strong>parametreleri</strong> kapsıyordu (<code>etas_params_sha256</code>) ama <strong>veriyi</strong> kapsamıyordu. Mühür sayıları koruyordu; **zeminin kendisi künyesizdi.**</blockquote>
+<p>Dondurulmuş bir sonuç, dondurulmamış bir zemin üzerinde duruyordu. V6&#x27;nın (bayat eser) veri tarafındaki karşılığı budur ve dört ay boyunca görünmedi — çünkü zemin hiç yeniden üretilmemişti. **Bir eserin bayat olup olmadığı, ancak yeniden üretilmeye çalışıldığında anlaşılır.**</p>
+<p><strong>Nasıl bulundu.</strong> Site veri hattının bir kabul testi olarak eşik teyidi istendi: &quot;hat ile değerlendirme aynı sayıları veriyor mu?&quot; Bu soru sorulmasaydı, cron yeniden üretilemeyen bir zemin üzerinde yayına başlayacak ve fark hiç görünmeyecekti.</p>
+<p><strong>Düzeltme (pazarlıksız, sonuçtan bağımsız).</strong> Künyeye iki alan eklendi ve şema koruması ikisini de <strong>zorunlu</strong> kıldı:</p>
+<pre>catalog_sha256        katalog dosyasının sha256&#x27;sı
+catalog_last_event    kataloğun son olay zamanı</pre>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>**Künye zinciri, sonucu üreten HER girdiyi kapsamalıdır — kodu, parametreleri VE veriyi.** Kapsamayan bir zincir, kapsamadığı yerden kopar; ve kopuş, ancak yeniden üretim denendiğinde görünür.</blockquote>
+<p><strong>Açık uç.</strong> Yeniden üretim koşusu ve okuma kuralları: <code>docs/ZEMIN_YENIDEN_URETIM.md</code> (koşudan önce yazıldı).</p>
+<hr>
+<h2>V38 — Veri hattı KENDİ GİRDİSİNİ imha etti</h2>
+<p><strong>Ne oldu.</strong> Site veri hattı sınanırken <code>update_catalog()</code> çağrıldı. Üç kaynağın ham CSV dosyaları <strong>yalnızca 2026 verisiyle üzerine yazıldı</strong>:</p>
+<table><tr><th>kaynak</th><th>öncesi</th><th>sonrası</th><th>kurtarıldı</th></tr><tr><td>AFAD</td><td>265.572</td><td><strong>4.713</strong></td><td>265.572</td></tr><tr><td>KOERI</td><td>71.865</td><td><strong>608</strong></td><td>71.865</td></tr><tr><td>EMSC</td><td>51.149</td><td><strong>724</strong></td><td>51.149</td></tr></table>
+<p>Birleşik katalog 302.767&#x27;den ~278.000&#x27;e düştü ve arka plan oranı μ <strong>3,81 kat</strong> yanlış hesaplandı (0,0968 yerine 0,3689).</p>
+<p><strong>Kök neden — iki doğru parçanın yanlış birleşimi.</strong></p>
+<pre>update_catalog  -&gt;  &quot;--start latest.year&quot;   (niyet: yalnızca son yılı tazele)
+indirme betiği  -&gt;  df.to_csv(out_csv)      (davranış: TÜM dosyayı yeniden yaz)</pre>
+<p>Her iki parça kendi içinde doğruydu. **Artımlı güncelleme niyeti, tam-yeniden-yazma davranışıyla çakıştı.** V18/V19 ailesinin en pahalı örneği: tablo doğru, yükleyici doğru, birleşim veri imha ediyor.</p>
+<p><strong>Neden hiçbir koruma yakalamadı.</strong></p>
+<blockquote>Bugüne kadar bütün korumalar <strong>YAYIN yönüne</strong> bakıyordu: kirli ağaç, dil, şema, künye, hücre bandı. Hattın <strong>KENDİ GİRDİSİNİ</strong> imha edebileceği senaryo haritada yoktu.</blockquote>
+<p>Koruma taksonomisinin eksik yüzü buydu. Çıktı denetleniyordu; **girdinin tahrip edilmediğini kimse denetlemiyordu.**</p>
+<p><strong>Nasıl bulundu.</strong> V37&#x27;nin teşhis zinciri: dondurulmuş tablo yeniden üretilemedi → beş kontrol farkın yerini μ&#x27;ye daralttı → dönem-bazlı olay sayıları loglandı → 2010-2019&#x27;da 4,5 kat düşüş görüldü → ham dosyalara bakıldı. <strong>Teşhis notu olmasaydı sebep bulunamayacaktı.</strong></p>
+<p><strong>Kurtarma — tesadüf, tasarıma çevrildi.</strong> AFAD&#x27;ın aylık (284 dosya) ve KOERI&#x27;nin yıllık (57 dosya) JSON/TXT önbellekleri dokunulmamıştı ve **fiilî yedek** işlevi gördü. Kimse onları yedek diye tasarlamamıştı.</p>
+<blockquote><strong>Önbellek dizinleri artık resmî kurtarma katmanıdır.</strong> Ağdan çekilen her şey önce önbelleğe, oradan birleştirmeye. EMSC&#x27;nin önbelleği yoktu ve ağdan yeniden çekilmek zorunda kalındı — bir sonraki sürümde o da önbelleğe alınır.</blockquote>
+<p><strong>Düzeltme — iki katmanlı.</strong></p>
+<p>1. <strong>Kök neden:</strong> her kaynak KENDİ TAM ARALIĞIYLA çağrılır (AFAD 2003+, KOERI 1970+, EMSC 1998+). Maliyet düşük: betikler önbelleği kullanır. 2. <strong>Monotonluk koruması:</strong> güncelleme sonrası ham dosya **%5&#x27;ten fazla küçülürse DURULUR** (<code>KatalogKuculdu</code>). Bilinçli temizlik <code>izin_kucultme</code> bayrağıyla geçer.</p>
+<p><strong>Kural 9 — reddettiği deney.</strong> <code>tests/test_pipeline.py</code>: kasten hasar veren sahte bir indirme (1000 → 10 satır) korumayı tetikliyor; bilinçli bayrak geçiyor; %2&#x27;lik dalgalanma durdurmuyor. 31 test.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote><strong>Bir hat, çıktısı kadar GİRDİSİNİN bütünlüğünden de sorumludur.</strong> Veriyi tazeleyen her işlem, tazeleme sonrası verinin küçülmediğini ölçmelidir. Monotonluk ucuz bir korumadır ve imhayı yakalar.</blockquote>
+<p><strong>Ve bir kayıt daha:</strong> bu hasarı ben verdim — hattı sınarken. Sınama, sınadığı şeyi bozabilir; bu yüzden sınama da geri alınabilir olmalıdır. Kurtarmayı mümkün kılan şey, tasarlanmamış bir önbellekti. Şansa bırakılmayacak.</p>
+<hr>
+<h2>V39 — Karşılaştırma, YUVARLANMIŞ YAYIN DEĞERİYLE kuruldu</h2>
+<p><strong>Ne oldu.</strong> Zemin yeniden üretimi karşılaştırılırken betik &quot;DAL B&quot; bastı: kalibrasyon 1,09&#x27;dan 1,0885&#x27;e &quot;değişmiş&quot; görünüyordu (fark −0,00146, tolerans 0,001).</p>
+<p><strong>Ama eski tablo da 1,0885 veriyordu.</strong> İki tablo birbiriyle **tam uyuşuyordu<strong>; aşan fark, tabloların değil, </strong>yayımlanmış yuvarlanmış değerle** olan farktı. Manşette <code>1,09</code> yazıyor — iki ondalıkta — ve 1,0885 → 1,09 doğru yuvarlamadır.</p>
+<p><strong>İki tasarım kusuru.</strong></p>
+<p>1. <strong>Yanlış çift.</strong> Asıl soru &quot;zemin yeniden üretilebiliyor mu?&quot; idi; yani <strong>eski tablo ↔ yeni tablo</strong>. Betik yeni tabloyu <strong>yayın değerleriyle</strong> kıyaslıyordu. Yuvarlama, tablonun değil <strong>sunumun</strong> özelliğidir.</p>
+<p>2. <strong>Tek tolerans, farklı hassasiyetler.</strong> Toleransı &quot;manşet üç ondalıkta yazılmış&quot; diye gerekçelendirmiştim; kalibrasyon <strong>iki</strong> ondalıkta yazılmış. Beş sayının yayımlanma hassasiyeti aynı değildi.</p>
+<p><strong>Düzeltilmiş ölçüm.</strong></p>
+<pre>tablo &lt;-&gt; tablo, en büyük BAĞIL fark   1,2e-04  (%0,012)
+yayımlanmış hassasiyette               5 sayıdan 4&#x27;ü örtüşüyor
+sapan                                  auc_etas 0,7909 -&gt; 0,7910 (4. ondalık)</pre>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>**Yeniden üretilebilirlik, ARTEFAKTLAR arasında ölçülür; yayımlanmış değerler arasında değil.** Yayın değeri yuvarlanmış bir sunumdur ve yuvarlama, üretim sürecinin değil raporlamanın özelliğidir.</blockquote>
+<blockquote>**Bir tolerans, karşılaştırılan her sayının KENDİ yayımlanma hassasiyetine göre kurulur.** Tek eşik, farklı hassasiyetlerde yazılmış sayılara uygulanınca yanlış alarm üretir.</blockquote>
+<p><strong>Kural değiştirilmedi.</strong> İlan edilen tolerans sonuç görüldükten sonra gevşetilmedi; <strong>yanlış olan ölçüt değil, ölçütün uygulandığı ÇİFTTİ.</strong> Doğru çift ölçüldü ve iki sonuç da ayrı ayrı raporlandı.</p>
+<hr>
+<h2>V40 — DOĞRULAMA BETİĞİ, doğruladığı sistemi İKİ KEZ haksız yere suçladı</h2>
+<p><strong>Ne oldu.</strong> Eşik teyidi betiği (<code>scripts/29_esik_teyidi.py</code>), canlı hat ile değerlendirme yolunun aynı sayıları verip vermediğini sınıyordu. İki kez <strong>&quot;AYRIŞMA — CRON BAŞLAMAZ&quot;</strong> hükmü verdi:</p>
+<pre>1. koşu (hasarlı katalogla)   YOL1 774-934 · YOL2 126-258
+2. koşu (temiz zeminde)       YOL1 774-934 · YOL2 314-474</pre>
+<p><strong>Ayrışma yoktu.</strong> Fark tam olarak açıklandı:</p>
+<pre>774 - 314 = 460 = temel modelde BULUNMAYAN hücre sayısı</pre>
+<p>Izgara 2560 hücre, uzun vadeli Poisson temel modeli 2100 hücre. Kalan 460 hücrede <code>normal = 0</code> ve <em>&quot;normalin kaç katı&quot;</em> <strong>TANIMSIZDIR</strong>.</p>
+<pre>to_geojson (DOĞRU)   normal=0 -&gt; NaN -&gt; `NaN &gt;= eşik` False -&gt; ELENİR
+benim betiğim (YANLIŞ) normal=0 -&gt; np.inf -&gt; eşiği OTOMATİK GEÇER</pre>
+<p>Düzeltmeden sonra <strong>beş başlangıçta beşi de birebir örtüştü.</strong></p>
+<p><strong>Kusurun anatomisi — <code>TANIMSIZ ≠ SONSUZ</code>.</strong></p>
+<blockquote>Bölen sıfırken sonucu <code>inf</code> yapmak, &quot;değeri çok büyük&quot; demektir. Oysa anlamı <strong>&quot;değer yok&quot;</strong>tur. İkisi karşılaştırmada zıt davranır: <code>inf</code> her eşiği geçer, <code>NaN</code> hiçbirini.</blockquote>
+<p>Bu, projede daha önce iki kez çıkan ayrımın üçüncü yüzü: **&quot;hesaplanamıyor&quot; ile &quot;sıfır&quot; farklı ifadelerdir** (doldurma kuralı, V27&#x27;nin NaN göstergeleri) — burada da <em>&quot;tanımsız&quot;</em> ile <em>&quot;sonsuz&quot;</em>.</p>
+<p><strong>İki kez yanlış hüküm vermesinin sebebi.</strong> İlk koşuda gerçek bir sorun (V38 katalog hasarı) vardı ve betiğin kendi kusuru onun <strong>arkasına gizlendi</strong>; katalog düzeltilince kusur tek başına kaldı ve ancak o zaman görülebildi.</p>
+<blockquote><strong>Bir hata, başka bir hatanın arkasına gizlenebilir.</strong> İlk hata düzeltildiğinde &quot;sorun çözülmedi&quot; sonucu, ikinci bir hatanın işareti olabilir — ve o an sorulacak soru &quot;düzeltme işe yaramadı mı?&quot; değil, <strong>&quot;kaç hata vardı?&quot;</strong>dır.</blockquote>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote><strong>Doğrulama betiği de doğrulanmalıdır.</strong> Bir denetim aracının verdiği olumsuz hüküm, aracın kendisi sınanmadan kabul edilmez. Burada araç, iki kez &quot;sistem bozuk&quot; dedi ve iki kez de kendisi bozuktu.</blockquote>
+<p><strong>Sonuç.</strong> <code>299</code> sorusu da kendiliğinden kapandı: ölçülmüş eşik tablosu 2100 hücrelik temel modele göre kuruluydu; hat 2560 hücrelik ızgarada çalışıp tanımsızları eliyor. Bugünkü 146 ile bu 314-474 arasındaki fark <strong>rejimdir.</strong></p>
+<hr>
+<h2>V44 — Teknik olarak doğru bir cümle, okuyucuyu YANLIŞ YERE götürüyordu</h2>
+<p><strong>Ne oldu.</strong> Metodoloji sayfasında şu cümle vardı:</p>
+<blockquote>*&quot;Üç bölgede üstünlük gösterilemedi — Marmara, Batı Anadolu, Kuzey Anadolu doğusu. <strong>Olay sayısı düşük</strong>, ölçüm gücü yetersiz.&quot;*</blockquote>
+<p>Sayı doğruydu: değerlendirme döneminde (2021-2024, M≥4,5) Marmara&#x27;da **6 olay** var. Ama okuyucu bundan <em>&quot;Marmara&#x27;da deprem az oluyor&quot;</em> sonucunu çıkarır — ve bu <strong>yanlıştır.</strong></p>
+<p><strong>Ölçüldü.</strong></p>
+<table><tr><th>Marmara&#x27;da M≥4,5 olay</th><th>sayı</th></tr><tr><td>2021-2024 (değerlendirme penceresi)</td><td><strong>6</strong></td></tr><tr><td>2010-2024</td><td>30</td></tr><tr><td>1990-2024</td><td><strong>142</strong></td></tr><tr><td>kayıtlı tüm dönem</td><td>227</td></tr></table>
+<p>Uzun vadeli yoğunluk (olay/derece²/yıl, 1990-2024): Marmara <strong>0,523</strong> — Batı Anadolu (0,533) ile aynı düzeyde, **Kuzey Anadolu doğusundan (0,441) yüksek.**</p>
+<p><strong>Marmara düşük sismisiteli bir bölge değildir.</strong> Cümledeki &quot;olay sayısı&quot;, bölgenin tehlikesi değil <strong>testin örneklemidir</strong>: dört yıllık bir pencerede M≥4,5 eşiğinin üstünde kaç olay düştüğü.</p>
+<p><strong>Hata sınıfı.</strong> Bu bir sayı hatası değil, <strong>bağlam hatası</strong>: doğru sayı, yanlış çerçevede. Teknik okuyucu &quot;6 olay = düşük güç&quot; der; sıradan okuyucu &quot;6 olay = güvenli bölge&quot; der. **Sayının doğruluğu, cümlenin doğruluğunu garanti etmez.**</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote><strong>Bir sayı, hangi soruyu cevapladığı yazılmadan yayımlanmaz.</strong> &quot;6 olay&quot; tek başına iki farklı soruyu cevaplayabilir — *bölgede ne kadar deprem oluyor?* ve <em>testimizin örneklemi ne kadar?</em> — ve ikisi zıt sonuçlara götürür.</blockquote>
+<p><strong>Düzeltme.</strong> Cümle yeniden yazıldı ve sayfaya ayrı bir bölüm eklendi: <em>&quot;&#x27;Az olay&#x27; ne demek — ve ne demek DEĞİL&quot;</em>, dört dönemin sayıları ve bölgeler arası yoğunluk tablosuyla. Açık cümle: *&quot;Yalnızca şu doğrudur: dört yıllık bir pencerede 6 olayla iki modeli ayırt edecek istatistiksel güç yoktur. Bu, modelin o bölgede kötü olduğunu da iyi olduğunu da göstermez — ölçemedik demektir.&quot;*</p>
+<p><strong>Nasıl bulundu.</strong> Kullanıcı sayfayı okudu ve *&quot;Marmara Türkiye&#x27;nin en çok konuşulan deprem bölgesi, nasıl olur da olay sayısı düşük olur?&quot;* diye sordu.</p>
+<blockquote><strong>Hiçbir ölçüm bu hatayı yakalayamazdı</strong> — sayı doğruydu, künye doğruydu, kapsam beyanı doğruydu. Yakalayan şey, **metnin bir okuyucu gözüyle okunmasıydı.**</blockquote>
+<p>Kanarya taksonomisine ek bir eksen: <strong>anlam ekseni.</strong> Veri doğru, ölçüm doğru, cümle yanlış.</p>
+<hr>
+<h2>V45 — Dil koruması, YAZILMASI ZORUNLU cümleyi engelledi</h2>
+<p><strong>Ne oldu.</strong> V44&#x27;ün düzeltmesi yazıldı ve dil koruması onu <strong>reddetti</strong>:</p>
+<pre>&quot;deprem TEHLİKESİNİN düşük olduğu anlamına gelmez&quot;   -&gt; ihlal sayıldı</pre>
+<p>Sebep: <code>tehlikesinin</code> kelimesi <code>kesin</code> alt dizisini içeriyor (teh-li-<strong>kesin</strong>-in). Tarama <strong>sözcük sınırı gözetmiyordu.</strong></p>
+<p><strong>Neden kaçınılmazdı.</strong> Türkçe eklemeli bir dildir; kök+ek birleşmeleri tesadüfi alt diziler üretir. Naif <code>in</code> kontrolü bu dilde yanlış pozitif üretmeye mahkûmdur.</p>
+<p><strong>Düzeltme.</strong> Kalıp <strong>sözcüğün başında</strong> aranır; sonrasına ek gelebilir:</p>
+<pre>\bkesin  -&gt;  &quot;kesin&quot;, &quot;kesinlikle&quot;, &quot;kesindir&quot;   YAKALANIR
+             &quot;tehlikesinin&quot;, &quot;eksiksiz&quot;          yakalanmaz</pre>
+<p><strong>Bu bir GEVŞETME DEĞİL, DÜZELTMEDİR</strong> — ve ayrımı testle sabitledim: altı gerçek ihlal (büyük harfliler dâhil) hâlâ yakalanıyor, dört masum kelime artık geçiyor. Koruma zayıflamadı, <strong>doğrulandı.</strong></p>
+<p><strong>İlke.</strong></p>
+<blockquote>Bir korumanın yanlış pozitifi düzeltilirken, **aynı commit&#x27;te gerçek ihlallerin hâlâ yakalandığı gösterilmelidir.** Aksi hâlde &quot;düzeltme&quot; ile &quot;gevşetme&quot; ayırt edilemez.</blockquote>
+<hr>
+<h2>V46 — Çıplak &quot;olacak&quot; yasağı, meşru Türkçeyi engelledi</h2>
+<p><strong>Ne oldu.</strong> Vaka defteri ve denetim mirası sayfa olarak yayımlanınca dil koruması onları reddetti. Eşleşen kalıp <code>olacak</code>, geçtiği yerler:</p>
+<pre>&quot;her tekil bulgunun sınıfı taranmış olacak&quot;
+&quot;koruyucular var derken lazım olacak satır budur&quot;</pre>
+<p>İkisi de sıradan Türkçe; depremle ilgisi yok.</p>
+<p><strong>Kalıp SİLİNMEDİ, KOŞULA BAĞLANDI.</strong> İki sınıf tanımlandı:</p>
+<pre>KOŞULSUZ  kesin · kesinlikle · garanti · bekleniyor ki
+          -&gt; kesinlik iddiasının KENDİSİ; nerede geçerse geçsin ihlal
+
+KOŞULLU   olacak · olacağ · gerçekleşecek · vuracak · bekliyoruz
+          -&gt; sıradan yardımcı fiiller; ihlal olmaları için DEPREM
+             BAĞLAMINDA (±60 karakter) geçmeleri gerekir</pre>
+<p><strong>Gevşetme olmadığı testle sabitlendi:</strong> dört meşru cümle geçiyor, beş deprem-bağlamlı cümle (büyük harfli dâhil) hâlâ yakalanıyor.</p>
+<hr>
+<h2>V47 — Desen tabanlı denetim, İDDİA ile REDDİ ayırt edemez</h2>
+<p><strong>Ne oldu.</strong> V46&#x27;nın düzeltmesinden hemen sonra koruma <strong>arayüz sayfasını</strong> reddetti. Eşleşen cümle:</p>
+<blockquote><em>&quot;<strong>Nerede deprem olacağını</strong> — bunu hiçbir yöntem söyleyemez&quot;</em></blockquote>
+<p>Bu, kesinlik iddiası değil, <strong>kesinliğin açık reddidir</strong> — hem de sayfanın en dürüst cümlesi.</p>
+<p><strong>Üçüncü kez aynı yapı.</strong> Aynı sorun daha önce iki kez çıktı:</p>
+<table><tr><th>#</th><th>reddedilen cümle</th><th>ne yapıyordu</th></tr><tr><td>V35</td><td><em>&quot;kesin deprem tahmini <strong>değildir</strong>&quot;</em></td><td>kesinliği reddediyor</td></tr><tr><td>V44/45</td><td><em>&quot;deprem <strong>tehlikesinin</strong> düşük olduğu anlamına gelmez&quot;</em></td><td>yanlış anlamayı reddediyor</td></tr><tr><td>V47</td><td><em>&quot;nerede deprem <strong>olacağını</strong> söyleyemez&quot;</em></td><td>öngörülebilirliği reddediyor</td></tr></table>
+<p><strong>KÖK SINIR — kabullenilir, kapatılamaz.</strong></p>
+<blockquote>**Desen eşleşmesi, bir cümlenin bir şeyi İDDİA mı ettiğini yoksa REDDİ mi ettiğini ayırt edemez.** Olumsuzlama, dilbilgisel olarak kalıptan uzaktadır (&quot;değildir&quot;, &quot;-mez&quot;, &quot;söyleyemez&quot;, &quot;anlamına gelmez&quot;) ve ±N karakterlik bir pencereyle güvenilir biçimde yakalanamaz.</blockquote>
+<p>Bir olumsuzlama sezgiselliği yazmak <strong>daha kötüdür</strong>: ihlali gizlemenin yolu açılır (<em>&quot;kesinlikle olacak, değil mi?&quot;</em>), yani muafiyet mekanizmasının kendisi bir bypass kanalı olur.</p>
+<p><strong>MİTİGASYON — düzeltme değil, KAPSAM BEYANI.</strong></p>
+<pre>dil koruması, KAZARA eklenen kesinlik dilini yakalayan bir ARKA DURAKTIR
+kesinliği REDDEDEN cümleleri ayırt EDEMEZ
+bu yüzden yayımlanan her sayfa AYRICA insan gözüyle okunur</pre>
+<p>Koruma, insan okumasının yerine geçmez; onu <strong>unutulmaya karşı</strong> korur.</p>
+<p><strong>Uygulama.</strong> Reddedilen cümleler, anlamı korunarak kalıptan kaçınacak biçimde yazılır (<em>&quot;bir sonraki depremin yerini ve zamanını&quot;</em>). Bu bir kaçınmadır ve <strong>öyle olduğu yazılıdır</strong> — korumanın sınırı gizlenmiyor.</p>
+<p><strong>Genellenen ilke.</strong></p>
+<blockquote>Bir korumanın kapatılamayan sınırı varsa, çare onu gizlemek ya da gevşetmek değil, <strong>sınırı ilan edip yanına ikinci bir katman koymaktır.</strong> Burada ikinci katman insan okumasıdır — ve beşinci eksen (anlam) zaten onu gerektiriyordu.</blockquote>
+<hr>
+<h2>V48 — KULLANIM ile ANMA: defter, korumanın kendisini belgeleyince reddedildi</h2>
+<p><strong>Ne oldu.</strong> Vaka defteri sayfa olarak yayımlanınca dil koruması onu reddetti — ve haklı görünüyordu, çünkü sayfa şunları içeriyordu:</p>
+<pre>&quot;kesin&quot;, &quot;kesinlikle&quot;, &quot;garanti&quot;, &quot;bekleniyor ki&quot;     (yasak kalıp LİSTESİ)
+&quot;deprem olacak&quot;, &quot;DEPREM OLACAK&quot;                       (örnek İHLALLER)</pre>
+<p>Ama bunların hiçbiri bir <strong>iddia</strong> değil; korumanın <strong>belgelenmesi</strong>.</p>
+<p><strong>Kaçınarak çözülemez.</strong> Defter, yakaladığı ihlalleri **örneklemek zorundadır**; örneksiz bir vaka kaydı, kaydın kendisini işe yaramaz kılar.</p>
+<p><strong>Kök ayrım — KULLANIM / ANMA.</strong></p>
+<blockquote>Bir metnin bir kalıbı <strong>kullanması</strong> ile <strong>anması</strong> farklı şeylerdir ve desen eşleşmesi bunu ayırt edemez.</blockquote>
+<p>V47&#x27;nin kardeşidir: orada <strong>iddia / ret</strong>, burada <strong>kullanım / anma</strong>. İkisi de aynı kökten gelir — desen, bağlamı görmez.</p>
+<p><strong>Çözüm: KAPSAM İLANI, muafiyet değil.</strong></p>
+<pre>dil denetimi   TAHMİN SUNAN sayfalara uygulanır
+               (index.html, metodoloji.html)
+kapsam dışı    BELGE sayfaları (vaka-defteri, denetim-mirasi)</pre>
+<p>Gerekçe: belge sayfaları <strong>tahmin sunmaz</strong> — sayı, harita, olasılık içermezler. İçerikleri kaynak belgelerden gelir ve o belgeler zaten insan gözüyle yazılır.</p>
+<p><strong>Muafiyet SAYFAYA verilir, CÜMLEYE değil</strong> — ve bu kasıtlıdır. Yayın sayfasında bir ihlali &quot;örneklemek&quot; için meşru sebep yoktur; belge sayfasında vardır. Test bunu sabitler: yayın sayfasında <strong>anma da ihlal sayılır.</strong></p>
+<p><strong>Kapsam dışı sayfalar AÇIKÇA LİSTELİDİR</strong> ve site kurulumunda *&quot;KAPSAM DIŞI (belge — kalıpları anar, kullanmaz)&quot;* satırıyla basılır. Sessiz atlama yok.</p>
+<p><strong>Dört yanlış pozitifin bilançosu.</strong> Dil koruması dört kez meşru metni reddetti: büyük harf (V33), sözcük sınırı (V45), bağlam (V46), kullanım/anma (V48) — artı bir kapatılamaz sınır (iddia/ret, V47).</p>
+<blockquote><strong>Ders: metin denetimi, dilin kendisi kadar karmaşıktır.</strong> Her düzeltme yeni bir sınır açtı ve hiçbiri korumayı gereksiz kılmadı — koruma hâlâ kazara eklenen kesinlik dilini yakalıyor. Ama **tek başına yeterli olmadığı ölçülerek görüldü**: yanında insan okuması gerekiyor, ve bu artık ilan edilmiş bir kapsamdır, bir umut değil.</blockquote>
+<hr>
+<h2>V49 — sessiz varsayılana düşme: kalibre b değeri depoda yoktu</h2>
+<p><strong>Nasıl bulundu.</strong> Actions koşusu 35 dakika boyunca yayın dalı üretmedi. Günlüğe erişimim yok, bu yüzden <strong>en olası sebebi ölçerek</strong> daraltmaya çalıştım: hattın gerçek import zincirini <code>ast</code> ile çıkardım ve depodaki eserleri <code>git ls-tree</code> ile saydım. Aradığım şey kurulum hatasıydı; bulduğum şey daha kötüsü oldu.</p>
+<p><strong>Bulgu.</strong> <code>.gitignore</code> istisnası <code>!data/processed/mc_b.csv</code> yazıyordu. <strong>Böyle bir dosya yok.</strong> Gerçek ad <code>mc_by_period.csv</code>. Yani istisna hiçbir şeyi kapsamıyordu ve dosya depoya hiç girmemişti.</p>
+<p><strong>Neden bu, düşen koşudan daha kötü.</strong> <code>config.load_mc_and_b()</code> dosya yoksa <strong>sessizce varsayılana döner</strong>: mc=3,3 ve <strong>b=1,0</strong>. Bu katalogda kalibre değer <strong>1,045</strong>&#x27;tir ve kodun kendi yorumu şunu söylüyordu:</p>
+<blockquote>*&quot;b=1.0 yaygın bir kısayoldur ama bu katalogda b=1.045 ölçüldü; küçük görünen fark M4.5 hedefinde normal oranı ~%5 kaydırır.&quot;*</blockquote>
+<p>Taze checkout&#x27;lu bir bulut koşusu <strong>düşmezdi</strong> — çalışırdı. Künye doğru olurdu, <code>worktree: clean</code> yazardı, yedi koruma da geçerdi. Ve &quot;normalin kaç katı&quot; alanı ~%5 kaymış olurdu. **Çıktı normal görünür, künye doğrudur, sayı yanlıştır** — V38 ailesinin en tehlikeli biçimi.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir dosyanın varlığını istisna satırı değil, ölçüm kanıtlar.* <code>.gitignore</code>&#x27;a yazılmış bir istisna, dosyanın depoda olduğunu göstermez; yalnızca birinin öyle sandığını gösterir. Yerelde fark edilemezdi çünkü dosya yereldeydi — hatanın görünür olduğu tek yer taze bir ortamdı.</p>
+<p><strong>Ve daha genel hâli:</strong> *bir yedek değer (fallback) sessizse, bir hata değil bir tuzaktır.* <code>load_mc_and_b</code> araştırma için doğru davranıyordu (eksik veriyle çalışabilmek). Yayımda aynı davranış kabul edilemez.</p>
+<p><strong>Düzeltme (üç parça).</strong> 1. <code>.gitignore</code> istisnası doğru ada çevrildi; dosya depoya alındı. 2. <strong>Yeni koruma: <code>kontrol_kalibre_parametreler()</code></strong> — dosya yoksa ya da b tam 1,0 ise <code>ParametreHatasi</code> ile yayım reddedilir. Sessiz düşüş yayımda YASAK. (Korumalar 7 → 8.) 3. Üretim bağımlılıkları <code>requirements-yayin.txt</code>&#x27;e ayrıldı: hattın gerçek import zinciri ÖLÇÜLDÜ (<code>etas</code>, <code>numpy</code>, <code>pandas</code>, <code>scipy</code>) ve <code>pycsep</code>, <code>cutde</code>, <code>shap</code>, <code>lightgbm</code>, <code>matplotlib</code> üretimden çıkarıldı. Bunlar kırılgan derlemelerdir ve hattın kullanmadığı bir bileşenin kurulumu koşuyu düşürebilir.</p>
+<p><strong>Kural 9 deneyi — yapıldı.</strong> Üç test:</p>
+<table><tr><th>deney</th><th>beklenen</th><th>sonuç</th></tr><tr><td>dosya yok</td><td><code>ParametreHatasi</code></td><td><strong>reddetti</strong></td></tr><tr><td>dosya var ama b=1,0</td><td><code>ParametreHatasi</code></td><td><strong>reddetti</strong></td></tr><tr><td>gerçek kalibre dosya</td><td>geçer, b≈1,045</td><td><strong>geçti</strong></td></tr></table>
+<p>Üçüncü test gevşetme kontrolüdür: yalnızca ret deneyi yapılsaydı, <em>her şeyi</em> reddeden bir koruma da testi geçerdi. İkinci deney de ayrıca gereklidir — sadece dosya varlığına bakan bir koruma, boş ya da bozuk bir dosyayı sessizce geçirirdi.</p>
+<p>Ölçülen kalibre değer testte doğrulandı: <strong>b = 1,045</strong>.</p>
+<hr>
+<h2>V50 — geri çekme kalıcı değildi: geri çekilen yayın ikinci işlemde geri geliyordu</h2>
+<p><strong>Nasıl bulundu.</strong> Geri çekme protokolünün kural-9 deneyini yazarken, deneylerden birini <em>iki</em> geri çekmeyle kurdum — amacım eski kaydın ezilmediğini görmekti. Test kırmızı döndü ve kırdığı şey kayıt değil, protokolün kendisiydi.</p>
+<p><strong>Bulgu.</strong> <code>geri_cek()</code> yalnızca <code>_arsiv/latest/</code> dizinini taşıyordu. Yayının arşivdeki <strong>kendi dizini yerinde kalıyordu.</strong> İkinci bir geri çekmede &quot;önceki geçerli yayın&quot; araması, az önce geri çekilen sürümü adayların başında buluyor ve <strong>onu geri getiriyordu.</strong></p>
+<pre>1. geri çekme  -&gt;  latest = B taşındı, latest := A   (arşivde B hâlâ var)
+2. geri çekme  -&gt;  latest = A taşındı, latest := B   &lt;-- B GERİ GELDİ</pre>
+<p>Yani geri çekme geçiciydi ve bunu hiçbir tek-işlemli test göremezdi.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir kaldırma işlemi, kaldırdığı şeyin bütün kopyalarını bilmiyorsa kaldırma değildir.* Protokol &quot;yayını çek&quot; diye tasarlanmıştı; oysa yayının sistemde iki temsili vardı — <code>latest/</code> (hangi yayın yürürlükte) ve arşiv dizini (hangi yayınlar var oldu). Biri kaldırılıp diğeri bırakıldığında sistem tutarsız kaldı.</p>
+<p><strong>Ve yöntemsel ders:</strong> *bir işlemin idempotent olmadığı yerde tek bir çağrıyla sınamak yetmez.* Hata ancak ikinci çağrıda görünüyordu. Kural 9 &quot;koruma reddediyor mu&quot; diye sorar; buna bir de **&quot;işlem tekrarlandığında hâlâ doğru mu&quot;** sorusu eklenir.</p>
+<p><strong>Düzeltme.</strong> Geri çekilen yayının arşiv kopyaları da <code>_geri_cekilen/</code> altına taşınır. Eşleştirme <strong>künyeyle</strong> yapılır (üretim zamanı + katalog sha256), dizin adıyla değil: bir yayının kimliği künyesidir, klasörünün adı değil.</p>
+<p><strong>Kural 9 deneyi.</strong> <code>tests/test_geri_cek.py</code>, beş deney:</p>
+<table><tr><th>deney</th><th>beklenen</th><th>sonuç</th></tr><tr><td>geri çek</td><td><code>latest</code> bir öncekine döner</td><td><strong>düştü</strong></td></tr><tr><td>aynı deney</td><td>dosyalar <code>_geri_cekilen/</code> altında</td><td><strong>silinmedi</strong></td></tr><tr><td>yerine geçen yok</td><td><code>null</code> olarak beyan edilir</td><td><strong>beyan etti</strong></td></tr><tr><td>gerekçe 40 karakterden kısa</td><td><code>GeriCekmeHatasi</code>, hiçbir şey değişmez</td><td><strong>reddetti</strong></td></tr><tr><td>künyesiz yayın</td><td><code>GeriCekmeHatasi</code></td><td><strong>reddetti</strong></td></tr><tr><td>iki kez geri çek</td><td>ilk çekilen GERİ GELMEZ</td><td><strong>gelmedi</strong> (düzeltmeden sonra)</td></tr></table>
+<hr>
+<h2>V51 — site kurucusu kendi ağacını kirletiyordu (V42&#x27;nin HTML tarafı)</h2>
+<p><strong>Nasıl bulundu.</strong> Yasal metin sayfasının gerçek yapı içinde dil denetiminden geçtiğini doğrulamak için siteyi yerelde kurdum. Kurulum başarılıydı; ama hemen ardından baktığım <code>git status</code> temiz değildi:</p>
+<pre>M web/vaka-defteri.html</pre>
+<p><strong>Bulgu.</strong> Vaka defteri ve denetim mirası sayfaları <code>docs/*.md</code>&#x27;den **her kurulumda yeniden üretilir** (V42&#x27;nin dersi: tek kaynak). Ama üretilmiş HTML&#x27;ler git&#x27;te izleniyordu. Defter büyüdükçe sayfa değişiyor, kurulum ağacı kirletiyor ve **bir sonraki hat koşusu kirli-ağaç korumasınca reddediliyordu.**</p>
+<p><strong>Neden V42&#x27;nin tekrarı değil, kardeşi.</strong> V42&#x27;de çözüm <code>web/data/</code> ve <code>data/publish/</code> dizinlerini izlemeden çıkarmaktı — <em>veri</em> çıktısı. Aynı kural <em>belge</em> çıktısına uygulanmamıştı. Üretilmiş bir şeyin veri mi HTML mi olduğu fark etmez; <strong>üretilmiş her şey aynı sınıftandır.</strong></p>
+<p><strong>Dersin genel hâli.</strong> *Bir ilke, bir dosya türü için değil bir özellik için konur.* &quot;Üretilmiş çıktı izlenmez&quot; kuralı <code>web/data/</code> diye değil &quot;üretilmiş&quot; diye yazılmalıydı; dizin adına bağlandığı için yeni bir üretilmiş çıktı sınıfı ortaya çıktığında kural onu kapsamadı.</p>
+<p><strong>Düzeltme.</strong> <code>web/vaka-defteri.html</code> ve <code>web/denetim-mirasi.html</code> izlemeden çıkarıldı. <code>yayin</code> dalına iş akışı tarafından üretilmiş hâlleriyle girerler; <code>main</code> yalnızca kaynağı (<code>docs/*.md</code>) taşır.</p>
+<p><strong>Not — Actions&#x27;ta zararsızdı.</strong> Bulut koşusunda hat, site kurucusundan ÖNCE çalışır ve checkout tazedir; orada bu sıra hiç kirlenmeye yol açmazdı. Hata yalnızca <strong>yerel</strong> koşuyu engelliyordu. Yine de düzeltildi: yerel koşu hâlâ desteklenen bir yoldur ve iki ortamın davranışının ayrışması başlı başına bir risktir.</p>
+<hr>
+<h1>GERİYE DÖNÜK KAYITLAR</h1>
+<p>**Bu bölümdeki altı vaka, olduğu sırada düzeltildi ama deftere GİRİLMEDİ.** Boşluk 26 Ağustos 2026&#x27;da bulundu: metodoloji sayfasındaki &quot;38 kayıt&quot; ifadesini kaynağına bağlarken defteri saydım — 44 başlık vardı ama numaralar V51&#x27;e kadar gidiyordu. Aradaki fark rastgele değildi: V34, V35, V36, V41, V42, V43 kod yorumlarında ve diğer belgelerde atıflanıyordu, ama defterde karşılıkları yoktu.</p>
+<p><strong>Neden gizlenmeden yazılıyor.</strong> Bu kayıtları araya sessizce sokmak, defterin baştan eksiksiz tutulduğu izlenimi verirdi. Defterin değeri tam da böyle bir izlenim vermemesindedir. Kayıtlar buradadır ve <strong>geriye dönük oldukları yazılıdır.</strong></p>
+<p><strong>Dersin kendisi bir vaka.</strong> *Bir sicilin eksiksizliği, sicilin kendisine bakarak anlaşılmaz.* Defter kendi kendine &quot;tamam&quot; görünüyordu; boşluk ancak <strong>dışarıdan bir sayımla</strong> — numaralar ile başlıkların karşılaştırılmasıyla — ortaya çıktı. Bundan sonra bu sayım <code>site_kur</code> içinde yapılır ve sayı künyeye yazılır.</p>
+<hr>
+<h2>V34 — şema koruması geçerli bir çıktıyı reddetti (yanlış pozitif)</h2>
+<p><strong>Bulgu.</strong> Şema koruması, yayımlanan GeoJSON&#x27;un taşıması gereken alan adlarını <strong>varsayarak</strong> yazılmıştı: <code>kunye</code>, <code>p</code>. Üretilen dosyada bu adlar yoktu; koruma <strong>geçerli bir çıktıyı reddetti.</strong></p>
+<p><strong>Neden önemli.</strong> Yanlış pozitif, yanlış negatiften daha az tehlikelidir ama daha çok aşındırıcıdır: her koşuda öten bir alarm, kapatılan bir alarma dönüşür. Bir koruma güvenilirliğini yanlış alarmla kaybederse, gerçek alarmı da kimse dinlemez.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir koruma, koruduğu şeyin ölçülmüş hâline yazılır — hayal edilmiş hâline değil.* Şema kafadan yazılmıştı; oysa dosya zaten üretilmişti ve okunabilirdi.</p>
+<p><strong>Düzeltme.</strong> Alan adları üretilen dosyadan <strong>okunarak</strong> yazıldı (<code>UST_ALANLAR</code>, <code>HUCRE_ALANLARI</code>, <code>KUNYE_ALANLARI</code>) ve kaynağı yorumda belirtildi: &quot;ÖLÇÜLMÜŞ ŞEMA&quot;.</p>
+<hr>
+<h2>V35 — dil koruması kendi uyarı metnimizi yasakladı</h2>
+<p><strong>Bulgu.</strong> Zorunlu uyarı metni, kesinliği <strong>reddeden</strong> bir metindir ve bu yüzden yasak kelimeleri <strong>zorunlu olarak</strong> içerir: <em>&quot;kesin deprem tahmini değildir.&quot;</em> Naif kelime taraması bunu bir ihlal sandı — koruma <strong>kendi uyarımızı</strong> reddetti.</p>
+<p><strong>İki çözüm vardı ve biri seçildi.</strong></p>
+<table><tr><th>seçenek</th><th>değerlendirme</th></tr><tr><td>(a) olumsuzlama sezgiselliği yaz</td><td>KIRILGAN — dilbilgisine bağlı, ve <strong>ihlali &quot;değildir&quot; ekleyerek gizlemek kolaylaşır</strong></td></tr><tr><td>(b) onaylı metni KİMLİĞİYLE muaf tut</td><td>DENETLENEBİLİR — muafiyet tek bir metne ait</td></tr></table>
+<p><strong>(b) seçildi.</strong> Onaylı metnin sha256&#x27;sı kodda sabittir. Metin bir karakter değişirse hash tutmaz ve <strong>hat durur</strong>; yeni metin insan tarafından gözden geçirilip yeniden sabitlenene kadar yayım olmaz.</p>
+<p><strong>Dersin genel hâli.</strong> <em>Muafiyet desene değil kimliğe verilir.</em> Desene verilen bir muafiyet, deseni taklit eden her şeye açılır. Kimliğe verilen muafiyet yalnızca o şeye aittir ve genişletilemez.</p>
+<p><strong>Not.</strong> Bu ilke sonradan V47&#x27;de (iddia/ret) ve V48&#x27;de (kullanım/anma) yeniden sınandı; ikisinde de dil korumasının <strong>desenle çözülemeyecek</strong> sınırlarına çarpıldı ve çözüm yine kapsam beyanı oldu, sezgisellik değil.</p>
+<hr>
+<h2>V36 — hat kendi çalışma ağacını kirletiyordu</h2>
+<p><strong>Bulgu.</strong> Hat, ürettiği yayını <code>data/publish/</code> altına yazıyordu ve bu dizin git&#x27;te izleniyordu. Sonuç: **hat çalıştıktan sonra çalışma ağacı kirli oluyordu** ve bir sonraki koşu, kirli-ağaç korumasınca reddediliyordu.</p>
+<p><strong>Neden bu bir tuzak.</strong> Koruma doğru çalışıyordu — kirli ağaçta üretilen bir künye güvenilmez, çünkü kodun hangi hâliyle üretildiği belirsizdir. Ama kirliliği <strong>korumanın koruduğu sürecin kendisi</strong> üretiyordu. Bir koruma, kendi ihlalini üreten bir sistemde işe yaramaz hâle gelir: ya kapatılır ya da her koşudan önce elle temizlik yapılır.</p>
+<p><strong>Dersin genel hâli.</strong> *Üretilmiş çıktı, üretimin girdisiyle aynı yerde durmaz.* Kaynak izlenir, çıktı izlenmez.</p>
+<p><strong>Düzeltme.</strong> <code>data/publish/</code> izlemeden çıkarıldı.</p>
+<p><strong>Sonraki tekrarları.</strong> Aynı kalıp iki kez daha ortaya çıktı — V42&#x27;de <code>web/data/</code> ile, V51&#x27;de üretilmiş belge sayfalarıyla. Üçüncüsünde dersin neden iki kez kaçtığı da anlaşıldı: kural <strong>dizin adına</strong> bağlanmıştı, &quot;üretilmiş olma&quot; özelliğine değil.</p>
+<hr>
+<h2>V41 — zamanlanmış görev günlüğü yazamadan ölüyordu</h2>
+<p><strong>Bulgu.</strong> Yerel günlük koşuyu saran PowerShell betiği başarısız oluyordu ve <strong>günlükte yalnızca başlık satırı</strong> vardı. Çıkış kodu 1 idi, sebep görünmüyordu.</p>
+<p><strong>Kök sebep.</strong> <code>$ErrorActionPreference = &quot;Stop&quot;</code>. PowerShell 5.1&#x27;de yerel bir programın stderr çıktısı boru hattında <code>ErrorRecord</code>&#x27;a çevrilir; &quot;Stop&quot; altında bu, betiği <strong>anında</strong> sonlandırır. Python hattı stderr&#x27;e ilk satırını yazdığı anda sarmalayıcı ölüyordu — ve öldüğü için o satırı günlüğe geçiremiyordu.</p>
+<p><strong>Neden en kötü hata sınıfı.</strong> Sessiz başarısızlık, yanlış sonuçtan daha tehlikelidir: yanlış sonuç incelenebilir, olmayan sonuç incelenemez. Site sessizce eskir ve kimse fark etmez.</p>
+<p><strong>Dersin genel hâli.</strong> *Kaydedicinin işi durdurmak değil, olan biteni kaydetmektir.* Sarmalayıcı bir koruma değildi; korumalar zaten hattın içindeydi ve yayımı durduruyorlardı. Sarmalayıcı yalnızca tanıktı — ve tanığın kendi kendini susturan bir ayarı vardı.</p>
+<p><strong>Düzeltme.</strong> <code>$ErrorActionPreference = &quot;Continue&quot;</code> ve gerekçesi yorumda.</p>
+<p><strong>Yapısal kapanış.</strong> GitHub Actions&#x27;a taşınmayla bu sınıf **yapısal olarak kapandı**: günlüğü platformun kendisi saklar ve başarısız koşu bildirim üretir. Sarmalayıcı yine de kalır — yerel koşu hâlâ desteklenen bir yoldur.</p>
+<hr>
+<h2>V42 — metodoloji sayfası uyarı metnini ELLE kopyalamıştı</h2>
+<p><strong>Bulgu.</strong> Metodoloji sayfası, zorunlu uyarı metnini kendi HTML&#x27;ine kopyalamıştı. Kopya, onaylı metinle <strong>birebir aynı değildi</strong> ve bu yüzden V35&#x27;te kurulan sha256 muafiyetini <strong>kaybetti</strong>: dil koruması sayfayı reddetti.</p>
+<p><strong>Korumanın haklı olduğu yer.</strong> Koruma burada bir yanlış pozitif üretmedi. Gerçekten bir sorun vardı: sitede, onaylı olmayan bir uyarı metni duruyordu. Kopya ile kaynak <strong>sessizce ayrışmıştı</strong>.</p>
+<p><strong>Yanlış çözüm ve doğru çözüm.</strong></p>
+<pre>yanlış  -&gt;  kopyayı düzelt, muafiyeti geri kazandır
+doğru   -&gt;  KOPYAYI KALDIR; sayfa metni künyeden yükler</pre>
+<p>Kopyayı düzeltmek, ayrışmayı bir kez geri alırdı; ayrışmanın <strong>sebebini</strong> bırakırdı. Bir sonraki metin değişikliğinde aynı şey tekrar olurdu.</p>
+<p><strong>Dersin genel hâli.</strong> *İki kopya, er ya da geç ayrışır ve ayrışma sessizdir.* Tek çare kopyayı kaldırmaktır.</p>
+<p><strong>Kapsam.</strong> Aynı ilke <code>web/data/</code> için de uygulandı (izlemeden çıkarıldı, V36&#x27;nın kardeşi) ve belge sayfaları <code>docs/*.md</code>&#x27;den her kurulumda yeniden üretilir hâle geldi. Metodoloji sayfasındaki &quot;38 kayıt&quot; ifadesi ise <strong>bu ilkenin gözden kaçmış bir örneğiydi</strong> ve ancak geriye dönük sayımda bulundu (yukarıdaki giriş).</p>
+<hr>
+<h2>V43 — yayımlanan hücrelerin yarısı Türkiye dışındaydı</h2>
+<p><strong>Bulgu.</strong> Izgara ilan edilmiş bir dikdörtgendir ([35–43] K × [25–45] D) ve Yunanistan, Bulgaristan, Gürcistan, Suriye, Irak ve İran&#x27;ın bir kısmını içine alır. Yayımlanan <strong>309 hücrenin %50&#x27;si Türkiye dışındaydı</strong> ve en yüksek oranlı hücre — <strong>normalin 82,4 katı</strong> — Irak&#x27;taydı.</p>
+<p><strong>Sorun sunum değil, GEÇERLİLİK.</strong> Katalog tamlığı ölçüldü:</p>
+<table><tr><th>eşik</th><th>dış/iç olay oranı</th></tr><tr><td>M ≥ 3,3</td><td>0,346</td></tr><tr><td>M ≥ 5,5</td><td>0,639</td></tr></table>
+<p>Gerçek sismisite oranı büyüklüğe göre <strong>sabit kalmalıdır.</strong> Artıyorsa küçük olaylar kaydedilmiyor demektir: sınır dışında küçük olayların **~%46&#x27;sı katalogda yok.**</p>
+<p><strong>Zincir.</strong></p>
+<pre>katalog eksik  -&gt;  uzun vadeli temel oran DÜŞÜK kestiriliyor
+                   (medyan 0,00180 vs içeride 0,00411)
+               -&gt;  &quot;normalin kaç katı&quot; ŞİŞİYOR
+               -&gt;  Kerkük&#x27;teki 82,4 kat gerçek bir sinyal değil,
+                   eksik katalogun ürettiği YAPAY bir değer</pre>
+<p><strong>Karar (kullanıcı onayı ile, seçenek A).</strong> Yayın Türkiye sınırlarıyla kısıtlanır. Gerekçe projenin kendi ilkesidir: **ölçemediğimiz yerde konuşmayız.** &quot;Yayımla ama işaretle&quot; seçeneği, bilinen yanlış bir sayıyı uyarıyla süslemek olurdu.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir modelin geçerli olduğu alan, ızgarasının kapladığı alan değildir.* Izgara bir hesaplama kolaylığıdır; geçerlilik alanı verinin nerede yeterli olduğuyla belirlenir ve bu <strong>ölçülür</strong>.</p>
+<p><strong>Açık bırakılan.</strong> Bölgesel Mc ölçüp temel oranı düzeltmek (seçenek C) daha doğrusudur ama ayrı bir ölçüm işidir; bir sonraki ilan paketinin önceden kayıtlı sorusu olarak yazıldı.</p>
+<p><strong>Kaynak.</strong> Natural Earth 10m admin-0 (kamu malı), künyeli: <code>data/processed/tr_sinir.geojson</code>. Kıyı hücreleri için tampon **0,125 derece** = yarım ızgara adımı, açıkça ilan edilmiştir.</p>
+<hr>
+<h2>V52 — künyedeki koruma listesi elle yazılmıştı ve üç koruma eksikti</h2>
+<p><strong>Nasıl bulundu.</strong> Metodoloji sayfasındaki sabit &quot;38 kayıt&quot; sayısını kaynağına bağladıktan sonra, aynı ilkeyi bir adım ileri götürüp koruma listesini de siteye taşımak istedim: kullanıcı, yayımın hangi denetimlerden geçtiğini görebilmeli. Listeyi künyeden okuttum ve çıktıya baktım — <strong>altı koruma</strong> yazıyordu.</p>
+<p><strong>Bulgu.</strong> Sistemde dokuz koruma vardı. Künyedeki liste elle yazılmış bir dizindi ve üçü hiç girmemişti:</p>
+<table><tr><th>eksik olan</th><th>nerede çalışır</th></tr><tr><td>katalog monotonluğu</td><td><code>forecast_now.update_catalog</code></td></tr><tr><td>yayın kapsamı (V43)</td><td><code>kapsam.hucre_maskesi</code></td></tr><tr><td>kalibre parametreler (V49)</td><td><code>pipeline.kontrol_kalibre_parametreler</code></td></tr></table>
+<p>İlk ikisi <code>pipeline.py</code> dışında yaşadığı için listeye yazılması unutulmuştu; üçüncüsü ise <strong>aynı gün</strong> eklenmişti ve listeye eklenmesi atlanmıştı.</p>
+<p><strong>Neden yakalandığı an önemli.</strong> Liste o âna kadar yalnızca künye dosyasındaydı — kimse okumuyordu, bu yüzden yanlış olması bir şey değiştirmiyordu. Siteye taşımaya karar verdiğim anda **yanlış bir koruma listesi yayımlanacaktı**: kullanıcıya sistemin altı denetimden geçtiği söylenecekti, oysa dokuz vardı ve üçünün adı hiç geçmeyecekti.</p>
+<p>Beyanın bir okuyucusu olmadığı sürece yanlışlığı sonuçsuz kalır; okuyucu kazandığı anda beyan bir iddiaya dönüşür. **Doğruluğu, okunmaya başlamadan önce sağlanmalıdır.**</p>
+<p><strong>Dersin genel hâli.</strong> *Bir sistemin kendi hakkındaki beyanı, sistemden türetilmelidir.* Elle yazılan her beyan — sayı, liste, sürüm, tarih — kaynağından ayrışır. V42 bunu iki kopya metin için söylemişti; burada aynı şey bir <strong>liste</strong> için geçerli oldu. Kalıbın genel adı: <em>ikinci temsil.</em></p>
+<p><strong>Düzeltme (ayrışma yapısal olarak kapatıldı).</strong></p>
+<p>1. <code>pipeline.KORUMALAR</code> tek kaynak oldu: <code>(ad, istisna, nerede)</code> üçlüleri. Künye listeyi buradan yazar; site künyeden okur. 2. <code>test_koruma_listesi_KODLA_AYNI</code> — ilan edilen istisna kümesinin, modüllerde tanımlı koruma istisnalarının kümesine <strong>eşit</strong> olduğunu doğrular. Yeni bir koruma eklenip listeye yazılmazsa <strong>test kırılır.</strong></p>
+<p><strong>Küme, sayı değil.</strong> Eşit sayıda ama farklı elemanlı iki liste bir sayı kontrolünden geçerdi. Bu projede tekrar tekrar aynı yere geliniyor: <em>sayı eşitliği, küme eşitliğinin yerini tutmaz.</em></p>
+<p><strong>Testin kendi kural-9 deneyi.</strong> Listeden <code>KapsamHatasi</code> yapay olarak çıkarıldı; test kırıldı ve gerekçeyi doğru yazdı:</p>
+<pre>kodda olup ilan edilmeyen : [&#x27;KapsamHatasi&#x27;]</pre>
+<p><strong>Açık kalan.</strong> Sitedeki künye, <strong>yayımlanmış</strong> manifestten gelir; bu düzeltme bir sonraki başarılı koşuda yayına yansır. O ana kadar sitede eski (altı maddelik) liste durur — bu, düzeltmenin gecikmesi değil, yayının künyeye bağlı olmasının doğal sonucudur.</p>
+<hr>
+<h2>V53 — bölge kartları DÜNÜN tahmininden üretiliyordu</h2>
+<p><strong>Nasıl bulundu.</strong> İlk bulut koşusu düştü. Günlük okundu: kurulum sorunsuzdu, katalog çekildi, üç pencerenin tahmini de üretildi — ve hat bölge kartlarına gelince çöktü:</p>
+<pre>FileNotFoundError: data/publish/latest/forecast_7d_m45.geojson yok
+                   — önce hat çalıştırılmalı</pre>
+<p>Bu, ilk bakışta bir soğuk-başlangıç sorunudur: taze checkout&#x27;ta önceki yayın yoktur. Ama sorunun neden orada olduğuna bakınca durum tersine döndü.</p>
+<p><strong>Bulgu — çökme, sorunun kendisi değil BELİRTİSİYDİ.</strong> Hattın sırası:</p>
+<pre>satır 445   bugünün tahminleri GÜN DİZİNİNE yazılır
+satır 454   bölge kartları üretilir   &lt;-- `latest/` OKUR
+satır 498   `latest`, gün dizininden GÜNCELLENİR</pre>
+<p>Yani kartlar üretilirken <code>latest/</code> hâlâ <strong>bir önceki yayındır.</strong> Kartlar koşunun kendi çıktısını değil, <strong>dünkü tahmini</strong> okuyordu.</p>
+<p><strong>Sonuç: aynı sayfada iki farklı güne ait sayı.</strong> Harita bugünün olasılıklarını gösteriyor, yanındaki bölge kartları dünün tahmininden üretilmiş &quot;bölge olasılığı&quot; ve &quot;en yüksek kat&quot; değerlerini gösteriyordu. Kullanıcı bunları tek bir yayının parçaları sanırdı.</p>
+<p><strong>Neden yerelde hiç görülmedi.</strong> <code>latest/</code> yerel makinede her zaman doluydu. Eksik dosya hatası hiç oluşmadı; yanlış dosya sessizce okundu. **Hata, doğru çalışıyor gibi görünmesini sağlayan koşulun kendisi tarafından gizleniyordu.**</p>
+<p><strong>Taşımanın kazandırdığı.</strong> Taze checkout, sessiz bir ayrışmayı gürültülü bir çökmeye çevirdi. GitHub Actions&#x27;a taşımanın gerekçesi hız ya da otomasyon değildi — <strong>her koşunun bilinen bir durumdan başlaması</strong>ydı. Bu vaka, o gerekçenin ilk somut karşılığıdır: taşıma daha ilk koşusunda, yerelde ne kadar koşulursa koşulsun görünmeyecek bir hatayı buldu.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir varsayılan yol, &quot;hangi dosyayı okuduğumu düşünmedim&quot; demenin sessiz biçimidir.* <code>guncel()</code> fonksiyonunun <code>geojson_yolu=None → latest/</code> varsayılanı, çağıranı düşünmekten muaf tutuyordu. Muafiyet, yanlış cevabı da kapsıyordu.</p>
+<p><strong>İkinci ders — sessizliğin koşulu.</strong> Bir hatanın görülmemesi, olmadığı anlamına gelmez; çoğu zaman <strong>hatayı görünmez kılan bir koşul</strong> vardır. Burada o koşul &quot;<code>latest/</code> her zaman dolu&quot;ydu. Böyle koşullar aranmalıdır: <em>bu hata hangi durumda kendini gösterirdi?</em> — ve o durum kasten kurulmalıdır.</p>
+<p><strong>Düzeltme (üç parça).</strong></p>
+<p>1. <code>guncel()</code> ve <code>kartlar()</code> artık <strong>zorunlu</strong> bir yol alır; varsayılan YOKTUR. Çağıran, hangi tahmini okuduğunu söylemek zorundadır. 2. Hat, kartlara <strong>kendi çıktısını</strong> verir: <code>_kartlar(gun_dizini / &quot;forecast_7d_m45.geojson&quot;)</code>. 3. <strong>Yeni koruma — kart-tahmin tutarlılığı</strong> (<code>KartTutarsizligi</code>). Yolu zorunlu kılmak hatayı düzeltir ama tekrarını engellemez: biri yarın yanlış yolu geçirebilir. Koruma iki sha256&#x27;yı karşılaştırır — kartların okuduğu dosya ile bu koşunun yayımladığı dosya aynı olmak zorundadır. Karşılaştırma <strong>yol</strong> üzerinden değil <strong>içerik</strong> üzerindendir.</p>
+<p><strong>Kural 9 deneyleri.</strong></p>
+<table><tr><th>deney</th><th>beklenen</th><th>sonuç</th></tr><tr><td>kartlar başka sha taşıyor</td><td><code>KartTutarsizligi</code></td><td><strong>reddetti</strong></td></tr><tr><td>kartlarda <code>kaynak_sha256</code> yok</td><td><code>KartTutarsizligi</code></td><td><strong>reddetti</strong></td></tr><tr><td>kartlar bu koşunun dosyasından</td><td>geçer</td><td><strong>geçti</strong></td></tr><tr><td><code>guncel</code>/<code>kartlar</code> ilk parametresi</td><td>varsayılansız</td><td><strong>varsayılansız</strong></td></tr></table>
+<p>Dördüncü deney, düzeltmenin <strong>geri alınamamasını</strong> sınar: biri varsayılanı geri koyarsa test kırılır.</p>
+<p><strong>Yan bulgu — kayma denetçisinin kendisi kaydı.</strong> Yeni koruma eklenince V52&#x27;de kurulan <code>test_koruma_listesi_KODLA_AYNI</code> testi kırıldı; ama beklenen yönde değil. Test, koruma istisnalarını <strong>ad ekiyle</strong> tanıyordu (&quot;...Hatasi&quot;, &quot;...Kuculdu&quot;) ve <code>KartTutarsizligi</code> bu desene uymuyordu. Yani denetçi, denetlediği şeyin yeni bir örneğini göremiyordu.</p>
+<p>Düzeltme, V35&#x27;in dersinin doğrudan tekrarı oldu: **tanıma desene değil kimliğe bağlanır.** Kimlik burada taban sınıftır — <code>YayimHatasi</code>&#x27;nın alt sınıfları. Ad ne olursa olsun görülür.</p>
+<hr>
+<h2>V54 — ölçüm aracı ölçtüğü şeyi bozdu</h2>
+<p><strong>Nasıl bulundu.</strong> Kural-9 bulut deneyi için bir şey eksikti: koşu düştüğünde gerekçeyi okuyamıyordum. Actions günlüğüne token olmadan erişilemiyor, başarısız koşu da <code>yayin</code> dalına yazmıyor (yazmamalı da). Bu yüzden hattın çıktısını bir dosyaya alıp ayrı bir dala itmeyi ekledim:</p>
+<pre>python -u -m src.operational.pipeline 2&gt;&amp;1 | tee hat_cikti.log</pre>
+<p>Deney koştu ve düştü — ama <strong>beklenen gerekçeyle değil.</strong> <code>ParametreHatasi</code> bekliyordum; günlükte <code>KirliAgacHatasi</code> vardı.</p>
+<p><strong>Bulgu.</strong> <code>tee hat_cikti.log</code> günlüğü <strong>depo köküne</strong> yazıyor. Takipsiz bir dosya çalışma ağacını kirletir; hattın <strong>ilk</strong> koruması (kirli ağaç) daha katalog çekilmeden reddediyor. Yerelde ölçtüm:</p>
+<pre>hat_cikti.log VARKEN   worktree = dirty
+hat_cikti.log YOKKEN   worktree = clean</pre>
+<p><strong>Bu bir regresyondu.</strong> Deney olmasaydı bile sonraki <strong>her</strong> koşu düşecekti — üretim, eklendiği andan itibaren durmuştu. Deney onu ilk çalıştırmada yakaladı; kural 9&#x27;un varlık sebebi tam olarak budur. Bir koruma &quot;kurulu&quot; sayılmadan önce reddettiği gösterilir; burada gösterilen şey, *korumanın yanlış sebeple reddettiğiydi.*</p>
+<p><strong>Dersin genel hâli.</strong> <em>Ölçüm aracı, ölçtüğü sistemin içine konmaz.</em> Gözlemci gözlenen sistemi değiştirdi. Bu, V36/V42/V51 ailesinin yeni bir üyesidir (&quot;üretilmiş çıktı, üretimin girdisiyle aynı yerde durmaz&quot;) ama bir farkla: orada kirleten şey <strong>üretilmiş sonuçtu</strong>, burada **günlüğün kendisiydi**. Sonucu saklamamaya dikkat ettim, tanığı saklamayı unuttum.</p>
+<p><strong>İkinci ders.</strong> <em>Bir deneyin yanlış sebeple başarılı görünmesi mümkündür.</em> Deneyin birinci beklentisi (&quot;koşu düşer&quot;) karşılandı, üçüncüsü de (&quot;yayın dalı değişmez&quot;). Yalnızca beşinci beklenti — gerekçenin ne olduğu — tutmadı. Eğer gerekçeyi yazmamış olsaydım, deney &quot;başarılı&quot; sayılacak ve regresyon üretimde kalacaktı. **Beklentiyi önceden ve ayrıntılı yazmak, deneyi kendi yanılgısından koruyan şeydir.**</p>
+<p><strong>Düzeltme.</strong> Günlük <code>$RUNNER_TEMP</code> altına yazılıyor — depo ağacının dışında. Düzeltmeden sonraki koşu beklenen gerekçeyi verdi:</p>
+<pre>ParametreHatasi: mc_by_period.csv YOK -- kalibre Mc/b olmadan yayım
+yapılmaz. Dosya yoksa load_mc_and_b sessizce mc=3.3, b=1.0 döner ve
+&#x27;normalin kaç katı&#x27; alanı ~%5 kayar.</pre>
+<hr>
+<h2>V55 — <code>.gitignore</code> satır içi yorum desteklemez; istisna hiç çalışmamış</h2>
+<p><strong>Nasıl bulundu.</strong> Kural-9 deneyinin temizlik yarısında kaldırdığım kalibre dosyasını geri koymaya çalıştım. <code>git add</code> reddetti:</p>
+<pre>The following paths are ignored by one of your .gitignore files:
+data/processed/mc_by_period.csv</pre>
+<p><strong>Bulgu.</strong> V49&#x27;da istisnayı &quot;düzeltmiş&quot; ve şöyle yazmıştım:</p>
+<pre>!data/processed/mc_by_period.csv   # DOĞRU AD -- &#x27;mc_b.csv&#x27; diye
+                                   # yazılmıştı ve dosya depoya girmemişti</pre>
+<p><code>.gitignore</code> <strong>satır içi yorum desteklemez.</strong> Yalnızca satırın BAŞINDAKİ <code>#</code> yorumdur. Buradaki metin desenin <strong>parçası</strong> olmuş; ortaya <code>mc_by_period.csv</code> diye bitmeyen, hiçbir dosyayla eşleşmeyen bir desen çıkmış.</p>
+<p><strong>Yani V49&#x27;un düzeltmesinin yarısı hiç çalışmamış.</strong> Dosya depoya yalnızca <code>git add -f</code> sayesinde girmişti — ve <code>-f</code>, tam da &quot;yok sayılıyor ama zorla ekle&quot; demek olduğu için, istisnanın çalışmadığını <em>gizlemişti</em>.</p>
+<p><strong>Neden dört ay değil dört saat sonra bulundu.</strong> Çünkü dosyayı bir kez daha eklemek gerekti. İzlenen bir dosya için <code>.gitignore</code> sonuçsuzdur; kural ancak dosya yeniden eklenirken sınanır. Kural-9 deneyi bunu tesadüfen zorunlu kıldı: dosyayı kaldırıp geri koymak, istisnayı ilk kez gerçekten sınadı.</p>
+<p><strong>Dersin genel hâli.</strong> <em>Bir beyanın çalıştığı, beyanı okuyarak anlaşılmaz.</em> İstisna doğru görünüyordu — doğru dosya adı, doğru sözdizimi görünümü. Onu yanlış yapan şey, göze görünmeyen bir dil kuralıydı. V52&#x27;nin (&quot;bir sistemin kendi hakkındaki beyanı sistemden türetilmelidir&quot;) ve V49&#x27;un (&quot;bir dosyanın varlığını istisna satırı değil ölçüm kanıtlar&quot;) doğrudan devamı.</p>
+<p><strong>Düzeltme.</strong> Yorum kendi satırına alındı. <strong>Kanıt:</strong> artık <code>git add</code> dosyayı <code>-f</code> olmadan alıyor.</p>
+<p><strong>Açık kalan risk.</strong> Aynı hata <code>.gitignore</code>&#x27;daki diğer istisna satırlarında da olabilir. Bu dosyada başka satır içi yorum kalmadığı görüldü; ama genel bir denetim yazılmadı. Yazılırsa, &quot;her istisna satırının gerçekten bir dosyayla eşleştiği&quot; sınanmalıdır — desenin varlığı değil, <strong>eşleşmesi</strong>.</p>
+<hr>
+<h2>V57 — kilitli metin değişti; kilit de değişti</h2>
+<p><strong>Olay, hata değil işleyiştir.</strong> Uyarı metninin sonundaki <code>docs/ROADMAP.md</code> göndermesi, sitede karşılığı olmayan bir depo yoluydu; <code>metodoloji.html</code> ile değiştirildi.</p>
+<p>Bu metin V35&#x27;ten beri <strong>sha256 ile sabittir</strong>: dil koruması kesinlik ifadesi içeren her çıktıyı reddeder, uyarı metni ise zorunlu olarak &quot;kesin deprem tahmini değildir&quot; der ve muafiyeti <strong>kimliğinden</strong> alır. Metin değişince hash tutmaz ve hat durur — tasarım gereği. Bu yüzden <code>ONAYLI_UYARI_SHA</code> da yenilendi:</p>
+<pre>d742ca8e...fb85752  -&gt;  b824f0f1...ff5ad83b</pre>
+<p><strong>Testteki kopya kaldırıldı.</strong> <code>tests/test_pipeline.py</code> metnin ikinci bir kopyasını tutuyordu. Kaynaktaki metin değişip hash güncellenmeseydi, test kendi kopyasıyla çalışacağı için <strong>yine geçerdi</strong> — yani korumanın bozulduğunu göstermezdi. Test artık metni <code>forecast_now.DISCLAIMER</code>&#x27;dan içe aktarır. V52&#x27;nin (&quot;beyan sistemden türetilir&quot;) doğrudan devamı.</p>
+<hr>
+<h2>V59 — koruma yayımı durdurdu, imhayı durduramadı</h2>
+<p><strong>Nasıl bulundu.</strong> 28 Ağustos 2026, bulut koşusu #42 düştü:</p>
+<pre>! KATALOG KÜÇÜLDÜ -- güncelleme veri İMHA ETMİŞ olabilir:
+    koeri_catalog.csv: 72,473 -&gt; 19,339</pre>
+<p>Monotonluk koruması (V38) çalıştı ve yayımı reddetti. Site etkilenmedi.</p>
+<p><strong>Ama kaynağa bakınca asıl mesele göründü.</strong> <code>scripts/02c_download_koeri.py</code> kataloğu yıl yıl çekiyor. <code>fetch_year</code>, üç denemeden sonra başaramazsa <strong>boş dize döndürüyordu</strong>; çağıran taraf <code>continue</code> ile o yılı atlıyor, elde kalan neyse yazıyor ve <strong>0 ile çıkıyordu</strong>. KOERI sunucusu yılların çoğuna yanıt vermeyince 19.339 satır, 72.473 satırlık dosyanın **üzerine yazıldı** ve betik başarılı göründü.</p>
+<p><strong>Kritik ayrım.</strong> V38&#x27;in koruması yayım yolundadır: yapabildiği şey yayımı durdurmaktı, yapamadığı şey ham dosyanın imhasını engellemekti. Koruma tetiklendiğinde dosya çoktan gitmişti. Yani bu bir &quot;korumanın çalışmaması&quot; vakası değil, <strong>korumanın yanlış yerde olması</strong> vakasıdır.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir kaynağı korumak, onu KULLANAN yolu korumakla olmaz; YAZAN yolu korumakla olur.* Yayım kapısına konan bir kontrol, girdinin bozulmasını ancak bozulduktan sonra haber verir. V38 doğru kuralı bulmuş ama yanlış kata koymuştu.</p>
+<p><strong>İkinci ders, tanıdık aileden.</strong> Kısmi başarı, başarı olarak raporlanıyordu. <code>return &quot;&quot;</code> ve <code>continue</code> ikilisi, &quot;yılların yarısını alamadım&quot; ile &quot;hepsini aldım&quot;ı aynı çıkış koduna indirgiyordu.</p>
+<p><strong>Düzeltme, iki katman.</strong></p>
+<p>1. <code>src/ingest/ham_yaz.guvenli_yaz</code> — var olan ham katalogun üzerine daha <strong>az</strong> satırla yazmayı reddeder; büyüme ve eşitlik serbesttir, küçülme açıklama ister (<code>izin_kucultme=True</code>). <strong>Dört indiricinin dördü de</strong> buradan geçiyor ve bir testi doğrudan <code>to_csv</code> çağrısı arıyor -- koruma yalnızca hatırlanan betikte olursa kusur öbüründen geri gelir.</p>
+<p>2. KOERI indiricisi, alınamayan yıl varsa <strong>hiç yazmadan</strong> durur ve eksik yılları listeler. Yıl bazlı önbellek sayesinde yeniden çalıştırmanın maliyeti düşüktür; sessizce devam etmenin maliyeti yüksekti.</p>
+<p><strong>Kanıt.</strong> Beş test; biri korumanın reddettiğini VE reddederken **dosyayı bozmadığını** ayrıca sınıyor -- reddederken bozsaydı koruma zararlı olurdu.</p>
+<p><strong>Açık kalan.</strong> Kırpılmanın neden bu koşuda olduğu kesinleşmedi. Günlükte &quot;katalog yok&quot; satırı var; Actions önbelleği ıskalanmış ve 57 yıl birden sıfırdan çekilmiş olabilir, bu da KOERI&#x27;nin hız sınırlamasını tetiklemiş olabilir. Ölçülmedi, yazılmadı sayılmaz: <strong>bu bir tahmindir.</strong> Önbellek davranışı ayrıca izlenecek.</p>
+<hr>
+<h2>V60 — düzeltmeyi yazdım, düzelttiğim şeyi bir kez bile çalıştırmadım</h2>
+<p><strong>Nasıl bulundu.</strong> V59&#x27;un düzeltmesi yayımlandıktan sonra **koşu #43&#x27;ten itibaren hepsi düştü.** Yaklaşık yirmi koşu, hiçbiri yayımlayamadı:</p>
+<pre>AFAD: ALINAMADI (Traceback (most recent call last):)
+KOERI: ALINAMADI (Traceback (most recent call last):)
+EMSC: ALINAMADI (Traceback (most recent call last):)
+! hiçbir kaynak güncellenemedi</pre>
+<p><strong>Bulgu.</strong> V59&#x27;da dört indiriciye `from src.ingest.ham_yaz import guvenli_yaz<code> satırını ekledim. Hat bu betikleri </code>python scripts/xx.py` diye çağırır — <code>-m</code> ile değil, çünkü modül adları rakamla başlıyor ve <code>-m</code> bunu kabul etmez. Betik olarak çalıştırıldığında <code>sys.path[0]</code> <strong><code>scripts/</code> dizinidir</strong>, depo kökü değil; dolayısıyla <code>src</code> paketi görünmez ve dördü de <code>ModuleNotFoundError</code> ile çöker.</p>
+<p><strong>Neden testler geçti.</strong> Testler modülü doğrudan içe aktarıyor ve pytest çalışırken depo kökü zaten <code>sys.path</code>&#x27;te. Yani test ortamı, üretim ortamının <strong>sahip olmadığı bir kolaylığı</strong> sağlıyordu. Beş yeni test yazmıştım; hiçbiri betiği hattın çağırdığı BİÇİMDE çalıştırmıyordu.</p>
+<p><strong>Dersin genel hâli.</strong> *Bir şeyi değiştirdiysen, değiştirdiğin şeyi kullanıldığı biçimde bir kez çalıştır.* V56&#x27;da aynı ders altlık için çıkmıştı (&quot;tek karo denemesi bir altlığın çalıştığını göstermez&quot;) ve buraya taşınmadı. İki vaka arasındaki ortak nokta şudur: doğrulama, sınanan şeyin <strong>gerçek kullanım biçimini</strong> almalıdır — kütüphane olarak içe aktarmak, betik olarak çalıştırmanın yerine geçmez.</p>
+<p>Kendi payıma daha keskin bir hâli var: koruma eklerken üretimi kırdım ve kırdığımı fark etmedim çünkü betiklerden hiçbirini **bir kez bile çalıştırmadım.**</p>
+<p><strong>Düzeltme.</strong> Dört betiğe de depo kökünü <code>sys.path</code>&#x27;e ekleyen üç satırlık bir açılış kondu, gerekçesi yerinde yazılı.</p>
+<p><strong>Kanıt.</strong> <code>test_INDIRICILER_BETIK_OLARAK_CALISIYOR</code>: dördünü de <code>python scripts/xx.py --help</code> ile çalıştırır (ağ kullanmaz, yalnızca modülün ayağa kalkabilmesini sınar). Açılış satırı kaldırılınca testin düştüğü gösterildi.</p>
+<p><strong>Zarar.</strong> Yaklaşık yirmi koşu boşa gitti ve site ~20 saat boyunca güncellenmedi. Sitenin yayın yaşı göstergesi bunu doğru şekilde bildiriyordu; sessiz bir bozulma değildi -- ama kimse bakmıyorsa görünür olmak yetmiyor. <code>kosu-gunlugu</code> dalı düşen koşuların gerekçesini taşıyor; onu düzenli okumak ayrı bir alışkanlık gerektiriyor ve bu alışkanlık kurulmadı.</p>
+<hr>
+<h2>V61 — kök neden önbellekteydi; düzeltmelerim belirtileri kovalamış</h2>
+<p><strong>Nasıl bulundu.</strong> V60&#x27;ın düzeltmesinden sonra koşu #63 yine düştü. Bu sefer AFAD ve EMSC güncellendi, KOERI düştü ve şu yazdı:</p>
+<pre>KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt çıkarıldı)
+! KATALOG KÜÇÜLDÜ: koeri_catalog.csv: 72,473 -&gt; 0</pre>
+<p>Sıfır. Oysa V59&#x27;da tam olarak bunu engellemek için <code>guvenli_yaz</code> eklenmişti.</p>
+<p><strong>Üç ayrı kusur bulundu ve üçü birbirini besliyordu.</strong></p>
+<p><strong>1. Önbellek anahtarı her koşuda yeniydi — asıl kök neden.</strong></p>
+<pre>key: ham-katalog-${{ github.run_id }}</pre>
+<p><code>github.run_id</code> her koşuda değişir, yani her koşu ~240 MB&#x27;lık **yeni bir önbellek girdisi** kaydediyordu. Üç saatlik kadansla günde ~2 GB; GitHub&#x27;ın depo başına 10 GB sınırı birkaç günde doluyor ve en eskiler tahliye ediliyordu. Günlüklerdeki &quot;katalog yok&quot; satırı, V59&#x27;daki KOERI kırpılması ve bu vaka -- hepsinin altında bu var. Anahtar artık günlüktür; anahtar tuttuğunda <code>actions/cache</code> yeniden kaydetmez, böylece günde en fazla bir kayıt yapılır.</p>
+<p><strong>2. Toplu CSV&#x27;ler hiç önbelleklenmiyordu.</strong> Önbellek <code>data/raw/afad</code> ve <code>data/raw/koeri</code> alt dizinlerini alıyordu; ama <code>afad_catalog.csv</code>, <code>koeri_catalog.csv</code>, <code>emsc_catalog.csv</code> <code>data/raw/</code> <strong>kökünde</strong> duruyor. Yani her koşu onları sıfırdan üretiyordu ve **<code>guvenli_yaz</code>&#x27;ın koruyacağı bir dosya hiç bulunmuyordu.** V59&#x27;da yazdığım koruma, üretimde bir kez bile devreye giremezdi. Önbellek artık <code>data/raw</code>&#x27;ın tamamını kapsıyor.</p>
+<p><strong>3. Kendi düzeltmem sistemi kilitlemişti.</strong> V59&#x27;da KOERI kısmi indirmede koşulsuz <code>SystemExit</code> ediyordu. Bu, &quot;kırpılmış yazma&quot;yı çözerken yenisini yarattı: dosya yazılmıyor, var olan dosya da (2. madde yüzünden) yok, sonuç 0 satır, monotonluk koruması reddediyor -- <strong>hiçbir zaman yayın yok.</strong> &quot;Sessizce kırpılmış&quot; bir sistemi &quot;hiç yayımlamayan&quot; bir sistemle değiştirmiştim.</p>
+<p>Korunması gereken şey <strong>dosyadır</strong>, durmanın kendisi değil. Dosya varsa kırpılmış sonuç atılır ve hat eldeki katalogla devam eder; dosya yoksa düşülecek yer olmadığı için durulur.</p>
+<p><strong>Yan bulgu: hata mesajı hatayı göstermiyordu.</strong> Raporlama <code>(r.stdout or r.stderr)</code> yazıyordu -- stdout boş olmadıkça stderr&#x27;e hiç bakılmıyor, üstelik <strong>ilk</strong> satır alınıyordu. Ekrana düşen şey buydu:</p>
+<pre>KOERI: ALINAMADI (patlatma/şüpheli filtresi: 0 kayıt çıkarıldı)</pre>
+<p>Gerçek hata ise <code>HamKatalogKuculdu</code> idi. Artık stderr&#x27;in <strong>son</strong> satırları basılıyor. <em>Hatayı göstermeyen bir hata mesajı, mesaj değildir.</em></p>
+<p><strong>Dersin genel hâli.</strong> <em>Belirtiyi kovalayan düzeltme yeni belirti üretir.</em> V59 ve V60&#x27;ın ikisi de gerçek kusurları düzeltti, ama ikisi de zincirin ucundaydı; kökteki önbellek tahliyesine hiç bakmamıştım. Üç düzeltme üst üste bindi ve arada ~20 koşu kayboldu.</p>
+<p><strong>Kanıt.</strong> Kısmi indirme gerçekten çalıştırıldı: <code>guvenli_yaz</code> reddetti ve <code>koeri_catalog.csv</code> 9,6 MB olarak <strong>korundu</strong>. Yeni hata raporlaması aynı koşuda gerçek hatayı bastı, eski raporlama alakasız bir ilerleme satırını.</p>
+<p><strong>Açık kalan.</strong> Önbellek düzeltmesinin işe yaradığı henüz <strong>gösterilmedi</strong> -- bir sonraki koşularda &quot;Cache restored&quot; satırının tuttuğu ve <code>data/raw</code> içindeki CSV&#x27;lerin geri geldiği izlenecek. Kural 9 gereği o görülene kadar bu düzeltme kurulu sayılmaz.</p>
+<hr><div class="soluk">Bu sayfa <code>VAKA_DEFTERI.md</code> belgesinden otomatik
+üretilmiştir; elle düzenlenmez. <a href="metodoloji.html">Yöntem ve
+sınırlılıklar</a> · <a href="index.html">Harita</a> · <a href="https://github.com/AdilcanTopuz/depremrapor" target="_blank" rel="noopener">Kaynak kodu (GitHub)</a></div>
+</div></body></html>
