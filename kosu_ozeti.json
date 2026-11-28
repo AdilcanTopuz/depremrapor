@@ -1,0 +1,122 @@
+{
+  "kosu_id": "46154967405",
+  "tetikleyici": "workflow_dispatch",
+  "sebep": "taban: son yayın 3.2 saat önce",
+  "commit": "0c7b2aa6c7eab4c855f486fcb2b4c207097e4304",
+  "okundu": "2026-11-28T14:34:03.161278+00:00",
+  "hat_sonucu": "success",
+  "hat_son_satirlar": [
+    "kalibre parametreler: mc=3.3 · b=1.0450",
+    "ürün kapısı: ETAS oran 1.089 band [0.8, 1.25] -> GEÇTİ",
+    "commit 0c7b2aa6c7ea · ağaç temiz",
+    "katalog yok",
+    "  AFAD: güncellendi",
+    "  KOERI: güncellendi",
+    "  EMSC: güncellendi",
+    "güncel katalog son olay: 2026-11-28 12:23",
+    "katalog son olay 2026-11-28 12:23:03+00:00 (2.18 saat önce)",
+    "tahmin başlangıcı: 2026-11-28 14:00, pencere 1 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 6, mu oranı 0.490",
+    "   1 gün ·  103 hücre · forecast_1d_m45.geojson",
+    "tahmin başlangıcı: 2026-11-28 14:00, pencere 7 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 8, mu oranı 0.490",
+    "   7 gün ·  125 hücre · forecast_7d_m45.geojson",
+    "tahmin başlangıcı: 2026-11-28 14:00, pencere 30 gün, M>=4.5 (ANALİTİK -- simülasyon yok)",
+    "  Rounding issues found. Check if delta_m and mc_current are set correctly.",
+    "  kuşak 9, mu oranı 0.490",
+    "  30 gün ·  153 hücre · forecast_30d_m45.geojson",
+    "kart-tahmin tutarlılığı: 598a15145ffbfcce… -> GEÇTİ",
+    "  son_depremler.json      23 olay",
+    "  tahmin_kaydi.json        7 olay",
+    "  bölge kartları · 6 bölge · iki katman ayrı",
+    "-> /home/runner/work/depremrapor/depremrapor/data/publish/2026-11-28T1400  ve  /home/runner/work/depremrapor/depremrapor/data/publish/latest"
+  ],
+  "manifest": {
+    "origin": "2026-11-28T14:00:00Z",
+    "uretim_zamani": "2026-11-28T14:30:38.365741+00:00",
+    "commit": "0c7b2aa6c7eab4c855f486fcb2b4c207097e4304",
+    "calisma_agaci": "clean",
+    "korumalar": [
+      "kirli ağaç",
+      "katalog tazeliği",
+      "katalog monotonluğu",
+      "kalibre parametreler",
+      "ürün kapısı",
+      "yayın kapsamı",
+      "şema",
+      "dil",
+      "hücre sayısı bandı",
+      "kart-tahmin tutarlılığı"
+    ],
+    "katalog": {
+      "son_olay": "2026-11-28 12:23:03+00:00",
+      "yas_saat": 2.18
+    },
+    "urun_kapisi": {
+      "model": "ETAS",
+      "gozlenen": 252,
+      "beklenen": 231.50356983581392,
+      "oran": 1.0885361300420657,
+      "gecti": true,
+      "band": [
+        0.8,
+        1.25
+      ],
+      "gerekce": "bandın içinde",
+      "olcum_kunyesi": {
+        "donem": "2021-01-01 .. 2024-12-20",
+        "pencere_gun": 7,
+        "hedef_mw": 4.5,
+        "tablo": "etas_analytic_weekly",
+        "olcum_tarihi": "2026-08-26"
+      }
+    },
+    "tazelik": {
+      "uretim_zamani": "2026-11-28T14:30:38.365741+00:00",
+      "sonraki_beklenen": "2026-11-28T17:30:38.365741+00:00",
+      "yayin_araligi_saat": 3,
+      "bayatlik_esigi_saat": 7,
+      "kural": "üretim zamanı FİİLÎ zamandır, planlanan değil. Bu yayın, üretiminden BAYATLIK EŞİĞİ kadar süre sonra 'güncel değil' sayılır ve arayüz uyarır."
+    },
+    "ham_satir_sayilari": {
+      "afad_catalog.csv": 267279,
+      "koeri_catalog.csv": 72675,
+      "emsc_catalog.csv": 60947
+    },
+    "min_times_normal": 2.0
+  },
+  "dosyalar": [
+    {
+      "dosya": "forecast_1d_m45.geojson",
+      "n_hucre": 103,
+      "sha256": "04cd1c5ae2f69d32"
+    },
+    {
+      "dosya": "forecast_7d_m45.geojson",
+      "n_hucre": 125,
+      "sha256": "598a15145ffbfcce"
+    },
+    {
+      "dosya": "forecast_30d_m45.geojson",
+      "n_hucre": 153,
+      "sha256": "30b8f88c2092a6a8"
+    },
+    {
+      "dosya": "bolge_kartlari.json",
+      "n_hucre": null,
+      "sha256": "310a3639aeb61cf6"
+    },
+    {
+      "dosya": "son_depremler.json",
+      "n_hucre": null,
+      "sha256": "424313aea38fc128"
+    },
+    {
+      "dosya": "tahmin_kaydi.json",
+      "n_hucre": null,
+      "sha256": "c1fb2384430ca66a"
+    }
+  ]
+}
